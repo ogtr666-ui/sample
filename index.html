@@ -77,9 +77,8 @@ body {
   width: 100%;
   background: white;
   border-radius: 20px 20px 0 0;
-  transition: transform 0.3s ease, bottom 0.3s ease;
-  z-index: 10;
-  will-change: transform;
+
+  transition: bottom 0.3s ease; /* ←ここが重要 */
 }
 
 .sheet {
@@ -282,61 +281,49 @@ function enableSwipeClose(element) {
   let startY = 0;
   let currentY = 0;
   let startTime = 0;
-  let isDragging = false;
-  let isScrolling = false;
+  let moved = false;
 
   element.addEventListener("touchstart", e => {
     startY = e.touches[0].clientY;
     startTime = Date.now();
-    isDragging = true;
-    isScrolling = false;
-    element.style.transition = "none";
+    moved = false;
   });
 
   element.addEventListener("touchmove", e => {
-    if (!isDragging) return;
-
     currentY = e.touches[0].clientY;
     let diff = currentY - startY;
 
-    if (Math.abs(diff) < 20) return;
+    if (diff > 10) moved = true; // ←タップとの分離
 
-    isScrolling = true;
-
+    // スワイプ表示だけ（閉じ確定しない）
     if (diff > 0) {
       element.style.transform = `translateY(${diff}px)`;
     }
   });
 
   element.addEventListener("touchend", () => {
-    if (!isDragging) return;
-
     let diff = currentY - startY;
     let time = Date.now() - startTime;
-    let velocity = diff / time; // px/ms
+    let velocity = diff / time;
 
-    element.style.transition = "transform 0.25s ease-out";
+    // 元に戻すアニメ
+    element.style.transition = "transform 0.25s ease";
 
-    // ■判定（距離 or 速度）
     if (diff > 120 || velocity > 0.5) {
-      // ▼閉じる（慣性っぽく下へ流す）
+      // 閉じる
       element.style.transform = "translateY(100%)";
 
       setTimeout(() => {
         element.classList.remove("active");
         element.style.transform = "";
-        
         if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
           overlay.classList.remove("active");
         }
       }, 250);
-
     } else {
-      // ▼戻す
+      // 戻す
       element.style.transform = "translateY(0)";
     }
-
-    isDragging = false;
   });
 }
 

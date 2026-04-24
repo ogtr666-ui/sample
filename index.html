@@ -281,11 +281,13 @@ function render(date) {
 function enableSwipeClose(element) {
   let startY = 0;
   let currentY = 0;
+  let startTime = 0;
   let isDragging = false;
   let isScrolling = false;
 
   element.addEventListener("touchstart", e => {
     startY = e.touches[0].clientY;
+    startTime = Date.now();
     isDragging = true;
     isScrolling = false;
     element.style.transition = "none";
@@ -297,7 +299,6 @@ function enableSwipeClose(element) {
     currentY = e.touches[0].clientY;
     let diff = currentY - startY;
 
-    // ←ここが追加ポイント（誤爆防止）
     if (Math.abs(diff) < 20) return;
 
     isScrolling = true;
@@ -308,22 +309,33 @@ function enableSwipeClose(element) {
   });
 
   element.addEventListener("touchend", () => {
-    element.style.transition = "0.3s";
-
-    // ←ここも追加（タップは無視）
-    if (!isScrolling) return;
+    if (!isDragging) return;
 
     let diff = currentY - startY;
+    let time = Date.now() - startTime;
+    let velocity = diff / time; // px/ms
 
-    if (diff > 120) {
-      element.classList.remove("active");
+    element.style.transition = "transform 0.25s ease-out";
 
-      if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
-        overlay.classList.remove("active");
-      }
+    // ■判定（距離 or 速度）
+    if (diff > 120 || velocity > 0.5) {
+      // ▼閉じる（慣性っぽく下へ流す）
+      element.style.transform = "translateY(100%)";
+
+      setTimeout(() => {
+        element.classList.remove("active");
+        element.style.transform = "";
+        
+        if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
+          overlay.classList.remove("active");
+        }
+      }, 250);
+
+    } else {
+      // ▼戻す
+      element.style.transform = "translateY(0)";
     }
 
-    element.style.transform = "translateY(0)";
     isDragging = false;
   });
 }

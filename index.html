@@ -73,6 +73,7 @@ body {
   border-radius: 20px 20px 0 0;
   transition: 0.3s;
   z-index: 10;
+  will-change: transform;
 }
 
 .sheet {
@@ -263,20 +264,43 @@ function render(date) {
 /* スワイプで閉じる */
 function enableSwipeClose(element) {
   let startY = 0;
+  let currentY = 0;
+  let isDragging = false;
 
   element.addEventListener("touchstart", e => {
     startY = e.touches[0].clientY;
+    isDragging = true;
+    element.style.transition = "none"; // 動きを止める
   });
 
   element.addEventListener("touchmove", e => {
-    let moveY = e.touches[0].clientY;
-    if (moveY - startY > 80) {
+    if (!isDragging) return;
+
+    currentY = e.touches[0].clientY;
+    let diff = currentY - startY;
+
+    if (diff > 0) {
+      element.style.transform = `translateY(${diff}px)`;
+    }
+  });
+
+  element.addEventListener("touchend", () => {
+    isDragging = false;
+    element.style.transition = "0.3s";
+
+    let diff = currentY - startY;
+
+    if (diff > 120) {
+      // 閉じる
       element.classList.remove("active");
 
       if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
         overlay.classList.remove("active");
       }
     }
+
+    // 元に戻す
+    element.style.transform = "translateY(0)";
   });
 }
 

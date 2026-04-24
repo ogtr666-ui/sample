@@ -78,6 +78,7 @@ body {
   display: flex;
   flex-direction: column;
   overscroll-behavior: contain;
+  transform: translateY(100%);
 }
 
 .detail {
@@ -86,7 +87,7 @@ body {
 }
 
 .sheet.active, .detail.active {
-  transform: translateY(0);
+  transform: translateY(0%);
 }
 
 .handle {
@@ -207,14 +208,16 @@ function toggleView(e) {
 
 function openSheet(date) {
   currentDate = date;
+
   sheet.classList.add("active");
   overlay.classList.add("active");
 
-  sheet.style.transition = "transform 0.35s ease";
-  sheet.style.transform = "translateY(0)";
-
   document.getElementById("dateTitle").innerText = date;
   render(date);
+
+  // ←これ超重要（位置リセット）
+  sheet.style.transition = "transform 0.35s ease";
+  sheet.style.transform = "translateY(0%)";
 }
 
 function openDetail() {

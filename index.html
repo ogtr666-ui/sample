@@ -49,24 +49,14 @@ body {
 
 /* オーバーレイ */
 #overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-
-  background: rgba(0,0,0,0.2);
-
-  opacity: 0;                 /* ←追加 */
-  pointer-events: none;       /* ←追加 */
-  transition: opacity 0.3s;   /* ←追加 */
-
-  z-index: 5;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.3s ease;
 }
 
 #overlay.active {
-  opacity: 1;                 /* ←変更 */
-  pointer-events: auto;       /* ←追加 */
+  opacity: 1;
+  pointer-events: auto;
 }
 
 /* ボトムシート */

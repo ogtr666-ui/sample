@@ -4,11 +4,13 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>参考書カレンダー</title>
+
 <style>
 body {
   margin: 0;
   font-family: sans-serif;
   background: #fff;
+  overscroll-behavior: none; /* ← これで引っ張って更新防止 */
 }
 
 /* ヘッダー */
@@ -32,7 +34,6 @@ body {
   font-size: 14px;
   position: relative;
   background: #fafafa;
-  cursor: pointer;
 }
 
 .dot {
@@ -59,6 +60,7 @@ body {
   transition: 0.3s;
   display: flex;
   flex-direction: column;
+  overscroll-behavior: contain;
 }
 
 .sheet.active {
@@ -98,6 +100,7 @@ body {
   height: 100px;
   background: #eee;
   border-radius: 10px;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
 /* 詳細 */
@@ -110,6 +113,7 @@ body {
   background: white;
   border-radius: 20px 20px 0 0;
   transition: 0.3s;
+  overflow-y: auto;
 }
 
 .detail.active {
@@ -124,23 +128,23 @@ body {
 }
 </style>
 </head>
+
 <body>
 
 <div class="header">2026年4月 ▼</div>
-
 <div class="calendar" id="calendar"></div>
 
-<!-- 日付シート -->
+<!-- 日付ボトムシート -->
 <div class="sheet" id="sheet">
   <div class="handle"></div>
   <div style="display:flex; justify-content:space-between; padding:10px;">
     <div id="dateTitle"></div>
-    <button onclick="toggleView()">切替</button>
+    <button onclick="toggleView()">表示切替</button>
   </div>
   <div id="content"></div>
 </div>
 
-<!-- 詳細 -->
+<!-- 詳細ボトムシート -->
 <div class="detail" id="detail">
   <div class="handle"></div>
   <div style="padding:10px;">
@@ -179,23 +183,24 @@ for (let i = 1; i <= 30; i++) {
   calendar.appendChild(d);
 }
 
-let isGrid = false;
+/* 表示モード保存 */
+let isGrid = localStorage.getItem("view") === "grid";
+let currentDate = "";
+
+function toggleView() {
+  isGrid = !isGrid;
+  localStorage.setItem("view", isGrid ? "grid" : "list");
+  render(currentDate);
+}
 
 function openSheet(date) {
+  currentDate = date;
   document.getElementById("sheet").classList.add("active");
   document.getElementById("dateTitle").innerText = date;
   render(date);
 }
 
-function toggleView() {
-  isGrid = !isGrid;
-  render(currentDate);
-}
-
-let currentDate = "";
-
 function render(date) {
-  currentDate = date;
   const container = document.getElementById("content");
   container.innerHTML = "";
 
@@ -208,7 +213,7 @@ function render(date) {
 
   if (isGrid) {
     container.className = "grid";
-    items.forEach(i=>{
+    items.forEach(() => {
       const c = document.createElement("div");
       c.className = "card";
       c.onclick = openDetail;
@@ -216,7 +221,7 @@ function render(date) {
     });
   } else {
     container.className = "";
-    items.forEach(i=>{
+    items.forEach(i => {
       const item = document.createElement("div");
       item.className = "list-item";
       item.innerHTML = "<div class='thumb'></div><div>"+i+"</div>";
@@ -229,6 +234,27 @@ function render(date) {
 function openDetail() {
   document.getElementById("detail").classList.add("active");
 }
+
+/* 下スワイプで閉じる（簡易） */
+let startY = 0;
+
+document.getElementById("sheet").addEventListener("touchstart", e => {
+  startY = e.touches[0].clientY;
+});
+
+document.getElementById("sheet").addEventListener("touchmove", e => {
+  let moveY = e.touches[0].clientY;
+  if (moveY - startY > 80) {
+    document.getElementById("sheet").classList.remove("active");
+  }
+});
+
+/* 引っ張って更新防止（強化） */
+document.addEventListener('touchmove', function(e) {
+  if (document.getElementById('sheet').classList.contains('active')) {
+    e.preventDefault();
+  }
+}, { passive: false });
 </script>
 
 </body>

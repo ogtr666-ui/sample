@@ -68,7 +68,9 @@ body {
   background: white;
   border-radius: 20px 20px 0 0;
 
-  transition: bottom 0.3s ease; /* ←ここが重要 */
+  transform: translateY(0);
+  transition: transform 0.35s ease; /* ←ここが重要 */
+  will-change: transform;
 }
 
 .sheet {
@@ -84,7 +86,7 @@ body {
 }
 
 .sheet.active, .detail.active {
-  bottom: 0;
+  transform: translateY(0);
 }
 
 .handle {
@@ -207,7 +209,10 @@ function openSheet(date) {
   currentDate = date;
   sheet.classList.add("active");
   overlay.classList.add("active");
-  overlay.classList.remove("detail-active"); // ←追加
+
+  sheet.style.transition = "transform 0.35s ease";
+  sheet.style.transform = "translateY(0)";
+
   document.getElementById("dateTitle").innerText = date;
   render(date);
 }
@@ -215,7 +220,9 @@ function openSheet(date) {
 function openDetail() {
   detail.classList.add("active");
   overlay.classList.add("active");
-  overlay.classList.add("detail-active"); // ←追加
+
+  detail.style.transition = "transform 0.35s ease";
+  detail.style.transform = "translateY(0)";
 }
 
 /* 閉じる共通 */
@@ -270,49 +277,55 @@ function render(date) {
 function enableSwipeClose(element) {
   let startY = 0;
   let currentY = 0;
-  let startTime = 0;
-  let moved = false;
+  let isDragging = false;
+
+  const threshold = window.innerHeight * 0.5; // 半分基準
 
   element.addEventListener("touchstart", e => {
     startY = e.touches[0].clientY;
-    startTime = Date.now();
-    moved = false;
+    isDragging = true;
+
+    element.style.transition = "none"; // 指追従
   });
 
   element.addEventListener("touchmove", e => {
+    if (!isDragging) return;
+
     currentY = e.touches[0].clientY;
     let diff = currentY - startY;
 
-    if (diff > 10) moved = true; // ←タップとの分離
-
-    // スワイプ表示だけ（閉じ確定しない）
     if (diff > 0) {
       element.style.transform = `translateY(${diff}px)`;
     }
   });
 
   element.addEventListener("touchend", () => {
+    if (!isDragging) return;
+
+    isDragging = false;
+
     let diff = currentY - startY;
-    let time = Date.now() - startTime;
-    let velocity = diff / time;
+    let height = element.offsetHeight;
 
-    // 元に戻すアニメ
-    element.style.transition = "transform 0.25s ease";
+    element.style.transition = "transform 0.35s ease"; // ←戻す速度統一
 
-    if (diff > 120 || velocity > 0.5) {
-      // 閉じる
+    // ■① 半分以上出てる → 戻す（開く状態）
+    if (diff < threshold) {
+      element.style.transform = "translateY(0)";
+    }
+
+    // ■② 半分未満 → 閉じる
+    else {
       element.style.transform = "translateY(100%)";
 
       setTimeout(() => {
         element.classList.remove("active");
         element.style.transform = "";
+
         if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
           overlay.classList.remove("active");
         }
-      }, 250);
-    } else {
-      // 戻す
-      element.style.transform = "translateY(0)";
+      }, 350);
     }
   });
 }

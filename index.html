@@ -10,7 +10,7 @@ body {
   margin: 0;
   font-family: sans-serif;
   background: #fff;
-  overscroll-behavior: none; /* ← これで引っ張って更新防止 */
+  overscroll-behavior: none;
 }
 
 /* ヘッダー */
@@ -47,23 +47,47 @@ body {
   transform: translateX(-50%);
 }
 
+/* オーバーレイ */
+#overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0,0,0,0.2);
+  display: none;
+  z-index: 5;
+}
+
+#overlay.active {
+  display: block;
+}
+
 /* ボトムシート */
-.sheet {
+.sheet, .detail {
   position: fixed;
   bottom: -100%;
   left: 0;
   width: 100%;
-  height: 70%;
   background: white;
   border-radius: 20px 20px 0 0;
-  box-shadow: 0 -5px 20px rgba(0,0,0,0.1);
   transition: 0.3s;
+  z-index: 10;
+}
+
+.sheet {
+  height: 70%;
   display: flex;
   flex-direction: column;
   overscroll-behavior: contain;
 }
 
-.sheet.active {
+.detail {
+  height: 80%;
+  overflow-y: auto;
+}
+
+.sheet.active, .detail.active {
   bottom: 0;
 }
 
@@ -103,47 +127,12 @@ body {
   box-shadow: 0 2px 6px rgba(0,0,0,0.1);
 }
 
-/* 詳細 */
-.detail {
-  position: fixed;
-  bottom: -100%;
-  left: 0;
-  width: 100%;
-  height: 80%;
-  background: white;
-  border-radius: 20px 20px 0 0;
-  transition: 0.3s;
-  overflow-y: auto;
-}
-
-.detail.active {
-  bottom: 0;
-}
-
+/* メタ */
 .meta {
   font-size: 12px;
   color: #888;
   padding: 10px;
   text-align: right;
-}
-
-#overlay {
-  position: fixed;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  background: rgba(0,0,0,0.2);
-  display: none;
-  z-index: 5;
-}
-
-#overlay.active {
-  display: block;
-}
-
-.sheet, .detail {
-  z-index: 10;
 }
 </style>
 </head>
@@ -153,17 +142,19 @@ body {
 <div class="header">2026年4月 ▼</div>
 <div class="calendar" id="calendar"></div>
 
-<!-- 日付ボトムシート -->
+<div id="overlay"></div>
+
+<!-- 日付シート -->
 <div class="sheet" id="sheet">
   <div class="handle"></div>
   <div style="display:flex; justify-content:space-between; padding:10px;">
     <div id="dateTitle"></div>
-    <button onclick="toggleView()">表示切替</button>
+    <button onclick="toggleView()">切替</button>
   </div>
   <div id="content"></div>
 </div>
 
-<!-- 詳細ボトムシート -->
+<!-- 詳細シート -->
 <div class="detail" id="detail">
   <div class="handle"></div>
   <div style="padding:10px;">
@@ -185,6 +176,9 @@ const data = {
 };
 
 const calendar = document.getElementById("calendar");
+const sheet = document.getElementById("sheet");
+const detail = document.getElementById("detail");
+const overlay = document.getElementById("overlay");
 
 for (let i = 1; i <= 30; i++) {
   const d = document.createElement("div");
@@ -214,11 +208,27 @@ function toggleView() {
 
 function openSheet(date) {
   currentDate = date;
-  document.getElementById("sheet").classList.add("active");
+  sheet.classList.add("active");
+  overlay.classList.add("active");
   document.getElementById("dateTitle").innerText = date;
   render(date);
 }
 
+function openDetail() {
+  detail.classList.add("active");
+  overlay.classList.add("active");
+}
+
+/* 閉じる共通 */
+function closeAll() {
+  sheet.classList.remove("active");
+  detail.classList.remove("active");
+  overlay.classList.remove("active");
+}
+
+overlay.addEventListener("click", closeAll);
+
+/* 描画 */
 function render(date) {
   const container = document.getElementById("content");
   container.innerHTML = "";
@@ -250,62 +260,7 @@ function render(date) {
   }
 }
 
-function openDetail() {
-  detail.classList.add("active");
-  overlay.classList.add("active");
-}
-
-/* 下スワイプで閉じる（簡易） */
-let startY = 0;
-
-document.getElementById("sheet").addEventListener("touchstart", e => {
-  startY = e.touches[0].clientY;
-});
-
-document.getElementById("sheet").addEventListener("touchmove", e => {
-  let moveY = e.touches[0].clientY;
-  if (moveY - startY > 80) {
-    document.getElementById("sheet").classList.remove("active");
-  }
-});
-
-/* 引っ張って更新防止（強化） */
-document.addEventListener('touchmove', function(e) {
-  if (document.getElementById('sheet').classList.contains('active')) {
-    e.preventDefault();
-  }
-}, { passive: false });
-</script>
-
-const sheet = document.getElementById("sheet");
-const detail = document.getElementById("detail");
-const overlay = document.getElementById("overlay");
-
-/* 開く */
-function openSheet(date) {
-  currentDate = date;
-  sheet.classList.add("active");
-  overlay.classList.add("active");
-  document.getElementById("dateTitle").innerText = date;
-  render(date);
-}
-
-function openDetail() {
-  detail.classList.add("active");
-  overlay.classList.add("active");
-}
-
-/* 閉じる共通処理 */
-function closeAll() {
-  sheet.classList.remove("active");
-  detail.classList.remove("active");
-  overlay.classList.remove("active");
-}
-
-/* 背景タップ */
-overlay.addEventListener("click", closeAll);
-
-/* スワイプで閉じる（共通関数） */
+/* スワイプで閉じる */
 function enableSwipeClose(element) {
   let startY = 0;
 
@@ -318,7 +273,6 @@ function enableSwipeClose(element) {
     if (moveY - startY > 80) {
       element.classList.remove("active");
 
-      /* 両方閉じてるならoverlayも消す */
       if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
         overlay.classList.remove("active");
       }
@@ -326,11 +280,17 @@ function enableSwipeClose(element) {
   });
 }
 
-/* 両方に適用 */
 enableSwipeClose(sheet);
 enableSwipeClose(detail);
-  
-<div id="overlay"></div>
-  
+
+/* 引っ張って更新防止 */
+document.addEventListener('touchmove', function(e) {
+  if (sheet.classList.contains('active') || detail.classList.contains('active')) {
+    e.preventDefault();
+  }
+}, { passive: false });
+
+</script>
+
 </body>
 </html>

@@ -135,6 +135,10 @@ body {
   padding: 10px;
   text-align: right;
 }
+
+#overlay.detail-active {
+  background: rgba(0,0,0,0.4);
+}
 </style>
 </head>
 
@@ -150,7 +154,7 @@ body {
   <div class="handle"></div>
   <div style="display:flex; justify-content:space-between; padding:10px;">
     <div id="dateTitle"></div>
-    <button onclick="toggleView()">切替</button>
+    <button onclick="toggleView(event)">切替</button>
   </div>
   <div id="content"></div>
 </div>
@@ -201,7 +205,8 @@ for (let i = 1; i <= 30; i++) {
 let isGrid = localStorage.getItem("view") === "grid";
 let currentDate = "";
 
-function toggleView() {
+function toggleView(e) {
+  e.stopPropagation(); // ←追加
   isGrid = !isGrid;
   localStorage.setItem("view", isGrid ? "grid" : "list");
   render(currentDate);
@@ -211,6 +216,7 @@ function openSheet(date) {
   currentDate = date;
   sheet.classList.add("active");
   overlay.classList.add("active");
+  overlay.classList.remove("detail-active"); // ←追加
   document.getElementById("dateTitle").innerText = date;
   render(date);
 }
@@ -218,6 +224,7 @@ function openSheet(date) {
 function openDetail() {
   detail.classList.add("active");
   overlay.classList.add("active");
+  overlay.classList.add("detail-active"); // ←追加
 }
 
 /* 閉じる共通 */
@@ -225,6 +232,7 @@ function closeAll() {
   sheet.classList.remove("active");
   detail.classList.remove("active");
   overlay.classList.remove("active");
+  overlay.classList.remove("detail-active"); // ←追加
 }
 
 overlay.addEventListener("click", closeAll);
@@ -246,7 +254,10 @@ function render(date) {
     items.forEach(() => {
       const c = document.createElement("div");
       c.className = "card";
-      c.onclick = openDetail;
+      c.onclick = (e) => {
+        e.stopPropagation();
+        openDetail();
+      };
       container.appendChild(c);
     });
   } else {
@@ -255,7 +266,10 @@ function render(date) {
       const item = document.createElement("div");
       item.className = "list-item";
       item.innerHTML = "<div class='thumb'></div><div>"+i+"</div>";
-      item.onclick = openDetail;
+      item.onclick = (e) => {
+        e.stopPropagation();
+        openDetail();
+      };
       container.appendChild(item);
     });
   }
@@ -266,11 +280,13 @@ function enableSwipeClose(element) {
   let startY = 0;
   let currentY = 0;
   let isDragging = false;
+  let isScrolling = false;
 
   element.addEventListener("touchstart", e => {
     startY = e.touches[0].clientY;
     isDragging = true;
-    element.style.transition = "none"; // 動きを止める
+    isScrolling = false;
+    element.style.transition = "none";
   });
 
   element.addEventListener("touchmove", e => {
@@ -279,19 +295,25 @@ function enableSwipeClose(element) {
     currentY = e.touches[0].clientY;
     let diff = currentY - startY;
 
+    // ←ここが追加ポイント（誤爆防止）
+    if (Math.abs(diff) < 20) return;
+
+    isScrolling = true;
+
     if (diff > 0) {
       element.style.transform = `translateY(${diff}px)`;
     }
   });
 
   element.addEventListener("touchend", () => {
-    isDragging = false;
     element.style.transition = "0.3s";
+
+    // ←ここも追加（タップは無視）
+    if (!isScrolling) return;
 
     let diff = currentY - startY;
 
     if (diff > 120) {
-      // 閉じる
       element.classList.remove("active");
 
       if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
@@ -299,8 +321,8 @@ function enableSwipeClose(element) {
       }
     }
 
-    // 元に戻す
     element.style.transform = "translateY(0)";
+    isDragging = false;
   });
 }
 

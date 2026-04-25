@@ -44,7 +44,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .cal-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 14px 7px;background:var(--bg);flex-shrink:0;
-  height:var(--header-h);border-bottom:0.5px solid var(--border);
+  height:var(--header-h);
+  border:none;border-bottom:none;
   position:relative;z-index:5;
 }
 .today-btn{font-size:11px;font-weight:600;color:var(--text2);border:0.5px solid #ddd;border-radius:6px;padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);}
@@ -92,12 +93,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .cal-panel-weekdays{
   display:grid;grid-template-columns:repeat(7,1fr);
-  padding:4px 10px 2px;background:var(--bg);flex-shrink:0;height:var(--week-h);
+  padding:6px 10px 2px;background:var(--bg);flex-shrink:0;height:var(--week-h);
+  border:none;
 }
-.cal-panel-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;}
+.cal-panel-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:2px 0;}
 .cal-panel-weekday:first-child{color:var(--sun);}
 .cal-panel-weekday:last-child{color:var(--sat);}
-.cal-panel-grid{flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;}
+/* グリッド上部の背景をヘッダーと同色にしてシームを消す */
+.cal-panel-grid{flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;background:var(--bg);}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
   height:56px;border-radius:var(--r);padding:6px 5px 4px;
@@ -110,6 +113,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .day.sun,.day.hol{color:var(--sun);}
 .day.sat{color:var(--sat);}
 .day.today .day-num{background:var(--today-bg);color:var(--today-text);}
+/* タップ選択中の日付をうっすらハイライト */
+.day.selected{background:#e8e8e8;}
+.day.selected .day-num{font-weight:700;}
 .day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .dot{width:5px;height:5px;background:var(--dot);border-radius:50%;flex-shrink:0;}
 
@@ -136,12 +142,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 .tag-pick-btn{
   font-size:11px;padding:4px 10px;border-radius:20px;
-  border:0.5px solid #ddd;background:#fafafa;cursor:pointer;
-  color:var(--text2);font-family:var(--font);transition:all 0.15s;
+  /* 常に1.5px確保でON/OFF切替時にレイアウトシフトなし */
+  border:1.5px solid #ddd;background:#fafafa;cursor:pointer;
+  color:var(--text2);font-family:var(--font);
+  transition:background 0.15s,color 0.15s,border-color 0.15s;
 }
-/* .on は JS側でインラインスタイルとして各タグ色を直接付与するため、
-   デフォルトのフォールバックだけ残す */
-.tag-pick-btn.on{border-width:1.5px;}
+.tag-pick-btn.on{/* 色はJS側インラインで付与、枠幅は変えない */}
 .submit-btn{
   box-sizing:border-box;width:100%;
   background:#111;color:#fff;border:none;border-radius:10px;
@@ -150,20 +156,47 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 
 /* ─── OVERLAY ─── */
-#overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity 0.48s ease;}
+/* カレンダー全体（ヘッダー含む）を暗くする */
+#overlay{
+  position:fixed;inset:0;
+  background:var(--overlay);z-index:100;
+  opacity:0;pointer-events:none;transition:opacity 0.48s ease;
+}
 #overlay.active{opacity:1;pointer-events:all;}
+
+/* 詳細モーダル用オーバーレイ:
+   詳細を開くとき #overlay を非表示にしてこちらに切り替える。
+   z-index は日付シート(200)より上、詳細シート(300)より下。
+   これにより全体の暗さが変わらず二重にならない。 */
+#detail-overlay{
+  position:fixed;inset:0;
+  background:var(--overlay);z-index:250;
+  opacity:0;pointer-events:none;transition:opacity 0.48s ease;
+}
+#detail-overlay.active{opacity:1;pointer-events:all;}
 
 /* ─── SHEETS ─── */
 .sheet{
   position:fixed;left:0;width:100%;bottom:0;
   transform:translateY(100%);
-  background:var(--sheet-bg);border-radius:var(--rs) var(--rs) 0 0;
+  background:var(--sheet-bg);
   transition:transform 0.48s cubic-bezier(0.23,1,0.32,1);
   will-change:transform;display:flex;flex-direction:column;overflow:hidden;
 }
 .sheet.open{transform:translateY(0);}
-#date-sheet{z-index:200;top:calc(var(--header-h) + var(--week-h) + 6px);}
-#detail-sheet{z-index:300;top:40px;}
+
+/* 日付シート: ヘッダーにぴったり接する(1px隙間なし) */
+#date-sheet{
+  z-index:200;
+  top:var(--header-h);
+  border-radius:var(--rs) var(--rs) 0 0;
+}
+/* 詳細シート: 日付シートの角丸(20px)分だけ下 */
+#detail-sheet{
+  z-index:300;
+  top:calc(var(--header-h) + 20px);
+  border-radius:12px 12px 0 0;
+}
 .handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
 .handle{width:40px;height:4px;background:var(--handle);border-radius:2px;}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:4px 16px 10px;flex-shrink:0;}
@@ -326,6 +359,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 <!-- オーバーレイ -->
 <div id="overlay"></div>
+<!-- 詳細モーダル用中間オーバーレイ (日付シートを暗くする) -->
+<div id="detail-overlay"></div>
 
 <!-- 日付シート -->
 <div class="sheet" id="date-sheet">
@@ -367,18 +402,19 @@ const TAG_DISPLAY = {
   '英語':'英語','数学':'数学',
   '現代文':'現代文','古文':'古文','漢文':'漢文',
   '物理':'物理','化学':'化学','生物':'生物','地学':'地学',
-  '歴史総合':'歴史総合','日本史':'日本史','世界史':'世界史',
-  '地理':'地理','公共':'公共','政治経済':'政治･経済','倫理':'倫理',
-  '情報':'情報','小論文':'小論文','共通テスト':'共通テスト','過去問（赤本）':'過去問（赤本）'
+  '歴史総合':'歴史総合','日本史':'日本史','世界史':'世界史','地理':'地理',
+  '公共':'公共','政治経済':'政治･経済','倫理':'倫理',
+  '情報':'情報','小論文':'小論文','共通テスト':'共通テスト','過去問（赤本）':'過去問'
 };
 const ALL_TAGS = Object.keys(TAG_DISPLAY);
 
 // グループ定義 (管理タブ用)
 const TAG_GROUPS = [
-  { label:'語学・数学', tags:['英語','数学','現代文','古文','漢文'] },
-  { label:'理科', tags:['物理','化学','生物','地学'] },
-  { label:'社会', tags:['歴史総合','日本史','世界史','地理','公共','政治経済','倫理'] },
-  { label:'その他', tags:['情報','小論文','共通テスト','過去問（赤本）'] },
+  { tags:['英語','数学','現代文','古文','漢文'] },
+  { tags:['物理','化学','生物','地学'] },
+  { tags:['歴史総合','日本史','世界史','地理'] },
+  { tags:['公共','政治経済','倫理'] },
+  { tags:['情報','小論文','共通テスト','過去問（赤本）'] },
 ];
 
 const TAG_COLOR = {
@@ -552,6 +588,7 @@ function buildGrid(el,y,m){
     if(isOther)cls+=' other';if(s===todayStr)cls+=' today';
     if(dow===0||hol)cls+=' sun';else if(dow===6)cls+=' sat';
     div.className=cls;
+    div.dataset.date=s;
     div.innerHTML=`<div class="day-num">${d.getDate()}</div>${hasB?'<div class="dot"></div>':''}`;
     div.addEventListener('click',()=>{if(dateOpen)return;openDate(s);});
     el.appendChild(div);
@@ -617,15 +654,39 @@ const detailSheet=document.getElementById('detail-sheet');
 function openDate(s){
   if(drumOpen)closeDrum();
   activeDate=s;setDateLabel(s);buildDatePanels(s);
+  // 選択日セルにハイライトを付与
+  document.querySelectorAll('.day.selected').forEach(el=>el.classList.remove('selected'));
+  document.querySelectorAll('.day').forEach(el=>{
+    if(el.dataset.date===s)el.classList.add('selected');
+  });
   if(!dateOpen){dateOpen=true;dateSheet.classList.add('open');overlay.classList.add('active');hideTabBar();}
 }
 function closeDate(){
   dateOpen=false;detailOpen=false;
   dateSheet.classList.remove('open');detailSheet.classList.remove('open');
-  overlay.classList.remove('active');showTabBar();
+  overlay.classList.remove('active');
+  document.getElementById('detail-overlay').classList.remove('active');
+  showTabBar();
+  // ハイライト解除
+  document.querySelectorAll('.day.selected').forEach(el=>el.classList.remove('selected'));
 }
-function openDetail(b){setDetailContent(b);if(!detailOpen){detailOpen=true;detailSheet.classList.add('open');}}
-function closeDetail(){detailOpen=false;detailSheet.classList.remove('open');}
+function openDetail(b){
+  setDetailContent(b);
+  if(!detailOpen){
+    detailOpen=true;
+    detailSheet.classList.add('open');
+    // #overlay を消して #detail-overlay に切り替え(暗さ維持・二重にならない)
+    overlay.classList.remove('active');
+    document.getElementById('detail-overlay').classList.add('active');
+  }
+}
+function closeDetail(){
+  detailOpen=false;
+  detailSheet.classList.remove('open');
+  // #detail-overlay を消して #overlay に戻す
+  document.getElementById('detail-overlay').classList.remove('active');
+  overlay.classList.add('active');
+}
 
 /* ── DATE SHEET ── */
 function setDateLabel(s){document.getElementById('sheetDateLabel').textContent=fmtDate(s);}
@@ -760,12 +821,10 @@ function applyTagBtnStyle(btn,on){
     btn.style.background=c[0];
     btn.style.color=c[1];
     btn.style.borderColor=c[1];
-    btn.style.borderWidth='1.5px';
   }else{
     btn.style.background='';
     btn.style.color='';
     btn.style.borderColor='';
-    btn.style.borderWidth='';
   }
 }
 

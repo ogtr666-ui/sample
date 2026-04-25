@@ -62,14 +62,13 @@ body {
 /* ボトムシート */
 .sheet, .detail {
   position: fixed;
-  bottom: -100%;
   left: 0;
   width: 100%;
   background: white;
   border-radius: 20px 20px 0 0;
 
-  transform: translateY(0);
-  transition: transform 0.35s ease; /* ←ここが重要 */
+  transform: translateY(100%);
+  transition: transform 0.35s ease;
   will-change: transform;
 }
 
@@ -214,28 +213,20 @@ function openSheet(date) {
 
   document.getElementById("dateTitle").innerText = date;
   render(date);
-
-  // ←これ超重要（位置リセット）
-  sheet.style.transition = "transform 0.35s ease";
-  sheet.style.transform = "translateY(0%)";
 }
 
 function openDetail() {
   detail.classList.add("active");
   overlay.classList.add("active");
-
-  detail.style.transition = "transform 0.35s ease";
-  detail.style.transform = "translateY(0)";
 }
 
 /* 閉じる共通 */
 function closeAll() {
   sheet.classList.remove("active");
   detail.classList.remove("active");
-  overlay.classList.remove("active");
-  overlay.classList.remove("detail-active"); // ←追加
-}
 
+  overlay.classList.remove("active");
+}
 overlay.addEventListener("click", closeAll);
 
 /* 描画 */
@@ -303,35 +294,32 @@ function enableSwipeClose(element) {
   });
 
   element.addEventListener("touchend", () => {
-    if (!isDragging) return;
+  if (!isDragging) return;
 
-    isDragging = false;
+  isDragging = false;
 
-    let diff = currentY - startY;
-    let height = element.offsetHeight;
+  let diff = currentY - startY;
+  let height = window.innerHeight;
 
-    element.style.transition = "transform 0.35s ease"; // ←戻す速度統一
+  element.style.transition = "transform 0.35s ease";
 
-    // ■① 半分以上出てる → 戻す（開く状態）
-    if (diff < threshold) {
-      element.style.transform = "translateY(0)";
-    }
+  if (diff > height * 0.25) {
+    // 閉じる
+    element.style.transform = "translateY(100%)";
 
-    // ■② 半分未満 → 閉じる
-    else {
-      element.style.transform = "translateY(100%)";
+    setTimeout(() => {
+      element.classList.remove("active");
+      element.style.transform = "";
 
-      setTimeout(() => {
-        element.classList.remove("active");
-        element.style.transform = "";
-
-        if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
-          overlay.classList.remove("active");
-        }
-      }, 350);
-    }
-  });
-}
+      if (!sheet.classList.contains("active") && !detail.classList.contains("active")) {
+        overlay.classList.remove("active");
+      }
+    }, 350);
+  } else {
+    // 戻す
+    element.style.transform = "translateY(0)";
+  }
+});
 
 enableSwipeClose(sheet);
 enableSwipeClose(detail);
@@ -342,6 +330,11 @@ document.addEventListener('touchmove', function(e) {
     e.preventDefault();
   }
 }, { passive: false });
+
+overlay.onclick = closeAll;
+
+sheet.onclick = (e) => e.stopPropagation();
+detail.onclick = (e) => e.stopPropagation();
 
 </script>
 

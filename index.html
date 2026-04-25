@@ -11,14 +11,13 @@
   --border:rgba(0,0,0,0.07);--border2:rgba(0,0,0,0.13);
   --dot:#222;--today-bg:#111;--today-text:#fff;
   --sheet-bg:#fff;--handle:#ddd;
-  --overlay:rgba(0,0,0,0.32);
+  --overlay:rgba(0,0,0,0.18);
   --sun:#e5503a;--sat:#3a7ee5;
   --r:10px;--rs:20px;
   --dur:0.46s;
   --tab-h:56px;
   --header-h:48px;
   --week-h:30px;
-  --drum-h:260px;
 }
 html,body{height:100%;overflow:hidden;touch-action:none;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;display:flex;flex-direction:column;}
@@ -54,31 +53,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .drum-caret{font-size:10px;color:var(--text3);transition:transform 0.2s;}
 .drum-caret.open{transform:rotate(180deg);}
 
-/* ─── ドラムロール ─── */
-.drum-picker-wrap{
-  position:absolute;top:var(--header-h);left:0;right:0;
-  background:#fff;border-bottom:0.5px solid var(--border2);
-  z-index:400;overflow:hidden;max-height:0;
-  transition:max-height var(--dur) cubic-bezier(0.4,0,0.2,1),box-shadow var(--dur) ease;
+/* ─── 年月ピッカー (selectベース) ─── */
+.month-picker-wrap{display:flex;align-items:center;gap:6px;}
+.month-select{
+  font-size:17px;font-weight:700;letter-spacing:-0.5px;
+  color:var(--text);font-family:var(--font);
+  background:none;border:none;outline:none;cursor:pointer;
+  -webkit-appearance:none;appearance:none;
+  padding-right:16px;
+  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
+  background-repeat:no-repeat;
+  background-position:right 0 center;
 }
-.drum-picker-wrap.open{max-height:var(--drum-h);box-shadow:0 8px 24px rgba(0,0,0,0.12);}
-.drum-picker-inner{display:flex;flex-direction:column;height:var(--drum-h);}
-.drum-cols{flex:1;display:flex;justify-content:center;align-items:stretch;position:relative;overflow:hidden;}
-.drum-cols::before,.drum-cols::after{content:'';position:absolute;left:20px;right:20px;height:1px;background:var(--border2);z-index:2;pointer-events:none;}
-.drum-cols::before{top:calc(50% - 22px);}
-.drum-cols::after{top:calc(50% + 21px);}
-.drum-fade-top,.drum-fade-bottom{position:absolute;left:0;right:0;height:80px;z-index:1;pointer-events:none;}
-.drum-fade-top{top:0;background:linear-gradient(to bottom,rgba(255,255,255,0.95),transparent);}
-.drum-fade-bottom{bottom:0;background:linear-gradient(to top,rgba(255,255,255,0.95),transparent);}
-.drum-col{width:140px;overflow:hidden;position:relative;cursor:grab;touch-action:none;}
-.drum-col-inner{display:flex;flex-direction:column;will-change:transform;}
-.drum-item{height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:400;color:var(--text3);flex-shrink:0;user-select:none;transition:color 0.12s,font-weight 0.12s;}
-.drum-item.sel{color:var(--text);font-weight:600;font-size:20px;}
-.drum-sep-line{width:1px;background:var(--border2);margin:16px 0;flex-shrink:0;}
-.drum-actions{display:flex;border-top:0.5px solid var(--border);flex-shrink:0;}
-.drum-btn{flex:1;padding:12px 0;border:none;background:none;font-size:15px;font-family:var(--font);cursor:pointer;}
-.drum-btn.ok{font-weight:700;color:var(--text);border-left:0.5px solid var(--border);}
-.drum-btn.cancel{color:var(--text3);}
 
 /* ─── CALENDAR AREA ─── */
 .cal-body{
@@ -260,27 +246,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   <div class="tab-page active" id="tab-calendar">
     <!-- 年月ヘッダー -->
     <div class="cal-header">
-      <div class="drum-trigger" id="drumTrigger">
-        <span class="drum-label" id="drumLabel">2026年4月</span>
-        <span class="drum-caret" id="drumCaret">▾</span>
+      <div class="month-picker-wrap">
+        <select class="month-select" id="yearSelect"></select>
+        <select class="month-select" id="monthSelect"></select>
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
-    </div>
-    <!-- ドラムロール -->
-    <div class="drum-picker-wrap" id="drumPickerWrap">
-      <div class="drum-picker-inner">
-        <div class="drum-cols" id="drumCols">
-          <div class="drum-fade-top"></div>
-          <div class="drum-fade-bottom"></div>
-          <div class="drum-col" id="drumColYear"><div class="drum-col-inner" id="drumInnerYear"></div></div>
-          <div class="drum-sep-line"></div>
-          <div class="drum-col" id="drumColMonth"><div class="drum-col-inner" id="drumInnerMonth"></div></div>
-        </div>
-        <div class="drum-actions">
-          <button class="drum-btn cancel" id="drumCancel">キャンセル</button>
-          <button class="drum-btn ok" id="drumOk">決定</button>
-        </div>
-      </div>
     </div>
 
     <!-- 曜日+グリッドをまとめてスワイプ — 1ブロック、全白 -->
@@ -434,8 +404,6 @@ function tagDisp(t){return TAG_DISPLAY[t]||t}
 
 const HOLIDAYS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
 
-const DRUM_ITEM_H=44,DRUM_PAD=3;
-
 function ds(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function addM(y,m,delta){let nm=m+delta,ny=y;while(nm<0){nm+=12;ny--}while(nm>11){nm-=12;ny++}return{y:ny,m:nm}}
 function addDays(s,n){const d=new Date(s);d.setDate(d.getDate()+n);return ds(d)}
@@ -463,8 +431,7 @@ const today=new Date(),todayStr=ds(today);
 let curYear=2026,curMonth=3;
 let viewMode=localStorage.getItem('tbcal7-view')||'list';
 let activeDate='';
-let dateOpen=false,detailOpen=false,drumOpen=false;
-let drumSelYear=2026,drumSelMonth=3;
+let dateOpen=false,detailOpen=false;
 
 /* ── TABS ── */
 document.querySelectorAll('.tab').forEach(t=>{
@@ -480,85 +447,39 @@ const tabBar=document.getElementById('tabBar');
 function hideTabBar(){tabBar.classList.add('hidden')}
 function showTabBar(){tabBar.classList.remove('hidden')}
 
-/* ── DRUM ── */
-const years=[];for(let y=2020;y<=2030;y++)years.push(y);
-const months=Array.from({length:12},(_,i)=>i);
-
-function buildDrumItems(innerId,items,labelFn,selIdx){
-  const inner=document.getElementById(innerId);
-  inner.innerHTML='';
-  for(let i=0;i<DRUM_PAD;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
-  items.forEach((item,i)=>{
-    const d=document.createElement('div');
-    d.className='drum-item'+(i===selIdx?' sel':'');
-    d.textContent=labelFn(item);inner.appendChild(d);
-  });
-  for(let i=0;i<DRUM_PAD;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
-  inner.style.transform=`translateY(${-selIdx*DRUM_ITEM_H}px)`;
-}
-function updateDrumSel(inner,idx){
-  inner.querySelectorAll('.drum-item').forEach((d,i)=>d.classList.toggle('sel',i-DRUM_PAD===idx));
-}
-function makeDrum(colId,innerId,items,onSelect){
-  const col=document.getElementById(colId),inner=document.getElementById(innerId);
-  let startY=0,curIdx=0,dragging=false,lastY=0,velY=0;
-  function clamp(i){return Math.max(0,Math.min(items.length-1,i))}
-  function getIdx(){const t=inner.style.transform;const m=t.match(/translateY\(([^)]+)px\)/);return Math.round(-(m?parseFloat(m[1]):0)/DRUM_ITEM_H)}
-  function setIdx(idx,anim=true){
-    idx=clamp(idx);curIdx=idx;
-    inner.style.transition=anim?'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
-    inner.style.transform=`translateY(${-idx*DRUM_ITEM_H}px)`;
-    updateDrumSel(inner,idx);onSelect(items[idx]);
+/* ── YEAR/MONTH PICKER ── */
+function buildSelects(){
+  const ySel=document.getElementById('yearSelect');
+  const mSel=document.getElementById('monthSelect');
+  ySel.innerHTML='';
+  for(let y=2020;y<=2030;y++){
+    const o=document.createElement('option');
+    o.value=y;o.textContent=`${y}年`;
+    if(y===curYear)o.selected=true;
+    ySel.appendChild(o);
   }
-  function onStart(e){
-    dragging=true;const y=e.touches?e.touches[0].clientY:e.clientY;
-    startY=y;lastY=y;velY=0;curIdx=getIdx();
-    inner.style.transition='none';e.preventDefault();
+  mSel.innerHTML='';
+  for(let m=0;m<12;m++){
+    const o=document.createElement('option');
+    o.value=m;o.textContent=`${m+1}月`;
+    if(m===curMonth)o.selected=true;
+    mSel.appendChild(o);
   }
-  function onMove(e){
-    if(!dragging)return;
-    const y=e.touches?e.touches[0].clientY:e.clientY;
-    velY=y-lastY;lastY=y;
-    const dy=y-startY,rawIdx=curIdx-dy/DRUM_ITEM_H;
-    const ci=clamp(rawIdx);
-    inner.style.transform=`translateY(${-ci*DRUM_ITEM_H+(-(rawIdx-ci)*DRUM_ITEM_H*0.3)}px)`;
-    updateDrumSel(inner,Math.round(rawIdx));e.preventDefault();
-  }
-  function onEnd(e){
-    if(!dragging)return;dragging=false;
-    const dy=(e.touches?e.changedTouches[0].clientY:e.clientY)-startY;
-    setIdx(Math.round(curIdx-dy/DRUM_ITEM_H-velY/DRUM_ITEM_H*6));
-  }
-  col.addEventListener('touchstart',onStart,{passive:false});
-  col.addEventListener('touchmove',onMove,{passive:false});
-  col.addEventListener('touchend',onEnd,{passive:true});
-  col.addEventListener('mousedown',onStart);
-  window.addEventListener('mousemove',e=>{if(dragging)onMove(e);});
-  window.addEventListener('mouseup',e=>{if(dragging)onEnd(e);});
 }
-
-function openDrum(){
-  drumOpen=true;drumSelYear=curYear;drumSelMonth=curMonth;
-  buildDrumItems('drumInnerYear',years,y=>`${y}年`,years.indexOf(drumSelYear));
-  buildDrumItems('drumInnerMonth',months,m=>`${m+1}月`,drumSelMonth);
-  makeDrum('drumColYear','drumInnerYear',years,v=>drumSelYear=v);
-  makeDrum('drumColMonth','drumInnerMonth',months,v=>drumSelMonth=v);
-  document.getElementById('drumPickerWrap').classList.add('open');
-  document.getElementById('drumCaret').classList.add('open');
+function syncSelects(){
+  document.getElementById('yearSelect').value=curYear;
+  document.getElementById('monthSelect').value=curMonth;
 }
-function closeDrum(){
-  drumOpen=false;
-  document.getElementById('drumPickerWrap').classList.remove('open');
-  document.getElementById('drumCaret').classList.remove('open');
-}
-document.getElementById('drumTrigger').addEventListener('click',()=>{drumOpen?closeDrum():openDrum();});
-document.getElementById('drumCancel').addEventListener('click',closeDrum);
-document.getElementById('drumOk').addEventListener('click',()=>{
-  curYear=drumSelYear;curMonth=drumSelMonth;closeDrum();renderCal();
+document.getElementById('yearSelect').addEventListener('change',e=>{
+  curYear=parseInt(e.target.value);renderCal();
+});
+document.getElementById('monthSelect').addEventListener('change',e=>{
+  curMonth=parseInt(e.target.value);renderCal();
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{
-  curYear=today.getFullYear();curMonth=today.getMonth();renderCal();
+  curYear=today.getFullYear();curMonth=today.getMonth();syncSelects();renderCal();
 });
+buildSelects();
 
 /* ── CALENDAR ── */
 function buildGrid(el,y,m){
@@ -585,7 +506,7 @@ function renderCal(){
   buildGrid(document.getElementById('calGridPrev'),p.y,p.m);
   buildGrid(document.getElementById('calGridCurr'),curYear,curMonth);
   buildGrid(document.getElementById('calGridNext'),n.y,n.m);
-  document.getElementById('drumLabel').textContent=`${curYear}年${curMonth+1}月`;
+  syncSelects();
   const track=document.getElementById('calTrack');
   track.style.transition='none';
   track.style.transform='translateX(-100%)';
@@ -600,7 +521,7 @@ renderCal();
   let sx=0,sy=0,tracking=false,dragging=false;
 
   vp.addEventListener('touchstart',e=>{
-    if(dateOpen||drumOpen)return;
+    if(dateOpen)return;
     sx=e.touches[0].clientX;sy=e.touches[0].clientY;
     tracking=true;dragging=false;
     track.style.transition='none';
@@ -638,7 +559,6 @@ const dateSheet=document.getElementById('date-sheet');
 const detailSheet=document.getElementById('detail-sheet');
 
 function openDate(s){
-  if(drumOpen)closeDrum();
   activeDate=s;setDateLabel(s);buildDatePanels(s);
   // 選択日セルにハイライトを付与
   document.querySelectorAll('.day.selected').forEach(el=>el.classList.remove('selected'));

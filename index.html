@@ -1016,10 +1016,11 @@ document.getElementById('imgUrlConfirm').addEventListener('click',()=>{
   closeImgAction();
 });
 
-// 写真を選択
 document.getElementById('imgChooseFile').addEventListener('click',()=>{
-  closeImgAction();
+  // iOSのSafari: ユーザーのタップイベント内で click() を呼ぶ必要がある
+  // オーバーレイを閉じる前に発火させる
   document.getElementById('f-img-file').click();
+  closeImgAction();
 });
 document.getElementById('f-img-file').addEventListener('change',e=>{
   const file=e.target.files[0];

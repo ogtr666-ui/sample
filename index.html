@@ -107,6 +107,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .center-msg .big{font-size:36px;}
 .admin-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
 .admin-form{padding:16px;display:flex;flex-direction:column;gap:12px;}
+.form-row{display:flex;gap:10px;align-items:flex-start;}
+.form-row .form-group{flex:1;min-width:0;}
 .form-group{display:flex;flex-direction:column;gap:3px;width:100%;}
 .form-label{font-size:10px;font-weight:600;color:var(--text2);}
 .form-input{
@@ -119,25 +121,49 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .form-input:focus{border-color:#aaa;}
 
-/* 書影: URL/アップロード切替 */
-.img-type-toggle{display:flex;gap:0;margin-bottom:3px;}
-.img-type-btn{
-  flex:1;padding:5px 0;font-size:11px;font-weight:500;
-  background:#f0f0f0;border:0.5px solid #e0e0e0;color:var(--text3);
-  cursor:pointer;font-family:var(--font);transition:all 0.12s;
+/* 書影アクションシート */
+.img-trigger{
+  cursor:pointer;display:flex;align-items:center;
+  min-height:34px;
 }
-.img-type-btn:first-child{border-radius:6px 0 0 6px;}
-.img-type-btn:last-child{border-radius:0 6px 6px 0;border-left:none;}
-.img-type-btn.active{background:#111;color:#fff;border-color:#111;}
-.img-upload-area{
-  display:none;box-sizing:border-box;width:100%;
-  background:#f4f4f4;border:0.5px dashed #ccc;
-  border-radius:8px;padding:7px 10px;height:34px;
-  font-size:13px;color:var(--text3);font-family:var(--font);
-  cursor:pointer;align-items:center;
+.img-action-overlay{
+  position:fixed;inset:0;z-index:600;
+  background:rgba(0,0,0,0.3);
+  display:none;align-items:flex-end;
 }
-.img-upload-area.show{display:flex;}
-input[type=file]#f-img-file{display:none;}
+.img-action-overlay.show{display:flex;}
+.img-action-sheet{
+  width:100%;background:#fff;border-radius:16px 16px 0 0;
+  padding:8px 0 32px;
+}
+.img-action-title{
+  text-align:center;font-size:12px;color:var(--text3);
+  padding:8px 16px 10px;border-bottom:0.5px solid var(--border);
+}
+.img-action-btn{
+  display:block;width:100%;padding:15px 20px;
+  text-align:left;font-size:15px;color:var(--text);
+  background:none;border:none;border-bottom:0.5px solid var(--border);
+  font-family:var(--font);cursor:pointer;
+}
+.img-action-btn:last-child{border-bottom:none;}
+.img-action-btn:active{background:#f5f5f5;}
+.img-url-input-wrap{
+  display:none;padding:10px 16px 4px;
+}
+.img-url-input-wrap.show{display:block;}
+.img-url-input{
+  box-sizing:border-box;width:100%;
+  background:#f4f4f4;border:0.5px solid #e0e0e0;
+  border-radius:8px;padding:7px 10px;
+  font-size:13px;color:var(--text);font-family:var(--font);outline:none;
+}
+.img-url-confirm{
+  display:block;width:calc(100% - 32px);margin:8px 16px 0;
+  background:#111;color:#fff;border:none;border-radius:8px;
+  padding:10px;font-size:13px;font-weight:700;
+  font-family:var(--font);cursor:pointer;
+}
 
 /* オプション折りたたみ */
 .optional-toggle{
@@ -306,22 +332,24 @@ input[type=file]#f-img-file{display:none;}
     <div class="admin-scroll" id="adminScroll">
       <div class="admin-form">
         <div class="form-group"><label class="form-label">タイトル *</label><input class="form-input" id="f-title" type="text" placeholder="参考書のタイトル"></div>
-        <div class="form-group"><label class="form-label">著者</label><input class="form-input" id="f-author" type="text" placeholder="著者名"></div>
-        <div class="form-group"><label class="form-label">出版社</label><input class="form-input" id="f-publisher" type="text" placeholder="出版社名"></div>
-        <div class="form-group"><label class="form-label">発売日 *</label><input class="form-input" id="f-date" type="date"></div>
 
-        <!-- 書影: URL or アップロード -->
-        <div class="form-group">
-          <label class="form-label">書影</label>
-          <div class="img-type-toggle">
-            <button class="img-type-btn active" id="imgTypeUrl" type="button">URL</button>
-            <button class="img-type-btn" id="imgTypeFile" type="button">アップロード</button>
+        <!-- 発売日 + 書影 -->
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">発売日 *</label><input class="form-input" id="f-date" type="date"></div>
+          <div class="form-group">
+            <label class="form-label">書影</label>
+            <div class="form-input img-trigger" id="imgTrigger">
+              <span id="imgTriggerLabel" style="color:var(--text3);">タップして選択…</span>
+            </div>
+            <input type="file" id="f-img-file" accept="image/*" style="display:none;">
+            <input type="text" id="f-img" style="display:none;">
           </div>
-          <input class="form-input" id="f-img" type="text" placeholder="https://…">
-          <div class="img-upload-area" id="imgUploadArea" onclick="document.getElementById('f-img-file').click()">
-            <span id="imgUploadLabel">ファイルを選択…</span>
-          </div>
-          <input type="file" id="f-img-file" accept="image/*">
+        </div>
+
+        <!-- 著者 + 出版社 -->
+        <div class="form-row">
+          <div class="form-group"><label class="form-label">著者</label><input class="form-input" id="f-author" type="text" placeholder="著者名"></div>
+          <div class="form-group"><label class="form-label">出版社</label><input class="form-input" id="f-publisher" type="text" placeholder="出版社名"></div>
         </div>
 
         <div class="form-group"><label class="form-label">科目タグ</label><div class="tags-pick-grouped" id="tags-pick-grouped"></div></div>
@@ -388,6 +416,20 @@ input[type=file]#f-img-file{display:none;}
   <div class="detail-body" id="detailBody"></div>
 </div>
 
+<!-- 書影選択アクションシート -->
+<div class="img-action-overlay" id="imgActionOverlay">
+  <div class="img-action-sheet">
+    <div class="img-action-title">書影の追加方法を選択</div>
+    <button class="img-action-btn" id="imgChooseUrl">URLを入力</button>
+    <button class="img-action-btn" id="imgChooseFile">写真を選択</button>
+    <div class="img-url-input-wrap" id="imgUrlInputWrap">
+      <input class="img-url-input" id="imgUrlInput" type="text" placeholder="https://…">
+      <button class="img-url-confirm" id="imgUrlConfirm">確定</button>
+    </div>
+    <button class="img-action-btn" id="imgChooseCancel" style="color:var(--text3);margin-top:4px;">キャンセル</button>
+  </div>
+</div>
+
 <script>
 /* ══════════════════════════════════════════
    TAG CONFIG
@@ -408,10 +450,11 @@ const ALL_TAGS = Object.keys(TAG_DISPLAY);
 
 // グループ定義 (管理タブ用) — 4行構成
 const TAG_GROUPS = [
-  { tags:['英語','数学','現代文','古文','漢文'] },          // 行1
-  { tags:['物理','化学','生物','地学'] },                    // 行2
-  { tags:['歴史総合','日本史','世界史','地理','公共','政治経済','倫理'] }, // 行3
-  { tags:['情報','小論文','共通テスト','過去問（赤本）'] },  // 行4
+  { tags:['英語','数学','現代文','古文','漢文'] },
+  { tags:['物理','化学','生物','地学'] },
+  { tags:['歴史総合','日本史','世界史','地理'] },
+  { tags:['公共','政治経済','倫理'] },
+  { tags:['情報','小論文','共通テスト','過去問（赤本）'] },
 ];
 
 const TAG_COLOR = {
@@ -942,24 +985,41 @@ TAG_GROUPS.forEach(group=>{
 });
 
 /* ── ADMIN UI ── */
-
-// 書影: URL / アップロード 切替
-let imgMode = 'url'; // 'url' | 'file'
+let imgMode = 'none'; // 'url' | 'file' | 'none'
 let imgFileDataUrl = '';
 
-document.getElementById('imgTypeUrl').addEventListener('click',()=>{
-  imgMode='url';
-  document.getElementById('imgTypeUrl').classList.add('active');
-  document.getElementById('imgTypeFile').classList.remove('active');
-  document.getElementById('f-img').style.display='block';
-  document.getElementById('imgUploadArea').classList.remove('show');
+const imgActionOverlay = document.getElementById('imgActionOverlay');
+const imgTrigger = document.getElementById('imgTrigger');
+const imgTriggerLabel = document.getElementById('imgTriggerLabel');
+
+function openImgAction(){
+  imgActionOverlay.classList.add('show');
+  document.getElementById('imgUrlInputWrap').classList.remove('show');
+  document.getElementById('imgUrlInput').value='';
+}
+function closeImgAction(){ imgActionOverlay.classList.remove('show'); }
+
+imgTrigger.addEventListener('click', openImgAction);
+
+// URLを入力
+document.getElementById('imgChooseUrl').addEventListener('click',()=>{
+  document.getElementById('imgUrlInputWrap').classList.add('show');
 });
-document.getElementById('imgTypeFile').addEventListener('click',()=>{
-  imgMode='file';
-  document.getElementById('imgTypeFile').classList.add('active');
-  document.getElementById('imgTypeUrl').classList.remove('active');
-  document.getElementById('f-img').style.display='none';
-  document.getElementById('imgUploadArea').classList.add('show');
+document.getElementById('imgUrlConfirm').addEventListener('click',()=>{
+  const url = document.getElementById('imgUrlInput').value.trim();
+  if(url){
+    imgMode='url';
+    document.getElementById('f-img').value=url;
+    imgTriggerLabel.textContent=url.length>30?url.substring(0,30)+'…':url;
+    imgTriggerLabel.style.color='var(--text)';
+  }
+  closeImgAction();
+});
+
+// 写真を選択
+document.getElementById('imgChooseFile').addEventListener('click',()=>{
+  closeImgAction();
+  document.getElementById('f-img-file').click();
 });
 document.getElementById('f-img-file').addEventListener('change',e=>{
   const file=e.target.files[0];
@@ -967,9 +1027,16 @@ document.getElementById('f-img-file').addEventListener('change',e=>{
   const reader=new FileReader();
   reader.onload=ev=>{
     imgFileDataUrl=ev.target.result;
-    document.getElementById('imgUploadLabel').textContent=file.name;
+    imgMode='file';
+    imgTriggerLabel.textContent=file.name;
+    imgTriggerLabel.style.color='var(--text)';
   };
   reader.readAsDataURL(file);
+});
+
+document.getElementById('imgChooseCancel').addEventListener('click', closeImgAction);
+imgActionOverlay.addEventListener('click',e=>{
+  if(e.target===imgActionOverlay) closeImgAction();
 });
 
 // オプション開閉
@@ -1001,7 +1068,10 @@ document.getElementById('submit-btn').addEventListener('click',()=>{
   saveBooks();
   ['f-title','f-author','f-publisher','f-img','f-amazon','f-isbn'].forEach(id=>document.getElementById(id).value='');
   imgFileDataUrl='';
-  document.getElementById('imgUploadLabel').textContent='ファイルを選択…';
+  imgMode='none';
+  document.getElementById('f-img').value='';
+  imgTriggerLabel.textContent='タップして選択…';
+  imgTriggerLabel.style.color='var(--text3)';
   document.querySelectorAll('.tag-pick-btn.on').forEach(b=>{
     b.classList.remove('on');
     applyTagBtnStyle(b,false);

@@ -2,7 +2,7 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"> /* 拡大縮小とスクロールの制限 */
 <style>
 *{box-sizing:border-box;margin:0;padding:0;}
 :root{
@@ -17,7 +17,7 @@
   --r:10px;--rs:20px;
   --sheet-dur:0.3s;
 }
-body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;min-height:100vh;}
+body{font-family:var(--font);background:var(--bg);color:var(--text);overflow: hidden;height: 100vh;overscroll-behavior:none;min-height:100vh;}
 
 /* ─── TABS ─── */
 .tab-bar{
@@ -73,7 +73,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .weekday:last-child{color:var(--sat);}
 
 /* ─── CALENDAR ─── */
-.cal-wrap{overflow:hidden;} /* swipe container */
+.cal-wrap{overflow-y: auto;height: calc(100vh - 130px);}
 .calendar{
   display:grid;grid-template-columns:repeat(7,1fr);
   gap:5px;padding:4px 10px 80px;

@@ -262,16 +262,35 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .empty{padding:36px 16px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* ─── DETAIL ─── */
-.detail-cover-zone{position:relative;overflow:hidden;height:200px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
-.detail-cover-side{position:absolute;inset:0;display:flex;}
-.cover-side-l,.cover-side-r{flex:1;overflow:hidden;position:relative;}
-.cover-side-l img,.cover-side-r img{position:absolute;top:0;height:100%;width:auto;object-fit:cover;filter:blur(18px);opacity:0.55;transform:scale(1.08);}
-.cover-side-l img{right:0;}
-.cover-side-r img{left:0;}
-.cover-side-center{position:relative;z-index:1;flex-shrink:0;height:100%;display:flex;align-items:center;justify-content:center;}
-.detail-cover-main{height:170px;width:auto;max-width:130px;border-radius:4px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.22);display:flex;align-items:center;justify-content:center;}
-.detail-cover-main img{height:100%;width:auto;object-fit:contain;display:block;}
-.detail-cover-main .cover-ph{width:110px;height:170px;display:flex;align-items:center;justify-content:center;background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;}
+.detail-cover-zone{
+  position:relative;overflow:hidden;height:220px;
+  display:flex;align-items:center;justify-content:center;
+  flex-shrink:0;background:#222;
+}
+/* 背景: 書影を横幅いっぱいに拡大してブラー+暗め */
+.detail-cover-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  filter:blur(24px);
+  transform:scale(1.15);
+  opacity:0.6;
+}
+/* メイン書影: 角丸なし、ゾーン高さいっぱい */
+.detail-cover-main{
+  position:relative;z-index:1;
+  height:100%;width:auto;
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 24px rgba(0,0,0,0.4);
+}
+.detail-cover-main img{
+  height:100%;width:auto;
+  object-fit:contain;display:block;
+}
+.detail-cover-main .cover-ph{
+  width:110px;height:100%;display:flex;align-items:center;justify-content:center;
+  background:rgba(255,255,255,0.15);font-size:11px;color:#fff;
+  text-align:center;padding:6px;line-height:1.4;
+}
 .detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;touch-action:pan-y;}
 /* 区切り線なし、タグとの間隔を詰める */
 .detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 6px;margin-bottom:8px;}
@@ -518,13 +537,28 @@ let activeDate='';
 let dateOpen=false,detailOpen=false;
 
 /* ── TABS ── */
+function resetAdminForm(){
+  ['f-title','f-author','f-publisher','f-date','f-img','f-amazon','f-isbn']
+    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
+  document.querySelectorAll('.tag-pick-btn.on').forEach(b=>{
+    b.classList.remove('on');
+    if(typeof applyTagBtnStyle==='function') applyTagBtnStyle(b,false);
+  });
+  if(typeof imgMode!=='undefined'){ imgMode='none'; imgFileDataUrl=''; }
+  const lbl=document.getElementById('imgTriggerLabel');
+  if(lbl){ lbl.textContent='タップして選択…'; lbl.style.color='var(--text3)'; }
+  document.getElementById('optionalToggle')?.classList.remove('open');
+  document.getElementById('optionalFields')?.classList.remove('show');
+  document.getElementById('adminScroll').scrollTop=0;
+}
+
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.tab-page').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('tab-'+t.dataset.tab).classList.add('active');
-    document.getElementById('adminScroll').scrollTop=0;
+    resetAdminForm();
   });
 });
 const tabBar=document.getElementById('tabBar');
@@ -766,17 +800,14 @@ function renderDay(el,s){
 function setDetailContent(b){
   document.getElementById('detailDateLabel').textContent=fmtDate(b.date)+'発売';
   const zone=document.getElementById('detailCoverZone');
-  zone.innerHTML=b.img
-    ?`<div class="detail-cover-side">
-        <div class="cover-side-l"><img src="${b.img}" alt=""></div>
-        <div class="cover-side-center"><div class="detail-cover-main"><img src="${b.img}" alt="${b.title}"></div></div>
-        <div class="cover-side-r"><img src="${b.img}" alt=""></div>
-      </div>`
-    :`<div class="detail-cover-side" style="background:#f0f0f0;">
-        <div class="cover-side-l"></div>
-        <div class="cover-side-center"><div class="detail-cover-main"><div class="cover-ph">${b.title.substring(0,12)}</div></div></div>
-        <div class="cover-side-r"></div>
-      </div>`;
+  if(b.img){
+    zone.innerHTML=`
+      <div class="detail-cover-bg" style="background-image:url('${b.img}')"></div>
+      <div class="detail-cover-main"><img src="${b.img}" alt="${b.title}"></div>`;
+  }else{
+    zone.innerHTML=`
+      <div class="detail-cover-main"><div class="cover-ph">${b.title.substring(0,12)}</div></div>`;
+  }
   const rows=[
     b.author?`<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author}</span></div>`:'',
     b.publisher?`<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher}</span></div>`:'',

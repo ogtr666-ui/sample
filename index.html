@@ -53,18 +53,62 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .drum-caret{font-size:10px;color:var(--text3);transition:transform 0.2s;}
 .drum-caret.open{transform:rotate(180deg);}
 
-/* ─── 年月ピッカー (selectベース) ─── */
-.month-picker-wrap{display:flex;align-items:center;gap:4px;}
-.month-select{
-  font-size:17px;font-weight:700;letter-spacing:-0.5px;
-  color:var(--text);font-family:var(--font);
-  background:none;border:none;outline:none;cursor:pointer;
-  -webkit-appearance:none;appearance:none;
-  padding-right:16px;
-  background-image:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23aaa'/%3E%3C/svg%3E");
-  background-repeat:no-repeat;
-  background-position:right 0 center;
+/* ─── 年月ドラムロール (ヘッダー直下ドロップダウン) ─── */
+.ym-trigger{
+  display:flex;align-items:center;gap:4px;cursor:pointer;padding:4px 0;
 }
+.ym-label{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
+.ym-caret{font-size:11px;color:var(--text3);transition:none;}
+
+/* ヘッダー直下から出てくるドロップダウン */
+#ym-sheet{
+  /* .sheet の共通スタイルを上書き */
+  position:fixed;
+  top:calc(var(--header-h) + 16px);
+  left:12px;right:12px;
+  bottom:auto; /* ボトムシートではない */
+  height:auto;
+  transform:translateY(-16px);
+  opacity:0;
+  pointer-events:none;
+  border-radius:16px;
+  /* 半透明+ブラー */
+  background:rgba(255,255,255,0.82);
+  -webkit-backdrop-filter:blur(20px);
+  backdrop-filter:blur(20px);
+  border-bottom:0.5px solid rgba(0,0,0,0.08);
+  box-shadow:0 8px 32px rgba(0,0,0,0.10);
+  transition:transform 0.32s cubic-bezier(0.23,1,0.32,1),
+             opacity 0.28s ease;
+  z-index:400;
+  overflow:visible;
+}
+#ym-sheet.open{
+  transform:translateY(0);
+  opacity:1;
+  pointer-events:all;
+}
+
+.ym-drum-wrap{
+  display:flex;justify-content:center;align-items:center;
+  height:200px;position:relative;overflow:hidden;
+  padding:0 16px 8px;
+}
+.ym-fade-t,.ym-fade-b{
+  position:absolute;left:0;right:0;height:68px;z-index:3;pointer-events:none;
+}
+.ym-fade-t{top:0;background:linear-gradient(to bottom,rgba(255,255,255,0.82),transparent);}
+.ym-fade-b{bottom:0;background:linear-gradient(to top,rgba(255,255,255,0.82),transparent);}
+
+.ym-col{flex:1;overflow:hidden;position:relative;touch-action:none;cursor:grab;}
+.ym-col-inner{display:flex;flex-direction:column;will-change:transform;}
+.ym-item{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  font-size:19px;font-weight:400;color:rgba(0,0,0,0.28);
+  flex-shrink:0;user-select:none;
+}
+.ym-item.sel{color:var(--text);font-weight:600;font-size:23px;}
+.ym-divider{width:0.5px;background:rgba(0,0,0,0.12);margin:16px 4px;flex-shrink:0;}
 
 /* ─── CALENDAR AREA ─── */
 .cal-body{
@@ -246,8 +290,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   <div class="tab-page active" id="tab-calendar">
     <!-- 年月ヘッダー -->
     <div class="cal-header">
-      <div class="month-picker-wrap">
-        <select class="month-select" id="ymSelect"></select>
+      <div class="ym-trigger" id="ymTrigger">
+        <span class="ym-label" id="ymLabel">2026年4月</span>
+        <span class="ym-caret" id="ymCaret">▼</span>
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
     </div>
@@ -317,7 +362,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <!-- 詳細モーダル用中間オーバーレイ (日付シートを暗くする) -->
 <div id="detail-overlay"></div>
 
-<!-- 日付シート -->
+<!-- 年月ドラムロール (ヘッダー直下ドロップダウン) -->
+<div id="ym-sheet">
+  <div class="ym-drum-wrap">
+    <div class="ym-fade-t"></div>
+    <div class="ym-fade-b"></div>
+    <div class="ym-col" id="ymColYear"><div class="ym-col-inner" id="ymInnerYear"></div></div>
+    <div class="ym-divider"></div>
+    <div class="ym-col" id="ymColMonth"><div class="ym-col-inner" id="ymInnerMonth"></div></div>
+  </div>
+</div>
 <div class="sheet" id="date-sheet">
   <div class="handle-wrap"><div class="handle"></div></div>
   <div class="sheet-header">
@@ -446,31 +500,114 @@ const tabBar=document.getElementById('tabBar');
 function hideTabBar(){tabBar.classList.add('hidden')}
 function showTabBar(){tabBar.classList.remove('hidden')}
 
-/* ── YEAR/MONTH PICKER ── */
-function buildSelects(){
-  const sel=document.getElementById('ymSelect');
-  sel.innerHTML='';
-  for(let y=2020;y<=2030;y++){
-    for(let m=0;m<12;m++){
-      const o=document.createElement('option');
-      o.value=`${y}-${m}`;
-      o.textContent=`${y}年${m+1}月`;
-      if(y===curYear&&m===curMonth)o.selected=true;
-      sel.appendChild(o);
-    }
+/* ── YEAR/MONTH DRUM PICKER ── */
+const YM_ITEM_H=44, YM_PAD=3;
+const ymYears=[];for(let y=2020;y<=2030;y++)ymYears.push(y);
+const ymMonths=Array.from({length:12},(_,i)=>i);
+let ymSelYear=curYear, ymSelMonth=curMonth;
+const ymSheet=document.getElementById('ym-sheet');
+
+function syncLabel(){
+  document.getElementById('ymLabel').textContent=`${curYear}年${curMonth+1}月`;
+}
+
+function buildYmDrum(innerId,items,labelFn,selIdx){
+  const inner=document.getElementById(innerId);
+  inner.innerHTML='';
+  for(let i=0;i<YM_PAD;i++){const d=document.createElement('div');d.className='ym-item';inner.appendChild(d);}
+  items.forEach((item,i)=>{
+    const d=document.createElement('div');
+    d.className='ym-item'+(i===selIdx?' sel':'');
+    d.textContent=labelFn(item);
+    inner.appendChild(d);
+  });
+  for(let i=0;i<YM_PAD;i++){const d=document.createElement('div');d.className='ym-item';inner.appendChild(d);}
+  inner.style.transition='none';
+  inner.style.transform=`translateY(${-selIdx*YM_ITEM_H}px)`;
+}
+
+function makeYmDrum(colId,innerId,items,onSelect){
+  const col=document.getElementById(colId);
+  const inner=document.getElementById(innerId);
+  let startY=0,curIdx=0,dragging=false,lastY=0,velY=0;
+
+  function clamp(i){return Math.max(0,Math.min(items.length-1,i));}
+  function getTY(){const m=inner.style.transform.match(/translateY\(([^)]+)px\)/);return m?parseFloat(m[1]):0;}
+  function snapTo(idx,anim=true){
+    idx=clamp(idx);curIdx=idx;
+    inner.style.transition=anim?'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
+    inner.style.transform=`translateY(${-idx*YM_ITEM_H}px)`;
+    inner.querySelectorAll('.ym-item').forEach((d,i)=>d.classList.toggle('sel',i-YM_PAD===idx));
+    onSelect(items[idx]);
+  }
+
+  function onStart(e){
+    dragging=true;
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    startY=y;lastY=y;velY=0;
+    curIdx=Math.round(-getTY()/YM_ITEM_H);
+    inner.style.transition='none';
+    e.preventDefault();
+  }
+  function onMove(e){
+    if(!dragging)return;
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    velY=y-lastY;lastY=y;
+    const dy=y-startY;
+    const rawIdx=curIdx-dy/YM_ITEM_H;
+    const ci=clamp(rawIdx);
+    // 端でゴムバンド感
+    const rubber=-(rawIdx-ci)*YM_ITEM_H*0.25;
+    inner.style.transform=`translateY(${-ci*YM_ITEM_H+rubber}px)`;
+    inner.querySelectorAll('.ym-item').forEach((d,i)=>d.classList.toggle('sel',Math.round(i-YM_PAD)===Math.round(rawIdx)));
+    e.preventDefault();
+  }
+  function onEnd(e){
+    if(!dragging)return;dragging=false;
+    const dy=(e.touches?e.changedTouches[0].clientY:e.clientY)-startY;
+    const momentum=velY/YM_ITEM_H*5;
+    snapTo(Math.round(curIdx-dy/YM_ITEM_H-momentum));
+  }
+
+  col.addEventListener('touchstart',onStart,{passive:false});
+  col.addEventListener('touchmove',onMove,{passive:false});
+  col.addEventListener('touchend',onEnd,{passive:true});
+  col.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',e=>{if(dragging)onMove(e);});
+  window.addEventListener('mouseup',e=>{if(dragging)onEnd(e);});
+}
+
+function openYmSheet(){
+  ymSelYear=curYear;ymSelMonth=curMonth;
+  buildYmDrum('ymInnerYear',ymYears,y=>`${y}年`,ymYears.indexOf(ymSelYear));
+  buildYmDrum('ymInnerMonth',ymMonths,m=>`${m+1}月`,ymSelMonth);
+  makeYmDrum('ymColYear','ymInnerYear',ymYears,v=>ymSelYear=v);
+  makeYmDrum('ymColMonth','ymInnerMonth',ymMonths,v=>ymSelMonth=v);
+  ymSheet.classList.add('open');
+  document.getElementById('ymCaret').textContent='▲';
+  setTimeout(()=>document.addEventListener('touchstart',ymOutsideClose,{once:true,passive:true}),100);
+}
+function closeYmSheet(apply=true){
+  ymSheet.classList.remove('open');
+  document.getElementById('ymCaret').textContent='▼';
+  if(apply){
+    curYear=ymSelYear;curMonth=ymSelMonth;
+    syncLabel();renderCal();
   }
 }
-function syncSelects(){
-  document.getElementById('ymSelect').value=`${curYear}-${curMonth}`;
+function ymOutsideClose(e){
+  if(!ymSheet.contains(e.target)&&!document.getElementById('ymTrigger').contains(e.target)){
+    closeYmSheet(true);
+  }
 }
-document.getElementById('ymSelect').addEventListener('change',e=>{
-  const[y,m]=e.target.value.split('-').map(Number);
-  curYear=y;curMonth=m;renderCal();
+
+document.getElementById('ymTrigger').addEventListener('click',()=>{
+  ymSheet.classList.contains('open')?closeYmSheet(true):openYmSheet();
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{
-  curYear=today.getFullYear();curMonth=today.getMonth();syncSelects();renderCal();
+  curYear=today.getFullYear();curMonth=today.getMonth();
+  syncLabel();renderCal();
 });
-buildSelects();
 
 /* ── CALENDAR ── */
 function buildGrid(el,y,m){
@@ -497,7 +634,7 @@ function renderCal(){
   buildGrid(document.getElementById('calGridPrev'),p.y,p.m);
   buildGrid(document.getElementById('calGridCurr'),curYear,curMonth);
   buildGrid(document.getElementById('calGridNext'),n.y,n.m);
-  syncSelects();
+  syncLabel();
   const track=document.getElementById('calTrack');
   track.style.transition='none';
   track.style.transform='translateX(-100%)';

@@ -12,11 +12,11 @@
   --dot:#222;--today-bg:#111;--today-text:#fff;
   --sheet-bg:#fff;--handle:#ddd;
   --overlay:rgba(0,0,0,0.32);
-  --sun:#e5503a;--sat:#3a7ee5;--hol:#e5503a;
+  --sun:#e5503a;--sat:#3a7ee5;
   --shadow:0 2px 8px rgba(0,0,0,0.09);
   --r:10px;--rs:20px;
   --dur:0.32s;
-  --tab-h:60px;
+  --tab-h:56px;
   --header-h:48px;
   --week-h:30px;
 }
@@ -31,19 +31,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   height:var(--tab-h);
   flex-shrink:0;
   order:2;
+  position:relative;z-index:10;
+  transition:opacity var(--dur) ease, transform var(--dur) ease;
+}
+.tab-bar.hidden{
+  opacity:0;pointer-events:none;transform:translateY(100%);
 }
 .tab{
   flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:3px;cursor:pointer;color:var(--text3);
-  font-size:10px;font-weight:500;
+  cursor:pointer;color:var(--text3);
   border-top:2px solid transparent;
   transition:color 0.15s;
-  user-select:none;padding-bottom:4px;
+  user-select:none;
 }
 .tab.active{color:var(--text);border-top-color:var(--text);}
-.tab-icon{font-size:20px;line-height:1;}
+.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 
-/* ─── PAGE CONTAINER ─── */
+/* ─── PAGES ─── */
 .pages{flex:1;overflow:hidden;order:1;position:relative;}
 .tab-page{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
 .tab-page.active{display:flex;}
@@ -60,59 +64,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   border:0.5px solid #ddd;border-radius:6px;
   padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);
 }
-
-/* ─── DRUM ROLL PICKER ─── */
-.drum-trigger{
-  display:flex;align-items:center;gap:2px;cursor:pointer;
-}
+.drum-trigger{display:flex;align-items:center;gap:2px;cursor:pointer;}
 .drum-label{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
 .drum-caret{font-size:10px;color:var(--text3);}
-.drum-overlay{
-  position:fixed;inset:0;z-index:500;
-  background:rgba(0,0,0,0.4);
-  display:none;align-items:flex-end;justify-content:center;
-}
-.drum-overlay.show{display:flex;}
-.drum-sheet{
-  width:100%;background:#fff;border-radius:20px 20px 0 0;
-  padding:16px 0 32px;
-}
-.drum-sheet-title{text-align:center;font-size:14px;font-weight:700;margin-bottom:12px;padding:0 16px;}
-.drum-pickers{display:flex;justify-content:center;gap:0;}
-.drum-col{
-  width:120px;
-  height:200px;
-  overflow:hidden;position:relative;
-  cursor:grab;
-}
-.drum-col-inner{
-  display:flex;flex-direction:column;
-  transition:transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94);
-  will-change:transform;
-}
-.drum-item{
-  height:40px;display:flex;align-items:center;justify-content:center;
-  font-size:17px;font-weight:500;color:var(--text3);
-  flex-shrink:0;user-select:none;
-  transition:color 0.15s,font-size 0.15s;
-}
-.drum-item.selected{color:var(--text);font-size:20px;font-weight:700;}
-.drum-center-line{
-  position:absolute;left:8px;right:8px;
-  top:80px;height:40px;
-  border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);
-  pointer-events:none;
-}
-.drum-sep{
-  width:1px;background:var(--border2);margin:20px 0;
-}
-.drum-actions{display:flex;gap:10px;padding:16px 16px 0;justify-content:center;}
-.drum-btn{
-  flex:1;padding:12px;border-radius:10px;border:none;
-  font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);
-}
-.drum-btn.cancel{background:#f2f2f2;color:var(--text2);}
-.drum-btn.ok{background:#111;color:#fff;}
 
 /* ─── WEEKDAYS ─── */
 .weekdays{
@@ -123,23 +77,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .weekday:first-child{color:var(--sun);}
 .weekday:last-child{color:var(--sat);}
 
-/* ─── CALENDAR SLIDE ─── */
+/* ─── CALENDAR ─── */
 .cal-viewport{flex:1;overflow:hidden;position:relative;}
-.cal-slider{
-  display:flex;height:100%;
-  transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);
-  will-change:transform;
-}
-.cal-panel{
-  flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;
-}
-.calendar{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  gap:5px;padding:4px 10px 16px;
-}
+.cal-slider{display:flex;height:100%;transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);will-change:transform;}
+.cal-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
+.calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
   height:56px;border-radius:var(--r);padding:6px 5px 4px;
-  font-size:13px;font-weight:500;position:relative;
+  font-size:13px;font-weight:500;
   background:var(--cell-bg);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;
   transition:background 0.1s;
@@ -149,27 +94,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .day.sun,.day.hol{color:var(--sun);}
 .day.sat{color:var(--sat);}
 .day.today .day-num{background:var(--today-bg);color:var(--today-text);}
-.day-num{
-  width:24px;height:24px;border-radius:50%;
-  display:flex;align-items:center;justify-content:center;font-size:13px;
-}
+.day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .dot{width:5px;height:5px;background:var(--dot);border-radius:50%;flex-shrink:0;}
 
-/* ─── SEARCH / ADMIN PLACEHOLDER ─── */
-.center-msg{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:12px;color:var(--text3);font-size:14px;text-align:center;padding:32px;
-}
+/* ─── SEARCH ─── */
+.center-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);font-size:14px;text-align:center;padding:32px;}
 .center-msg .big{font-size:36px;}
 
-/* ─── ADMIN FORM ─── */
+/* ─── ADMIN ─── */
 .admin-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;}
 .admin-form{padding:16px 16px 60px;display:flex;flex-direction:column;gap:14px;}
-.form-label{font-size:11px;font-weight:600;color:var(--text2);margin-bottom:4px;display:block;}
+.form-group{display:flex;flex-direction:column;gap:4px;}
+.form-label{font-size:11px;font-weight:600;color:var(--text2);}
 .form-input{
   width:100%;background:#f4f4f4;border:0.5px solid #e0e0e0;
   border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);
-  font-family:var(--font);outline:none;
+  font-family:var(--font);outline:none;display:block;
 }
 .form-input:focus{border-color:#aaa;}
 .tags-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
@@ -183,56 +123,49 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── OVERLAY ─── */
 #overlay{
-  position:fixed;inset:0 0 var(--tab-h) 0;
+  position:fixed;inset:0;
   background:var(--overlay);z-index:100;
   opacity:0;pointer-events:none;
   transition:opacity var(--dur) ease;
 }
 #overlay.active{opacity:1;pointer-events:all;}
 
-/* ─── SHEET ─── */
+/* ─── SHEETS ─── */
 .sheet{
-  position:fixed;left:0;width:100%;
-  bottom:var(--tab-h);
+  position:fixed;
+  left:0;width:100%;
+  bottom:0;
   transform:translateY(100%);
-  background:var(--sheet-bg);border-radius:var(--rs) var(--rs) 0 0;
+  background:var(--sheet-bg);
+  border-radius:var(--rs) var(--rs) 0 0;
   transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);
   will-change:transform;
   display:flex;flex-direction:column;
   overflow:hidden;
 }
 .sheet.open{transform:translateY(0);}
+
 #date-sheet{
   z-index:200;
-  top:calc(var(--header-h) + var(--week-h) + 8px);
+  top:calc(var(--header-h) + var(--week-h) + 6px);
 }
 #detail-sheet{
   z-index:300;
-  top:calc(var(--header-h) + var(--week-h) + 48px);
+  top:40px;
 }
-.handle-wrap{
-  padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;
-  cursor:grab;user-select:none;
-}
+
+.handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
 .handle{width:40px;height:4px;background:var(--handle);border-radius:2px;}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:4px 16px 10px;flex-shrink:0;}
 .sheet-title{font-size:15px;font-weight:700;}
-.sheet-body{flex:1;overflow-y:auto;overscroll-behavior:contain;}
 
-/* ─── DATE SHEET: slide between days ─── */
+/* ─── DATE VIEWPORT ─── */
 .date-viewport{flex:1;overflow:hidden;position:relative;}
-.date-slider{
-  display:flex;height:100%;
-  transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);
-  will-change:transform;
-}
+.date-slider{display:flex;height:100%;transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);will-change:transform;}
 .date-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
 
 /* ─── VIEW TOGGLE ─── */
-.view-toggle-btn{
-  width:32px;height:32px;border:none;background:#f2f2f2;border-radius:8px;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-}
+.view-toggle-btn{width:32px;height:32px;border:none;background:#f2f2f2;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
 /* ─── LIST / CARD ─── */
 .list-view{display:flex;flex-direction:column;}
@@ -253,10 +186,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .tags{display:flex;gap:4px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;}
-.card{
-  aspect-ratio:2/3;background:#eee;border-radius:var(--r);
-  box-shadow:var(--shadow);overflow:hidden;cursor:pointer;position:relative;transition:transform 0.12s;
-}
+.card{aspect-ratio:2/3;background:#eee;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;position:relative;transition:transform 0.12s;}
 .card:active{transform:scale(0.97);}
 .card img{width:100%;height:100%;object-fit:cover;display:block;}
 .card-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ebebeb;font-size:10px;font-weight:600;color:#888;text-align:center;padding:8px;line-height:1.4;}
@@ -265,18 +195,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .empty{padding:36px 16px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* ─── DETAIL ─── */
-.detail-cover-zone{position:relative;overflow:hidden;height:180px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
+.detail-cover-zone{position:relative;overflow:hidden;height:200px;display:flex;align-items:center;justify-content:center;flex-shrink:0;}
 .detail-cover-side{position:absolute;inset:0;display:flex;}
 .cover-side-l,.cover-side-r{flex:1;overflow:hidden;position:relative;}
 .cover-side-l img,.cover-side-r img{position:absolute;top:0;height:100%;width:auto;object-fit:cover;filter:blur(18px);opacity:0.55;transform:scale(1.08);}
 .cover-side-l img{right:0;}
 .cover-side-r img{left:0;}
 .cover-side-center{position:relative;z-index:1;flex-shrink:0;height:100%;display:flex;align-items:center;justify-content:center;}
-.detail-cover-main{height:160px;width:auto;max-width:120px;border-radius:4px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.22);display:flex;align-items:center;justify-content:center;}
+.detail-cover-main{height:170px;width:auto;max-width:130px;border-radius:4px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.22);display:flex;align-items:center;justify-content:center;}
 .detail-cover-main img{height:100%;width:auto;object-fit:contain;display:block;}
-.detail-cover-main .cover-ph{width:100px;height:160px;display:flex;align-items:center;justify-content:center;background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;}
-.detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 18px 24px;}
-.detail-title{font-size:16px;font-weight:700;line-height:1.5;margin-bottom:10px;}
+.detail-cover-main .cover-ph{width:110px;height:170px;display:flex;align-items:center;justify-content:center;background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;}
+.detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;}
+.detail-title{
+  font-size:17px;font-weight:700;line-height:1.55;
+  padding:16px 0 12px;
+  border-bottom:0.5px solid var(--border);
+  margin-bottom:14px;
+}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .meta-rows{display:flex;flex-direction:column;}
@@ -286,13 +221,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .meta-val{color:var(--text);flex:1;}
 .amazon-btn{display:block;margin-top:14px;background:#FF9900;color:#111;text-align:center;text-decoration:none;font-weight:700;font-size:13px;padding:11px;border-radius:9px;}
 .timestamps{margin-top:14px;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
-.close-btn{width:30px;height:30px;border:none;background:none;cursor:pointer;font-size:19px;color:var(--text3);border-radius:6px;display:flex;align-items:center;justify-content:center;}
+
+/* ─── DRUM ─── */
+.drum-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.4);display:none;align-items:flex-end;justify-content:center;}
+.drum-overlay.show{display:flex;}
+.drum-sheet{width:100%;background:#fff;border-radius:20px 20px 0 0;padding:16px 0 32px;}
+.drum-sheet-title{text-align:center;font-size:14px;font-weight:700;margin-bottom:12px;}
+.drum-pickers{display:flex;justify-content:center;}
+.drum-col{width:120px;height:200px;overflow:hidden;position:relative;cursor:grab;}
+.drum-col-inner{display:flex;flex-direction:column;transition:transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94);will-change:transform;}
+.drum-item{height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500;color:var(--text3);flex-shrink:0;user-select:none;transition:color 0.15s,font-size 0.15s;}
+.drum-item.selected{color:var(--text);font-size:20px;font-weight:700;}
+.drum-center-line{position:absolute;left:8px;right:8px;top:80px;height:40px;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);pointer-events:none;}
+.drum-sep{width:1px;background:var(--border2);margin:20px 0;}
+.drum-actions{display:flex;gap:10px;padding:16px 16px 0;}
+.drum-btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.drum-btn.cancel{background:#f2f2f2;color:var(--text2);}
+.drum-btn.ok{background:#111;color:#fff;}
 </style>
 </head>
 <body>
 
 <div class="pages">
-  <!-- カレンダータブ -->
+  <!-- カレンダー -->
   <div class="tab-page active" id="tab-calendar">
     <div class="cal-header">
       <div class="drum-trigger" id="drumTrigger">
@@ -308,44 +259,50 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
     </div>
     <div class="cal-viewport" id="calViewport">
       <div class="cal-slider" id="calSlider">
-        <div class="cal-panel" id="calPrev"><div class="calendar" id="calGridPrev"></div></div>
-        <div class="cal-panel" id="calCurr"><div class="calendar" id="calGridCurr"></div></div>
-        <div class="cal-panel" id="calNext"><div class="calendar" id="calGridNext"></div></div>
+        <div class="cal-panel"><div class="calendar" id="calGridPrev"></div></div>
+        <div class="cal-panel"><div class="calendar" id="calGridCurr"></div></div>
+        <div class="cal-panel"><div class="calendar" id="calGridNext"></div></div>
       </div>
     </div>
   </div>
 
-  <!-- 検索タブ -->
+  <!-- 検索 -->
   <div class="tab-page" id="tab-search">
-    <div class="center-msg"><div class="big">🔍</div><div>検索機能は<br>近日公開予定です</div></div>
+    <div class="center-msg"><div class="big">🔍</div><div>検索機能は近日公開予定です</div></div>
   </div>
 
-  <!-- 管理タブ -->
+  <!-- 管理 -->
   <div class="tab-page" id="tab-admin">
     <div class="admin-scroll">
       <div class="admin-form">
-        <div><label class="form-label">タイトル *</label><input class="form-input" id="f-title" type="text" placeholder="参考書のタイトル"></div>
-        <div><label class="form-label">著者</label><input class="form-input" id="f-author" type="text" placeholder="著者名"></div>
-        <div><label class="form-label">出版社</label><input class="form-input" id="f-publisher" type="text" placeholder="出版社名"></div>
-        <div><label class="form-label">発売日 *</label><input class="form-input" id="f-date" type="date"></div>
-        <div><label class="form-label">書影URL</label><input class="form-input" id="f-img" type="text" placeholder="https://…"></div>
-        <div><label class="form-label">Amazonリンク</label><input class="form-input" id="f-amazon" type="text" placeholder="https://amazon.co.jp/…"></div>
-        <div><label class="form-label">ISBN</label><input class="form-input" id="f-isbn" type="text" placeholder="978-4-…"></div>
-        <div><label class="form-label">科目タグ</label><div class="tags-pick" id="tags-pick"></div></div>
+        <div class="form-group"><label class="form-label">タイトル *</label><input class="form-input" id="f-title" type="text" placeholder="参考書のタイトル"></div>
+        <div class="form-group"><label class="form-label">著者</label><input class="form-input" id="f-author" type="text" placeholder="著者名"></div>
+        <div class="form-group"><label class="form-label">出版社</label><input class="form-input" id="f-publisher" type="text" placeholder="出版社名"></div>
+        <div class="form-group"><label class="form-label">発売日 *</label><input class="form-input" id="f-date" type="date"></div>
+        <div class="form-group"><label class="form-label">書影URL</label><input class="form-input" id="f-img" type="text" placeholder="https://…"></div>
+        <div class="form-group"><label class="form-label">Amazonリンク</label><input class="form-input" id="f-amazon" type="text" placeholder="https://amazon.co.jp/…"></div>
+        <div class="form-group"><label class="form-label">ISBN</label><input class="form-input" id="f-isbn" type="text" placeholder="978-4-…"></div>
+        <div class="form-group"><label class="form-label">科目タグ</label><div class="tags-pick" id="tags-pick"></div></div>
         <button class="submit-btn" id="submit-btn">登録する</button>
       </div>
     </div>
   </div>
 </div>
 
-<!-- BOTTOM TAB BAR -->
-<div class="tab-bar">
-  <div class="tab active" data-tab="calendar"><div class="tab-icon">📅</div><div>カレンダー</div></div>
-  <div class="tab" data-tab="search"><div class="tab-icon">🔍</div><div>検索</div></div>
-  <div class="tab" data-tab="admin"><div class="tab-icon">✏️</div><div>管理</div></div>
+<!-- タブバー -->
+<div class="tab-bar" id="tabBar">
+  <div class="tab active" data-tab="calendar">
+    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+  </div>
+  <div class="tab" data-tab="search">
+    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+  </div>
+  <div class="tab" data-tab="admin">
+    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  </div>
 </div>
 
-<!-- OVERLAY -->
+<!-- オーバーレイ -->
 <div id="overlay"></div>
 
 <!-- 日付シート -->
@@ -354,7 +311,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   <div class="sheet-header">
     <div class="sheet-title" id="sheet-date-label"></div>
     <button class="view-toggle-btn" id="viewToggle">
-      <svg id="toggle-svg" viewBox="0 0 16 16" fill="#666" width="16" height="16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
+      <svg viewBox="0 0 16 16" fill="#666" width="16" height="16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
     </button>
   </div>
   <div class="date-viewport">
@@ -369,28 +326,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <!-- 詳細シート -->
 <div class="sheet" id="detail-sheet">
   <div class="handle-wrap"><div class="handle"></div></div>
-  <div class="sheet-header" style="padding-bottom:6px;">
-    <div class="sheet-title" style="font-size:13px;font-weight:500;color:var(--text3);" id="detail-date-label"></div>
-    <button class="close-btn" id="detail-close">×</button>
+  <div class="sheet-header" style="padding-bottom:4px;">
+    <div style="font-size:13px;font-weight:500;color:var(--text3);" id="detail-date-label"></div>
   </div>
   <div class="detail-cover-zone" id="detail-cover-zone"></div>
   <div class="detail-body" id="detail-body"></div>
 </div>
 
-<!-- ドラムロールピッカー -->
+<!-- ドラムロール -->
 <div class="drum-overlay" id="drumOverlay">
   <div class="drum-sheet">
     <div class="drum-sheet-title">年月を選択</div>
     <div class="drum-pickers">
-      <div class="drum-col" id="drumYear">
-        <div class="drum-col-inner" id="drumYearInner"></div>
-        <div class="drum-center-line"></div>
-      </div>
+      <div class="drum-col" id="drumYear"><div class="drum-col-inner" id="drumYearInner"></div><div class="drum-center-line"></div></div>
       <div class="drum-sep"></div>
-      <div class="drum-col" id="drumMonth">
-        <div class="drum-col-inner" id="drumMonthInner"></div>
-        <div class="drum-center-line"></div>
-      </div>
+      <div class="drum-col" id="drumMonth"><div class="drum-col-inner" id="drumMonthInner"></div><div class="drum-center-line"></div></div>
     </div>
     <div class="drum-actions">
       <button class="drum-btn cancel" id="drumCancel">キャンセル</button>
@@ -400,7 +350,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 </div>
 
 <script>
-/* ═══ TAG COLORS ═══ */
+/* ── TAG CONFIG ── */
 const ALL_TAGS=['英語','数学','現代文','古文','漢文','物理','化学','生物','地学','歴史総合','日本史','世界史','地理','公共','政治経済','倫理','情報','小論文','共通テスト','過去問（赤本）'];
 const TAG_COLOR={
   '英語':['#fdeaea','#c0392b'],'数学':['#e8f0fe','#1a56c4'],
@@ -413,21 +363,11 @@ const TAG_COLOR={
 };
 function tagStyle(t){const c=TAG_COLOR[t];return c?`background:${c[0]};color:${c[1]};`:'';};
 
-/* ═══ HOLIDAYS ═══ */
-const HOLIDAYS=new Set([
-  '2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20',
-  '2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06',
-  '2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23',
-  '2026-10-12','2026-11-03','2026-11-23','2026-12-23',
-  '2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24',
-  '2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05',
-  '2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23',
-  '2025-10-13','2025-11-03','2025-11-24','2025-12-23',
-]);
-function isHoliday(ds){return HOLIDAYS.has(ds);}
+/* ── HOLIDAYS ── */
+const HOLIDAYS=new Set(['2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23','2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-24','2025-12-23']);
 
-/* ═══ DATA ═══ */
-let books=JSON.parse(localStorage.getItem('tbcal4-books')||'null');
+/* ── DATA ── */
+let books=JSON.parse(localStorage.getItem('tbcal5')||'null');
 if(!books){
   books=[
     {id:1,title:'英語長文ハイパートレーニング レベル3',author:'安河内哲也',publisher:'桐原書店',date:'2026-04-05',tags:['英語'],img:'',amazon:'',isbn:'',created:'2026/4/10 09:00',updated:'2026/4/10 09:00'},
@@ -439,267 +379,169 @@ if(!books){
     {id:7,title:'物理のエッセンス 力学・波動',author:'浜島清利',publisher:'河合出版',date:'2026-04-25',tags:['物理'],img:'',amazon:'',isbn:'',created:'2026/4/16 10:00',updated:'2026/4/16 10:00'},
     {id:8,title:'古文上達 基礎編 読解と演習45',author:'Z会出版編集部',publisher:'Z会',date:'2026-04-25',tags:['古文'],img:'',amazon:'',isbn:'',created:'2026/4/16 12:00',updated:'2026/4/16 12:00'},
   ];
-  localStorage.setItem('tbcal4-books',JSON.stringify(books));
+  localStorage.setItem('tbcal5',JSON.stringify(books));
 }
-function saveBooks(){localStorage.setItem('tbcal4-books',JSON.stringify(books));}
+function saveBooks(){localStorage.setItem('tbcal5',JSON.stringify(books));}
 
-/* ═══ STATE ═══ */
+/* ── STATE ── */
 const today=new Date();
+const todayStr=ds(today);
 let curYear=2026,curMonth=3;
-let viewMode=localStorage.getItem('tbcal4-view')||'list';
+let viewMode=localStorage.getItem('tbcal5-view')||'list';
 let activeDate='';
-let dateSheetOpen=false,detailSheetOpen=false;
-function dateStr(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-const todayStr=dateStr(today);
+let dateOpen=false,detailOpen=false;
 
-/* ═══ TABS ═══ */
-document.querySelectorAll('.tab').forEach(tab=>{
-  tab.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
-    document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
-    tab.classList.add('active');
-    document.getElementById('tab-'+tab.dataset.tab).classList.add('active');
+function ds(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
+function addM(y,m,d){let nm=m+d,ny=y;while(nm<0){nm+=12;ny--;}while(nm>11){nm-=12;ny++;}return{y:ny,m:nm};}
+function addDays(s,n){const d=new Date(s);d.setDate(d.getDate()+n);return ds(d);}
+
+/* ── TABS ── */
+document.querySelectorAll('.tab').forEach(t=>{
+  t.addEventListener('click',()=>{
+    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
+    document.querySelectorAll('.tab-page').forEach(x=>x.classList.remove('active'));
+    t.classList.add('active');
+    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
   });
 });
 
-/* ═══ CALENDAR RENDER ═══ */
-function buildGrid(gridEl,year,month){
-  gridEl.innerHTML='';
-  const first=new Date(year,month,1);
-  const last=new Date(year,month+1,0);
+/* ── TAB BAR HIDE/SHOW ── */
+const tabBar=document.getElementById('tabBar');
+function hideTabBar(){tabBar.classList.add('hidden');}
+function showTabBar(){tabBar.classList.remove('hidden');}
+
+/* ── CALENDAR ── */
+function buildGrid(el,y,m){
+  el.innerHTML='';
+  const first=new Date(y,m,1),last=new Date(y,m+1,0);
   const cells=Math.ceil((first.getDay()+last.getDate())/7)*7;
   for(let i=0;i<cells;i++){
-    const d=new Date(year,month,i-first.getDay()+1);
-    const ds=dateStr(d);
-    const isOther=d.getMonth()!==month;
-    const dow=d.getDay();
-    const hol=isHoliday(ds);
-    const hasBooks=books.some(b=>b.date===ds);
-    const el=document.createElement('div');
+    const d=new Date(y,m,i-first.getDay()+1);
+    const s=ds(d),isOther=d.getMonth()!==m,dow=d.getDay(),hol=HOLIDAYS.has(s);
+    const hasB=books.some(b=>b.date===s);
+    const div=document.createElement('div');
     let cls='day';
     if(isOther)cls+=' other';
-    if(ds===todayStr)cls+=' today';
-    if(dow===0||hol)cls+=' sun';
-    else if(dow===6)cls+=' sat';
-    el.className=cls;
-    el.innerHTML=`<div class="day-num">${d.getDate()}</div>${hasBooks?'<div class="dot"></div>':''}`;
-    el.addEventListener('click',()=>openDateSheet(ds));
-    gridEl.appendChild(el);
+    if(s===todayStr)cls+=' today';
+    if(dow===0||hol)cls+=' sun';else if(dow===6)cls+=' sat';
+    div.className=cls;
+    div.innerHTML=`<div class="day-num">${d.getDate()}</div>${hasB?'<div class="dot"></div>':''}`;
+    div.addEventListener('click',()=>openDate(s));
+    el.appendChild(div);
   }
 }
-
-function addMonths(y,m,delta){
-  let nm=m+delta,ny=y;
-  while(nm<0){nm+=12;ny--;}
-  while(nm>11){nm-=12;ny++;}
-  return{y:ny,m:nm};
-}
-
-function renderCalendar(animate=null){
-  const prev=addMonths(curYear,curMonth,-1);
-  const next=addMonths(curYear,curMonth,1);
-  buildGrid(document.getElementById('calGridPrev'),prev.y,prev.m);
+function renderCal(anim=null){
+  const p=addM(curYear,curMonth,-1),n=addM(curYear,curMonth,1);
+  buildGrid(document.getElementById('calGridPrev'),p.y,p.m);
   buildGrid(document.getElementById('calGridCurr'),curYear,curMonth);
-  buildGrid(document.getElementById('calGridNext'),next.y,next.m);
+  buildGrid(document.getElementById('calGridNext'),n.y,n.m);
   document.getElementById('drumLabel').textContent=`${curYear}年${curMonth+1}月`;
-  const slider=document.getElementById('calSlider');
-  if(animate){
-    slider.style.transition='none';
-    slider.style.transform=animate==='next'?'translateX(-200%)':'translateX(0%)';
+  const sl=document.getElementById('calSlider');
+  if(anim){
+    sl.style.transition='none';
+    sl.style.transform=anim==='next'?'translateX(-200%)':'translateX(0%)';
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      slider.style.transition=`transform var(--dur) cubic-bezier(0.32,0.72,0,1)`;
-      slider.style.transform='translateX(-100%)';
+      sl.style.transition=`transform var(--dur) cubic-bezier(0.32,0.72,0,1)`;
+      sl.style.transform='translateX(-100%)';
     }));
-  }else{
-    slider.style.transition='none';
-    slider.style.transform='translateX(-100%)';
-  }
+  }else{sl.style.transition='none';sl.style.transform='translateX(-100%)';}
 }
-renderCalendar();
+renderCal();
 
 /* カレンダー横スワイプ */
 (()=>{
   const vp=document.getElementById('calViewport');
-  let sx=0,sy=0,tracking=false;
-  vp.addEventListener('touchstart',e=>{
-    if(dateSheetOpen)return;
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;
-  },{passive:true});
+  let sx=0,sy=0,tr=false;
+  vp.addEventListener('touchstart',e=>{if(dateOpen)return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;tr=true;},{passive:true});
   vp.addEventListener('touchend',e=>{
-    if(!tracking)return;tracking=false;
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
+    if(!tr)return;tr=false;
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
     if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
-      if(dx<0){const n=addMonths(curYear,curMonth,1);curYear=n.y;curMonth=n.m;renderCalendar('next');}
-      else{const n=addMonths(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;renderCalendar('prev');}
+      if(dx<0){const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;renderCal('next');}
+      else{const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;renderCal('prev');}
     }
   },{passive:true});
 })();
 
-/* ═══ DRUM ROLL PICKER ═══ */
-const ITEM_H=40,OFFSET=2;
-let drumSelYear=curYear,drumSelMonth=curMonth;
-const years=[];for(let y=2020;y<=2030;y++)years.push(y);
-const months=Array.from({length:12},(_,i)=>i);
-
-function buildDrum(innerId,items,labelFn,selectedIdx){
-  const inner=document.getElementById(innerId);
-  inner.innerHTML='';
-  for(let i=0;i<OFFSET;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
-  items.forEach((item,i)=>{
-    const d=document.createElement('div');
-    d.className='drum-item'+(i===selectedIdx?' selected':'');
-    d.textContent=labelFn(item);
-    inner.appendChild(d);
-  });
-  for(let i=0;i<OFFSET;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
-  inner.style.transform=`translateY(-${selectedIdx*ITEM_H}px)`;
-}
-
-function makeDrumInteractive(colId,innerId,items,onSelect){
-  const col=document.getElementById(colId);
-  const inner=document.getElementById(innerId);
-  let startY=0,startTime=0,curIdx=0,dragging=false;
-  function getIdx(){
-    const ty=parseFloat(inner.style.transform.replace('translateY(',''))||0;
-    return Math.round(-ty/ITEM_H);
-  }
-  function setIdx(idx,animate=true){
-    idx=Math.max(0,Math.min(items.length-1,idx));
-    curIdx=idx;
-    inner.style.transition=animate?'transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
-    inner.style.transform=`translateY(-${idx*ITEM_H}px)`;
-    inner.querySelectorAll('.drum-item').forEach((d,i)=>{d.classList.toggle('selected',i-OFFSET===idx);});
-    onSelect(items[idx]);
-  }
-  col.addEventListener('touchstart',e=>{
-    dragging=true;startY=e.touches[0].clientY;startTime=Date.now();curIdx=getIdx();inner.style.transition='none';
-  },{passive:true});
-  col.addEventListener('touchmove',e=>{
-    if(!dragging)return;
-    const dy=e.touches[0].clientY-startY;
-    const newIdx=Math.max(0,Math.min(items.length-1,curIdx-dy/ITEM_H));
-    inner.style.transform=`translateY(-${newIdx*ITEM_H}px)`;
-    inner.querySelectorAll('.drum-item').forEach((d,i)=>{d.classList.toggle('selected',Math.round(i-OFFSET)===Math.round(newIdx));});
-  },{passive:true});
-  col.addEventListener('touchend',e=>{
-    if(!dragging)return;dragging=false;
-    const dy=e.changedTouches[0].clientY-startY;
-    const vel=(e.changedTouches[0].clientY-startY)/(Date.now()-startTime);
-    setIdx(curIdx-Math.round(dy/ITEM_H)-Math.round(vel*4));
-  },{passive:true});
-  col.addEventListener('mousedown',e=>{dragging=true;startY=e.clientY;startTime=Date.now();curIdx=getIdx();inner.style.transition='none';});
-  window.addEventListener('mousemove',e=>{if(!dragging)return;const dy=e.clientY-startY;const newIdx=Math.max(0,Math.min(items.length-1,curIdx-dy/ITEM_H));inner.style.transform=`translateY(-${newIdx*ITEM_H}px)`;});
-  window.addEventListener('mouseup',e=>{if(!dragging)return;dragging=false;const dy=e.clientY-startY;setIdx(Math.round(curIdx-dy/ITEM_H));});
-}
-
-document.getElementById('drumTrigger').addEventListener('click',()=>{
-  drumSelYear=curYear;drumSelMonth=curMonth;
-  buildDrum('drumYearInner',years,y=>`${y}年`,years.indexOf(drumSelYear));
-  buildDrum('drumMonthInner',months,m=>`${m+1}月`,drumSelMonth);
-  makeDrumInteractive('drumYear','drumYearInner',years,v=>drumSelYear=v);
-  makeDrumInteractive('drumMonth','drumMonthInner',months,v=>drumSelMonth=v);
-  document.getElementById('drumOverlay').classList.add('show');
-});
-document.getElementById('drumCancel').addEventListener('click',()=>{document.getElementById('drumOverlay').classList.remove('show');});
-document.getElementById('drumOk').addEventListener('click',()=>{
-  document.getElementById('drumOverlay').classList.remove('show');
-  curYear=drumSelYear;curMonth=drumSelMonth;renderCalendar();
-});
-document.getElementById('todayBtn').addEventListener('click',()=>{
-  curYear=today.getFullYear();curMonth=today.getMonth();renderCalendar();
-});
-
-/* ═══ SHEET SYSTEM ═══ */
+/* ── SHEET OPEN/CLOSE ── */
 const overlay=document.getElementById('overlay');
 const dateSheet=document.getElementById('date-sheet');
 const detailSheet=document.getElementById('detail-sheet');
 
-function openDateSheet(ds){
-  activeDate=ds;
-  renderDateLabel(ds);
-  buildDatePanels(ds);
-  if(!dateSheetOpen){
-    dateSheetOpen=true;
+function openDate(s){
+  activeDate=s;
+  setDateLabel(s);
+  buildDatePanels(s);
+  if(!dateOpen){
+    dateOpen=true;
     dateSheet.classList.add('open');
     overlay.classList.add('active');
+    hideTabBar();
   }
 }
-function closeDateSheet(){
-  dateSheetOpen=false;detailSheetOpen=false;
+function closeDate(){
+  dateOpen=false;detailOpen=false;
   dateSheet.classList.remove('open');
   detailSheet.classList.remove('open');
   overlay.classList.remove('active');
+  showTabBar();
 }
-function openDetailSheet(b){
+function openDetail(b){
   setDetailContent(b);
-  if(!detailSheetOpen){detailSheetOpen=true;detailSheet.classList.add('open');}
+  if(!detailOpen){detailOpen=true;detailSheet.classList.add('open');}
 }
-function closeDetailSheet(){
-  detailSheetOpen=false;detailSheet.classList.remove('open');
+function closeDetail(){
+  detailOpen=false;detailSheet.classList.remove('open');
 }
 
-/* ═══ DATE SHEET ═══ */
-function renderDateLabel(ds){
-  const[y,m,d]=ds.split('-');
+/* ── DATE SHEET ── */
+function setDateLabel(s){
+  const[y,m,d]=s.split('-');
   document.getElementById('sheet-date-label').textContent=`${y}年${parseInt(m)}月${parseInt(d)}日`;
 }
-function offsetDate(ds,delta){
-  const d=new Date(ds);d.setDate(d.getDate()+delta);return dateStr(d);
-}
-function buildDatePanels(ds,animate=null){
-  activeDate=ds;
-  renderDateLabel(ds);
-  const prev=offsetDate(ds,-1),next=offsetDate(ds,1);
-  renderDayContent(document.getElementById('datePanelPrev'),prev);
-  renderDayContent(document.getElementById('datePanelCurr'),ds);
-  renderDayContent(document.getElementById('datePanelNext'),next);
-  const slider=document.getElementById('dateSlider');
-  if(animate){
-    slider.style.transition='none';
-    slider.style.transform=animate==='next'?'translateX(-200%)':'translateX(0%)';
+function buildDatePanels(s,anim=null){
+  activeDate=s;setDateLabel(s);
+  renderDay(document.getElementById('datePanelPrev'),addDays(s,-1));
+  renderDay(document.getElementById('datePanelCurr'),s);
+  renderDay(document.getElementById('datePanelNext'),addDays(s,1));
+  const sl=document.getElementById('dateSlider');
+  if(anim){
+    sl.style.transition='none';
+    sl.style.transform=anim==='next'?'translateX(-200%)':'translateX(0%)';
     requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      slider.style.transition=`transform var(--dur) cubic-bezier(0.32,0.72,0,1)`;
-      slider.style.transform='translateX(-100%)';
+      sl.style.transition=`transform var(--dur) cubic-bezier(0.32,0.72,0,1)`;
+      sl.style.transform='translateX(-100%)';
     }));
-  }else{
-    slider.style.transition='none';
-    slider.style.transform='translateX(-100%)';
-  }
+  }else{sl.style.transition='none';sl.style.transform='translateX(-100%)';}
 }
 
-/* 日付パネル内横スワイプ */
+/* 日付パネル横スワイプ */
 (()=>{
   const vp=document.querySelector('.date-viewport');
   let sx=0,sy=0;
   vp.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
   vp.addEventListener('touchend',e=>{
-    const dx=e.changedTouches[0].clientX-sx;
-    const dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50){
-      const next=offsetDate(activeDate,dx<0?1:-1);
-      buildDatePanels(next,dx<0?'next':'prev');
-    }
+    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
+    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50)
+      buildDatePanels(addDays(activeDate,dx<0?1:-1),dx<0?'next':'prev');
   },{passive:true});
 })();
 
 /* VIEW TOGGLE */
 const ICON_LIST=`<svg viewBox="0 0 16 16" fill="#666" width="16" height="16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>`;
 const ICON_GRID=`<svg viewBox="0 0 16 16" fill="#666" width="16" height="16"><rect x="1" y="1" width="6" height="6" rx="1.5"/><rect x="9" y="1" width="6" height="6" rx="1.5"/><rect x="1" y="9" width="6" height="6" rx="1.5"/><rect x="9" y="9" width="6" height="6" rx="1.5"/></svg>`;
-function updateToggle(){document.getElementById('viewToggle').innerHTML=viewMode==='list'?ICON_GRID:ICON_LIST;}
-updateToggle();
+function updToggle(){document.getElementById('viewToggle').innerHTML=viewMode==='list'?ICON_GRID:ICON_LIST;}
+updToggle();
 document.getElementById('viewToggle').addEventListener('click',e=>{
-  e.stopPropagation();
-  viewMode=viewMode==='list'?'card':'list';
-  localStorage.setItem('tbcal4-view',viewMode);
-  updateToggle();buildDatePanels(activeDate);
+  e.stopPropagation();viewMode=viewMode==='list'?'card':'list';
+  localStorage.setItem('tbcal5-view',viewMode);updToggle();buildDatePanels(activeDate);
 });
 
-function renderDayContent(container,ds){
-  const items=books.filter(b=>b.date===ds);
-  if(!items.length){container.innerHTML='<div class="empty">この日の新刊はありません</div>';return;}
+function renderDay(el,s){
+  const items=books.filter(b=>b.date===s);
+  if(!items.length){el.innerHTML='<div class="empty">この日の新刊はありません</div>';return;}
   if(viewMode==='list'){
-    container.innerHTML=`<div class="list-view">${items.map(b=>`
+    el.innerHTML=`<div class="list-view">${items.map(b=>`
       <div class="list-item" data-id="${b.id}">
         <div class="thumb">${b.img?`<img src="${b.img}" alt="">`:b.title.substring(0,10)}</div>
         <div class="list-info">
@@ -708,22 +550,22 @@ function renderDayContent(container,ds){
         </div>
       </div>`).join('')}</div>`;
   }else{
-    container.innerHTML=`<div class="grid">${items.map(b=>`
+    el.innerHTML=`<div class="grid">${items.map(b=>`
       <div class="card" data-id="${b.id}">
-        ${b.img?`<img src="${b.img}" alt="">` :`<div class="card-ph">${b.title.substring(0,14)}</div>`}
+        ${b.img?`<img src="${b.img}" alt="">`:`<div class="card-ph">${b.title.substring(0,14)}</div>`}
         <div class="card-over">${b.tags.slice(0,2).map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>
       </div>`).join('')}</div>`;
   }
-  container.querySelectorAll('[data-id]').forEach(el=>{
-    el.addEventListener('click',e=>{
+  el.querySelectorAll('[data-id]').forEach(el2=>{
+    el2.addEventListener('click',e=>{
       e.stopPropagation();
-      const b=books.find(x=>x.id==el.dataset.id);
-      if(b)openDetailSheet(b);
+      const b=books.find(x=>x.id==el2.dataset.id);
+      if(b)openDetail(b);
     });
   });
 }
 
-/* ═══ DETAIL ═══ */
+/* ── DETAIL ── */
 function setDetailContent(b){
   const[y,m,d]=b.date.split('-');
   document.getElementById('detail-date-label').textContent=`${y}年${parseInt(m)}月${parseInt(d)}日発売`;
@@ -754,61 +596,95 @@ function setDetailContent(b){
     ${b.amazon?`<a class="amazon-btn" href="${b.amazon}" target="_blank">Amazonで見る →</a>`:''}
     <div class="timestamps">作成：${b.created}<br>更新：${b.updated}</div>`;
 }
-document.getElementById('detail-close').addEventListener('click',e=>{e.stopPropagation();closeDetailSheet();});
 
-/* ═══ SWIPE TO CLOSE ═══ */
+/* ── SWIPE TO CLOSE ── */
 function enableSwipe(sheetEl,closeFn){
-  let startY=0,curDY=0,startTime=0,dragging=false,moved=false;
+  let sy=0,dy=0,t0=0,on=false,moved=false;
   sheetEl.addEventListener('touchstart',e=>{
     let el=e.target;
     while(el&&el!==sheetEl){if(el.scrollTop>0)return;el=el.parentElement;}
-    dragging=true;moved=false;curDY=0;
-    startY=e.touches[0].clientY;startTime=Date.now();
+    on=true;moved=false;dy=0;sy=e.touches[0].clientY;t0=Date.now();
     sheetEl.style.transition='none';
   },{passive:true});
   sheetEl.addEventListener('touchmove',e=>{
-    if(!dragging)return;
-    const dy=e.touches[0].clientY-startY;
-    if(dy>5){moved=true;curDY=dy;sheetEl.style.transform=`translateY(${dy}px)`;}
+    if(!on)return;
+    const d=e.touches[0].clientY-sy;
+    if(d>5){moved=true;dy=d;sheetEl.style.transform=`translateY(${d}px)`;}
     if(e.cancelable)e.preventDefault();
   },{passive:false});
   sheetEl.addEventListener('touchend',()=>{
-    if(!dragging)return;dragging=false;
-    const vel=curDY/(Date.now()-startTime);
+    if(!on)return;on=false;
+    const vel=dy/(Date.now()-t0);
     sheetEl.style.transition='';sheetEl.style.transform='';
-    if(moved&&(curDY>sheetEl.offsetHeight*0.25||vel>0.4))closeFn();
-    curDY=0;
+    if(moved&&(dy>sheetEl.offsetHeight*0.25||vel>0.4))closeFn();
+    dy=0;
   });
 }
-enableSwipe(dateSheet,closeDateSheet);
-enableSwipe(detailSheet,closeDetailSheet);
+enableSwipe(dateSheet,closeDate);
+enableSwipe(detailSheet,closeDetail);
 
-/* ═══ ADMIN ═══ */
+/* ── DRUM ── */
+const ITEM_H=40,OFFSET=2;
+let dSY=curYear,dSM=curMonth;
+const years=[];for(let y=2020;y<=2030;y++)years.push(y);
+const months=Array.from({length:12},(_,i)=>i);
+
+function buildDrum(innerId,items,lFn,selIdx){
+  const inner=document.getElementById(innerId);inner.innerHTML='';
+  for(let i=0;i<OFFSET;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
+  items.forEach((item,i)=>{const d=document.createElement('div');d.className='drum-item'+(i===selIdx?' selected':'');d.textContent=lFn(item);inner.appendChild(d);});
+  for(let i=0;i<OFFSET;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
+  inner.style.transform=`translateY(-${selIdx*ITEM_H}px)`;
+}
+function makeDrum(colId,innerId,items,onSel){
+  const col=document.getElementById(colId),inner=document.getElementById(innerId);
+  let sy=0,t0=0,ci=0,on=false;
+  function gIdx(){return Math.round(-(parseFloat(inner.style.transform.replace('translateY(',''))||0)/ITEM_H);}
+  function sIdx(idx,anim=true){
+    idx=Math.max(0,Math.min(items.length-1,idx));ci=idx;
+    inner.style.transition=anim?'transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
+    inner.style.transform=`translateY(-${idx*ITEM_H}px)`;
+    inner.querySelectorAll('.drum-item').forEach((d,i)=>d.classList.toggle('selected',i-OFFSET===idx));
+    onSel(items[idx]);
+  }
+  col.addEventListener('touchstart',e=>{on=true;sy=e.touches[0].clientY;t0=Date.now();ci=gIdx();inner.style.transition='none';},{passive:true});
+  col.addEventListener('touchmove',e=>{if(!on)return;const dy=e.touches[0].clientY-sy;const ni=Math.max(0,Math.min(items.length-1,ci-dy/ITEM_H));inner.style.transform=`translateY(-${ni*ITEM_H}px)`;inner.querySelectorAll('.drum-item').forEach((d,i)=>d.classList.toggle('selected',Math.round(i-OFFSET)===Math.round(ni)));},{passive:true});
+  col.addEventListener('touchend',e=>{if(!on)return;on=false;const dy=e.changedTouches[0].clientY-sy,vel=(e.changedTouches[0].clientY-sy)/(Date.now()-t0);sIdx(ci-Math.round(dy/ITEM_H)-Math.round(vel*4));});
+  col.addEventListener('mousedown',e=>{on=true;sy=e.clientY;t0=Date.now();ci=gIdx();inner.style.transition='none';});
+  window.addEventListener('mousemove',e=>{if(!on)return;const dy=e.clientY-sy;inner.style.transform=`translateY(-${Math.max(0,Math.min(items.length-1,ci-dy/ITEM_H))*ITEM_H}px)`;});
+  window.addEventListener('mouseup',e=>{if(!on)return;on=false;sIdx(Math.round(ci-(e.clientY-sy)/ITEM_H));});
+}
+document.getElementById('drumTrigger').addEventListener('click',()=>{
+  dSY=curYear;dSM=curMonth;
+  buildDrum('drumYearInner',years,y=>`${y}年`,years.indexOf(dSY));
+  buildDrum('drumMonthInner',months,m=>`${m+1}月`,dSM);
+  makeDrum('drumYear','drumYearInner',years,v=>dSY=v);
+  makeDrum('drumMonth','drumMonthInner',months,v=>dSM=v);
+  document.getElementById('drumOverlay').classList.add('show');
+});
+document.getElementById('drumCancel').addEventListener('click',()=>document.getElementById('drumOverlay').classList.remove('show'));
+document.getElementById('drumOk').addEventListener('click',()=>{
+  document.getElementById('drumOverlay').classList.remove('show');
+  curYear=dSY;curMonth=dSM;renderCal();
+});
+document.getElementById('todayBtn').addEventListener('click',()=>{curYear=today.getFullYear();curMonth=today.getMonth();renderCal();});
+
+/* ── ADMIN ── */
 ALL_TAGS.forEach(t=>{
-  const btn=document.createElement('button');
-  btn.className='tag-pick-btn';btn.textContent=t;btn.dataset.tag=t;btn.type='button';
+  const btn=document.createElement('button');btn.className='tag-pick-btn';btn.textContent=t;btn.dataset.tag=t;btn.type='button';
   btn.addEventListener('click',()=>btn.classList.toggle('on'));
   document.getElementById('tags-pick').appendChild(btn);
 });
 document.getElementById('submit-btn').addEventListener('click',()=>{
-  const title=document.getElementById('f-title').value.trim();
-  const date=document.getElementById('f-date').value;
+  const title=document.getElementById('f-title').value.trim(),date=document.getElementById('f-date').value;
   if(!title||!date){alert('タイトルと発売日は必須です');return;}
   const selTags=[...document.querySelectorAll('.tag-pick-btn.on')].map(b=>b.dataset.tag);
-  const now=new Date();
-  const ts=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  books.push({id:Date.now(),title,
-    author:document.getElementById('f-author').value.trim(),
-    publisher:document.getElementById('f-publisher').value.trim(),
-    date,tags:selTags,
-    img:document.getElementById('f-img').value.trim(),
-    amazon:document.getElementById('f-amazon').value.trim(),
-    isbn:document.getElementById('f-isbn').value.trim(),
-    created:ts,updated:ts});
+  const now=new Date(),ts=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  books.push({id:Date.now(),title,author:document.getElementById('f-author').value.trim(),publisher:document.getElementById('f-publisher').value.trim(),date,tags:selTags,img:document.getElementById('f-img').value.trim(),amazon:document.getElementById('f-amazon').value.trim(),isbn:document.getElementById('f-isbn').value.trim(),created:ts,updated:ts});
   saveBooks();
   ['f-title','f-author','f-publisher','f-img','f-amazon','f-isbn'].forEach(id=>document.getElementById(id).value='');
   document.querySelectorAll('.tag-pick-btn.on').forEach(b=>b.classList.remove('on'));
-  alert('登録しました');renderCalendar();
+  alert('登録しました');renderCal();
 });
 </script>
 </body>

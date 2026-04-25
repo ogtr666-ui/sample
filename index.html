@@ -54,7 +54,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .drum-caret.open{transform:rotate(180deg);}
 
 /* ─── 年月ピッカー (selectベース) ─── */
-.month-picker-wrap{display:flex;align-items:center;gap:6px;}
+.month-picker-wrap{display:flex;align-items:center;gap:4px;}
 .month-select{
   font-size:17px;font-weight:700;letter-spacing:-0.5px;
   color:var(--text);font-family:var(--font);
@@ -247,8 +247,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
     <!-- 年月ヘッダー -->
     <div class="cal-header">
       <div class="month-picker-wrap">
-        <select class="month-select" id="yearSelect"></select>
-        <select class="month-select" id="monthSelect"></select>
+        <select class="month-select" id="ymSelect"></select>
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
     </div>
@@ -449,32 +448,24 @@ function showTabBar(){tabBar.classList.remove('hidden')}
 
 /* ── YEAR/MONTH PICKER ── */
 function buildSelects(){
-  const ySel=document.getElementById('yearSelect');
-  const mSel=document.getElementById('monthSelect');
-  ySel.innerHTML='';
+  const sel=document.getElementById('ymSelect');
+  sel.innerHTML='';
   for(let y=2020;y<=2030;y++){
-    const o=document.createElement('option');
-    o.value=y;o.textContent=`${y}年`;
-    if(y===curYear)o.selected=true;
-    ySel.appendChild(o);
-  }
-  mSel.innerHTML='';
-  for(let m=0;m<12;m++){
-    const o=document.createElement('option');
-    o.value=m;o.textContent=`${m+1}月`;
-    if(m===curMonth)o.selected=true;
-    mSel.appendChild(o);
+    for(let m=0;m<12;m++){
+      const o=document.createElement('option');
+      o.value=`${y}-${m}`;
+      o.textContent=`${y}年${m+1}月`;
+      if(y===curYear&&m===curMonth)o.selected=true;
+      sel.appendChild(o);
+    }
   }
 }
 function syncSelects(){
-  document.getElementById('yearSelect').value=curYear;
-  document.getElementById('monthSelect').value=curMonth;
+  document.getElementById('ymSelect').value=`${curYear}-${curMonth}`;
 }
-document.getElementById('yearSelect').addEventListener('change',e=>{
-  curYear=parseInt(e.target.value);renderCal();
-});
-document.getElementById('monthSelect').addEventListener('change',e=>{
-  curMonth=parseInt(e.target.value);renderCal();
+document.getElementById('ymSelect').addEventListener('change',e=>{
+  const[y,m]=e.target.value.split('-').map(Number);
+  curYear=y;curMonth=m;renderCal();
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{
   curYear=today.getFullYear();curMonth=today.getMonth();syncSelects();renderCal();
@@ -691,31 +682,50 @@ function setDetailContent(b){
 }
 
 /* ── SWIPE TO CLOSE ── */
-function enableSwipe(sheetEl,closeFn){
+const OVERLAY_OPACITY = 0.18; // --overlay と同値
+
+function enableSwipe(sheetEl, closeFn, overlayEl){
   let sy=0,dy=0,t0=0,on=false,moved=false;
   sheetEl.addEventListener('touchstart',e=>{
     let el=e.target;
     while(el&&el!==sheetEl){if(el.scrollTop>0&&el.scrollHeight>el.clientHeight)return;el=el.parentElement;}
     on=true;moved=false;dy=0;sy=e.touches[0].clientY;t0=Date.now();
     sheetEl.style.transition='none';
+    if(overlayEl) overlayEl.style.transition='none';
   },{passive:true});
   sheetEl.addEventListener('touchmove',e=>{
-    if(!on)return;const d=e.touches[0].clientY-sy;
-    if(d>5){moved=true;dy=d;sheetEl.style.transform=`translateY(${d}px)`;}
+    if(!on)return;
+    const d=e.touches[0].clientY-sy;
+    if(d>5){
+      moved=true;dy=d;
+      sheetEl.style.transform=`translateY(${d}px)`;
+      // シートの移動割合に応じてoverlay opacityを下げる
+      if(overlayEl){
+        const ratio=Math.min(d/sheetEl.offsetHeight,1);
+        overlayEl.style.opacity=OVERLAY_OPACITY*(1-ratio);
+      }
+    }
     if(e.cancelable)e.preventDefault();
   },{passive:false});
   sheetEl.addEventListener('touchend',()=>{
     if(!on)return;on=false;
     const vel=dy/(Date.now()-t0);
-    // 離した瞬間だけ同じイージングで戻す/閉じる
+    const closing=moved&&(dy>sheetEl.offsetHeight*0.25||vel>0.4);
+    // シートとoverlayを同じイージングで揃える
     sheetEl.style.transition='transform 0.48s cubic-bezier(0.23,1,0.32,1)';
     sheetEl.style.transform='';
-    if(moved&&(dy>sheetEl.offsetHeight*0.25||vel>0.4))closeFn();
+    if(overlayEl){
+      overlayEl.style.transition='opacity 0.48s cubic-bezier(0.23,1,0.32,1)';
+      overlayEl.style.opacity = closing ? '0' : OVERLAY_OPACITY;
+      // 閉じ完了後にCSSクラスで管理し直す
+      if(!closing) setTimeout(()=>{ overlayEl.style.opacity=''; overlayEl.style.transition=''; },480);
+    }
+    if(closing) closeFn();
     dy=0;
   });
 }
-enableSwipe(dateSheet,closeDate);
-enableSwipe(detailSheet,closeDetail);
+enableSwipe(dateSheet, closeDate, overlay);
+enableSwipe(detailSheet, closeDetail, document.getElementById('detail-overlay'));
 
 /* ── ADMIN: グループ化タグ ── */
 const tagPickGrouped=document.getElementById('tags-pick-grouped');

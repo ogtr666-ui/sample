@@ -704,13 +704,19 @@ const OVERLAY_OPACITY = 0.18;
 let rafId = null;
 
 function getSheetProgress(sheetEl){
-  // translateY(Xpx) を読んで、0=全開(progress=1), 100%=全閉(progress=0) を返す
-  const h = sheetEl.offsetHeight;
-  if(!h) return 0;
+  // シートが移動する距離 = window.innerHeight - sheetのtop位置
+  const rect = sheetEl.getBoundingClientRect();
+  // 閉じた状態: translateY=100% (画面外), 開いた状態: translateY=0
+  // getBoundingClientRect().top は translateY 込みの値なので、
+  // 開いた状態での top を sheetEl の CSS top から取得する
+  const computedTop = parseFloat(window.getComputedStyle(sheetEl).top) || 0;
+  const travelDist = window.innerHeight - computedTop;
+  if(!travelDist) return 0;
   const style = window.getComputedStyle(sheetEl);
   const mat = new DOMMatrix(style.transform);
-  const ty = mat.m42; // translateY値(px)
-  return Math.max(0, Math.min(1, 1 - ty / h));
+  const ty = mat.m42;
+  // ty=0 → progress=1 (全開), ty=travelDist → progress=0 (全閉)
+  return Math.max(0, Math.min(1, 1 - ty / travelDist));
 }
 
 function startOverlaySync(sheetEl, overlayEl, targetOpacity){

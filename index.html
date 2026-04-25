@@ -13,36 +13,28 @@
   --sheet-bg:#fff;--handle:#ddd;
   --overlay:rgba(0,0,0,0.32);
   --sun:#e5503a;--sat:#3a7ee5;
-  --shadow:0 2px 8px rgba(0,0,0,0.09);
   --r:10px;--rs:20px;
-  --dur:0.32s;
+  --dur:0.3s;
   --tab-h:56px;
   --header-h:48px;
   --week-h:30px;
+  --drum-h:260px; /* ドラムピッカーの高さ */
 }
-html,body{height:100%;overflow:hidden;touch-action:none;}
+html,body{height:100%;overflow:hidden;touch-action:pan-y;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;display:flex;flex-direction:column;}
 
-/* ─── BOTTOM TAB BAR ─── */
+/* ─── TAB BAR ─── */
 .tab-bar{
-  display:flex;align-items:stretch;
-  background:var(--bg);
-  border-top:0.5px solid var(--border2);
-  height:var(--tab-h);
-  flex-shrink:0;
-  order:2;
-  position:relative;z-index:10;
-  transition:opacity var(--dur) ease, transform var(--dur) ease;
+  display:flex;align-items:stretch;background:var(--bg);
+  border-top:0.5px solid var(--border2);height:var(--tab-h);
+  flex-shrink:0;order:2;position:relative;z-index:10;
+  transition:opacity var(--dur) ease,transform var(--dur) ease;
 }
-.tab-bar.hidden{
-  opacity:0;pointer-events:none;transform:translateY(100%);
-}
+.tab-bar.hidden{opacity:0;pointer-events:none;transform:translateY(100%);}
 .tab{
-  flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--text3);
-  border-top:2px solid transparent;
-  transition:color 0.15s;
-  user-select:none;
+  flex:1;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;color:var(--text3);border-top:2px solid transparent;
+  transition:color 0.15s;user-select:none;
 }
 .tab.active{color:var(--text);border-top-color:var(--text);}
 .tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
@@ -55,18 +47,83 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 /* ─── CAL HEADER ─── */
 .cal-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px 7px;
-  background:var(--bg);flex-shrink:0;height:var(--header-h);
-  border-bottom:0.5px solid var(--border);
+  padding:10px 14px 7px;background:var(--bg);flex-shrink:0;
+  height:var(--header-h);border-bottom:0.5px solid var(--border);
+  position:relative;z-index:5;
 }
 .today-btn{
   font-size:11px;font-weight:600;color:var(--text2);
   border:0.5px solid #ddd;border-radius:6px;
   padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);
 }
-.drum-trigger{display:flex;align-items:center;gap:2px;cursor:pointer;}
+.drum-trigger{display:flex;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
 .drum-label{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
-.drum-caret{font-size:10px;color:var(--text3);}
+.drum-caret{font-size:10px;color:var(--text3);transition:transform 0.2s;}
+.drum-caret.open{transform:rotate(180deg);}
+
+/* ─── iOS風ドラムロール (上から落下) ─── */
+.drum-picker-wrap{
+  position:absolute;top:var(--header-h);left:0;right:0;
+  background:#fff;
+  border-bottom:0.5px solid var(--border2);
+  z-index:400;
+  overflow:hidden;
+  max-height:0;
+  transition:max-height var(--dur) cubic-bezier(0.4,0,0.2,1),
+             box-shadow var(--dur) ease;
+  box-shadow:none;
+}
+.drum-picker-wrap.open{
+  max-height:var(--drum-h);
+  box-shadow:0 8px 24px rgba(0,0,0,0.12);
+}
+.drum-picker-inner{
+  display:flex;flex-direction:column;
+  height:var(--drum-h);
+}
+.drum-cols{
+  flex:1;display:flex;justify-content:center;align-items:stretch;
+  position:relative;overflow:hidden;
+}
+/* 中央選択ライン */
+.drum-cols::before,.drum-cols::after{
+  content:'';position:absolute;left:20px;right:20px;height:1px;
+  background:var(--border2);z-index:2;pointer-events:none;
+}
+.drum-cols::before{top:calc(50% - 22px);}
+.drum-cols::after{top:calc(50% + 21px);}
+/* 上下フェード */
+.drum-fade-top,.drum-fade-bottom{
+  position:absolute;left:0;right:0;height:80px;z-index:1;pointer-events:none;
+}
+.drum-fade-top{top:0;background:linear-gradient(to bottom,rgba(255,255,255,0.95),transparent);}
+.drum-fade-bottom{bottom:0;background:linear-gradient(to top,rgba(255,255,255,0.95),transparent);}
+.drum-col{
+  width:140px;overflow:hidden;position:relative;
+  cursor:grab;touch-action:none;
+}
+.drum-col-inner{
+  display:flex;flex-direction:column;
+  will-change:transform;
+}
+.drum-item{
+  height:44px;display:flex;align-items:center;justify-content:center;
+  font-size:18px;font-weight:400;color:var(--text3);
+  flex-shrink:0;user-select:none;
+  transition:color 0.12s,font-weight 0.12s;
+}
+.drum-item.sel{color:var(--text);font-weight:600;font-size:20px;}
+.drum-sep-line{width:1px;background:var(--border2);margin:16px 0;flex-shrink:0;}
+.drum-actions{
+  display:flex;border-top:0.5px solid var(--border);
+  flex-shrink:0;
+}
+.drum-btn{
+  flex:1;padding:12px 0;border:none;background:none;
+  font-size:15px;font-family:var(--font);cursor:pointer;
+}
+.drum-btn.ok{font-weight:700;color:var(--text);border-left:0.5px solid var(--border);}
+.drum-btn.cancel{color:var(--text3);}
 
 /* ─── WEEKDAYS ─── */
 .weekdays{
@@ -77,15 +134,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .weekday:first-child{color:var(--sun);}
 .weekday:last-child{color:var(--sat);}
 
-/* ─── CALENDAR ─── */
+/* ─── CALENDAR (指追従スワイプ) ─── */
 .cal-viewport{flex:1;overflow:hidden;position:relative;}
-.cal-slider{display:flex;height:100%;transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);will-change:transform;}
+.cal-track{
+  display:flex;height:100%;
+  /* transition はJS側で動的に付け外し */
+  will-change:transform;
+}
 .cal-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
   height:56px;border-radius:var(--r);padding:6px 5px 4px;
-  font-size:13px;font-weight:500;
-  background:var(--cell-bg);cursor:pointer;
+  font-size:13px;font-weight:500;background:var(--cell-bg);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;
   transition:background 0.1s;
 }
@@ -97,19 +157,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .dot{width:5px;height:5px;background:var(--dot);border-radius:50%;flex-shrink:0;}
 
-/* ─── SEARCH ─── */
+/* ─── SEARCH / ADMIN ─── */
 .center-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);font-size:14px;text-align:center;padding:32px;}
 .center-msg .big{font-size:36px;}
-
-/* ─── ADMIN ─── */
-.admin-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;}
-.admin-form{padding:16px 16px 60px;display:flex;flex-direction:column;gap:14px;}
-.form-group{display:flex;flex-direction:column;gap:4px;}
+.admin-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.admin-form{padding:16px;display:flex;flex-direction:column;gap:14px;}
+.form-group{display:flex;flex-direction:column;gap:4px;width:100%;}
 .form-label{font-size:11px;font-weight:600;color:var(--text2);}
 .form-input{
-  width:100%;background:#f4f4f4;border:0.5px solid #e0e0e0;
-  border-radius:8px;padding:10px 12px;font-size:13px;color:var(--text);
-  font-family:var(--font);outline:none;display:block;
+  /* width:100% + box-sizing:border-box で確実に揃える */
+  box-sizing:border-box;width:100%;
+  background:#f4f4f4;border:0.5px solid #e0e0e0;
+  border-radius:8px;padding:10px 12px;
+  font-size:16px; /* iOS zoom防止 */
+  color:var(--text);font-family:var(--font);outline:none;
+  -webkit-appearance:none;appearance:none;
+  display:block;
 }
 .form-input:focus{border-color:#aaa;}
 .tags-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
@@ -119,49 +182,40 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   color:var(--text2);font-family:var(--font);transition:all 0.1s;
 }
 .tag-pick-btn.on{background:#111;color:#fff;border-color:#111;}
-.submit-btn{background:#111;color:#fff;border:none;border-radius:10px;padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);}
+.submit-btn{
+  box-sizing:border-box;width:100%;
+  background:#111;color:#fff;border:none;border-radius:10px;
+  padding:13px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);
+  margin-bottom:40px;
+}
 
 /* ─── OVERLAY ─── */
 #overlay{
-  position:fixed;inset:0;
-  background:var(--overlay);z-index:100;
-  opacity:0;pointer-events:none;
-  transition:opacity var(--dur) ease;
+  position:fixed;inset:0;background:var(--overlay);z-index:100;
+  opacity:0;pointer-events:none;transition:opacity var(--dur) ease;
 }
 #overlay.active{opacity:1;pointer-events:all;}
 
 /* ─── SHEETS ─── */
 .sheet{
-  position:fixed;
-  left:0;width:100%;
-  bottom:0;
+  position:fixed;left:0;width:100%;bottom:0;
   transform:translateY(100%);
-  background:var(--sheet-bg);
-  border-radius:var(--rs) var(--rs) 0 0;
+  background:var(--sheet-bg);border-radius:var(--rs) var(--rs) 0 0;
   transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);
-  will-change:transform;
-  display:flex;flex-direction:column;
-  overflow:hidden;
+  will-change:transform;display:flex;flex-direction:column;overflow:hidden;
 }
 .sheet.open{transform:translateY(0);}
-
-#date-sheet{
-  z-index:200;
-  top:calc(var(--header-h) + var(--week-h) + 6px);
-}
-#detail-sheet{
-  z-index:300;
-  top:40px;
-}
+#date-sheet{z-index:200;top:calc(var(--header-h) + var(--week-h) + 6px);}
+#detail-sheet{z-index:300;top:40px;}
 
 .handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
 .handle{width:40px;height:4px;background:var(--handle);border-radius:2px;}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:4px 16px 10px;flex-shrink:0;}
 .sheet-title{font-size:15px;font-weight:700;}
 
-/* ─── DATE VIEWPORT ─── */
+/* ─── DATE SHEET (指追従スワイプ) ─── */
 .date-viewport{flex:1;overflow:hidden;position:relative;}
-.date-slider{display:flex;height:100%;transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);will-change:transform;}
+.date-track{display:flex;height:100%;will-change:transform;}
 .date-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
 
 /* ─── VIEW TOGGLE ─── */
@@ -169,24 +223,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── LIST / CARD ─── */
 .list-view{display:flex;flex-direction:column;}
-.list-item{
-  display:flex;align-items:center;gap:12px;padding:10px 16px;
-  border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;
-}
+.list-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
 .list-item:last-child{border-bottom:none;}
 .list-item:active{background:#fafafa;}
-.thumb{
-  width:52px;height:72px;background:#e8e8e8;border-radius:4px;flex-shrink:0;
-  overflow:hidden;display:flex;align-items:center;justify-content:center;
-  font-size:9px;font-weight:600;color:#888;text-align:center;line-height:1.3;padding:3px;
-}
+.thumb{width:52px;height:72px;background:#e8e8e8;border-radius:4px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#888;text-align:center;line-height:1.3;padding:3px;}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block;}
 .list-info{flex:1;min-width:0;}
 .list-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
 .tags{display:flex;gap:4px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;}
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;}
-.card{aspect-ratio:2/3;background:#eee;border-radius:var(--r);box-shadow:var(--shadow);overflow:hidden;cursor:pointer;position:relative;transition:transform 0.12s;}
+.card{aspect-ratio:2/3;background:#eee;border-radius:var(--r);box-shadow:0 2px 8px rgba(0,0,0,0.09);overflow:hidden;cursor:pointer;position:relative;transition:transform 0.12s;}
 .card:active{transform:scale(0.97);}
 .card img{width:100%;height:100%;object-fit:cover;display:block;}
 .card-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ebebeb;font-size:10px;font-weight:600;color:#888;text-align:center;padding:8px;line-height:1.4;}
@@ -206,12 +253,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .detail-cover-main img{height:100%;width:auto;object-fit:contain;display:block;}
 .detail-cover-main .cover-ph{width:110px;height:170px;display:flex;align-items:center;justify-content:center;background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;}
 .detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;}
-.detail-title{
-  font-size:17px;font-weight:700;line-height:1.55;
-  padding:16px 0 12px;
-  border-bottom:0.5px solid var(--border);
-  margin-bottom:14px;
-}
+.detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 12px;border-bottom:0.5px solid var(--border);margin-bottom:14px;}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .meta-rows{display:flex;flex-direction:column;}
@@ -221,44 +263,50 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .meta-val{color:var(--text);flex:1;}
 .amazon-btn{display:block;margin-top:14px;background:#FF9900;color:#111;text-align:center;text-decoration:none;font-weight:700;font-size:13px;padding:11px;border-radius:9px;}
 .timestamps{margin-top:14px;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
-
-/* ─── DRUM ─── */
-.drum-overlay{position:fixed;inset:0;z-index:500;background:rgba(0,0,0,0.4);display:none;align-items:flex-end;justify-content:center;}
-.drum-overlay.show{display:flex;}
-.drum-sheet{width:100%;background:#fff;border-radius:20px 20px 0 0;padding:16px 0 32px;}
-.drum-sheet-title{text-align:center;font-size:14px;font-weight:700;margin-bottom:12px;}
-.drum-pickers{display:flex;justify-content:center;}
-.drum-col{width:120px;height:200px;overflow:hidden;position:relative;cursor:grab;}
-.drum-col-inner{display:flex;flex-direction:column;transition:transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94);will-change:transform;}
-.drum-item{height:40px;display:flex;align-items:center;justify-content:center;font-size:17px;font-weight:500;color:var(--text3);flex-shrink:0;user-select:none;transition:color 0.15s,font-size 0.15s;}
-.drum-item.selected{color:var(--text);font-size:20px;font-weight:700;}
-.drum-center-line{position:absolute;left:8px;right:8px;top:80px;height:40px;border-top:1px solid var(--border2);border-bottom:1px solid var(--border2);pointer-events:none;}
-.drum-sep{width:1px;background:var(--border2);margin:20px 0;}
-.drum-actions{display:flex;gap:10px;padding:16px 16px 0;}
-.drum-btn{flex:1;padding:12px;border-radius:10px;border:none;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);}
-.drum-btn.cancel{background:#f2f2f2;color:var(--text2);}
-.drum-btn.ok{background:#111;color:#fff;}
 </style>
 </head>
 <body>
 
 <div class="pages">
-  <!-- カレンダー -->
+
+  <!-- カレンダータブ -->
   <div class="tab-page active" id="tab-calendar">
     <div class="cal-header">
       <div class="drum-trigger" id="drumTrigger">
         <span class="drum-label" id="drumLabel">2026年4月</span>
-        <span class="drum-caret">▾</span>
+        <span class="drum-caret" id="drumCaret">▾</span>
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
     </div>
+
+    <!-- iOSスタイル ドラムロール (上から展開) -->
+    <div class="drum-picker-wrap" id="drumPickerWrap">
+      <div class="drum-picker-inner">
+        <div class="drum-cols" id="drumCols">
+          <div class="drum-fade-top"></div>
+          <div class="drum-fade-bottom"></div>
+          <div class="drum-col" id="drumColYear">
+            <div class="drum-col-inner" id="drumInnerYear"></div>
+          </div>
+          <div class="drum-sep-line"></div>
+          <div class="drum-col" id="drumColMonth">
+            <div class="drum-col-inner" id="drumInnerMonth"></div>
+          </div>
+        </div>
+        <div class="drum-actions">
+          <button class="drum-btn cancel" id="drumCancel">キャンセル</button>
+          <button class="drum-btn ok" id="drumOk">決定</button>
+        </div>
+      </div>
+    </div>
+
     <div class="weekdays">
       <div class="weekday">日</div><div class="weekday">月</div><div class="weekday">火</div>
       <div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div>
       <div class="weekday">土</div>
     </div>
     <div class="cal-viewport" id="calViewport">
-      <div class="cal-slider" id="calSlider">
+      <div class="cal-track" id="calTrack">
         <div class="cal-panel"><div class="calendar" id="calGridPrev"></div></div>
         <div class="cal-panel"><div class="calendar" id="calGridCurr"></div></div>
         <div class="cal-panel"><div class="calendar" id="calGridNext"></div></div>
@@ -266,14 +314,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
     </div>
   </div>
 
-  <!-- 検索 -->
+  <!-- 検索タブ -->
   <div class="tab-page" id="tab-search">
     <div class="center-msg"><div class="big">🔍</div><div>検索機能は近日公開予定です</div></div>
   </div>
 
-  <!-- 管理 -->
+  <!-- 管理タブ -->
   <div class="tab-page" id="tab-admin">
-    <div class="admin-scroll">
+    <div class="admin-scroll" id="adminScroll">
       <div class="admin-form">
         <div class="form-group"><label class="form-label">タイトル *</label><input class="form-input" id="f-title" type="text" placeholder="参考書のタイトル"></div>
         <div class="form-group"><label class="form-label">著者</label><input class="form-input" id="f-author" type="text" placeholder="著者名"></div>
@@ -309,13 +357,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <div class="sheet" id="date-sheet">
   <div class="handle-wrap"><div class="handle"></div></div>
   <div class="sheet-header">
-    <div class="sheet-title" id="sheet-date-label"></div>
+    <div class="sheet-title" id="sheetDateLabel"></div>
     <button class="view-toggle-btn" id="viewToggle">
       <svg viewBox="0 0 16 16" fill="#666" width="16" height="16"><rect x="1" y="2" width="14" height="2" rx="1"/><rect x="1" y="7" width="14" height="2" rx="1"/><rect x="1" y="12" width="14" height="2" rx="1"/></svg>
     </button>
   </div>
   <div class="date-viewport">
-    <div class="date-slider" id="dateSlider">
+    <div class="date-track" id="dateTrack">
       <div class="date-panel" id="datePanelPrev"></div>
       <div class="date-panel" id="datePanelCurr"></div>
       <div class="date-panel" id="datePanelNext"></div>
@@ -327,30 +375,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <div class="sheet" id="detail-sheet">
   <div class="handle-wrap"><div class="handle"></div></div>
   <div class="sheet-header" style="padding-bottom:4px;">
-    <div style="font-size:13px;font-weight:500;color:var(--text3);" id="detail-date-label"></div>
+    <div style="font-size:13px;font-weight:500;color:var(--text3);" id="detailDateLabel"></div>
   </div>
-  <div class="detail-cover-zone" id="detail-cover-zone"></div>
-  <div class="detail-body" id="detail-body"></div>
-</div>
-
-<!-- ドラムロール -->
-<div class="drum-overlay" id="drumOverlay">
-  <div class="drum-sheet">
-    <div class="drum-sheet-title">年月を選択</div>
-    <div class="drum-pickers">
-      <div class="drum-col" id="drumYear"><div class="drum-col-inner" id="drumYearInner"></div><div class="drum-center-line"></div></div>
-      <div class="drum-sep"></div>
-      <div class="drum-col" id="drumMonth"><div class="drum-col-inner" id="drumMonthInner"></div><div class="drum-center-line"></div></div>
-    </div>
-    <div class="drum-actions">
-      <button class="drum-btn cancel" id="drumCancel">キャンセル</button>
-      <button class="drum-btn ok" id="drumOk">決定</button>
-    </div>
-  </div>
+  <div class="detail-cover-zone" id="detailCoverZone"></div>
+  <div class="detail-body" id="detailBody"></div>
 </div>
 
 <script>
-/* ── TAG CONFIG ── */
+/* ══════════════════════════════════════════
+   CONSTANTS & CONFIG
+══════════════════════════════════════════ */
 const ALL_TAGS=['英語','数学','現代文','古文','漢文','物理','化学','生物','地学','歴史総合','日本史','世界史','地理','公共','政治経済','倫理','情報','小論文','共通テスト','過去問（赤本）'];
 const TAG_COLOR={
   '英語':['#fdeaea','#c0392b'],'数学':['#e8f0fe','#1a56c4'],
@@ -361,13 +395,21 @@ const TAG_COLOR={
   '情報':['#fce4ec','#c2185b'],'小論文':['#e0f7f4','#00796b'],
   '共通テスト':['#efebe9','#6d4c41'],'過去問（赤本）':['#f5f5f5','#757575'],
 };
-function tagStyle(t){const c=TAG_COLOR[t];return c?`background:${c[0]};color:${c[1]};`:'';};
+const HOLIDAYS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
+const DRUM_ITEM_H = 44;
+const DRUM_VISIBLE = 3; // 上下に見える数
+const DRUM_PAD = DRUM_VISIBLE; // padding items
 
-/* ── HOLIDAYS ── */
-const HOLIDAYS=new Set(['2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23','2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-24','2025-12-23']);
+function tagStyle(t){const c=TAG_COLOR[t];return c?`background:${c[0]};color:${c[1]};`:''}
+function ds(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
+function addM(y,m,delta){let nm=m+delta,ny=y;while(nm<0){nm+=12;ny--}while(nm>11){nm-=12;ny++}return{y:ny,m:nm}}
+function addDays(s,n){const d=new Date(s);d.setDate(d.getDate()+n);return ds(d)}
+function fmtDate(s){const[y,m,d]=s.split('-');return`${y}年${parseInt(m)}月${parseInt(d)}日`}
 
-/* ── DATA ── */
-let books=JSON.parse(localStorage.getItem('tbcal5')||'null');
+/* ══════════════════════════════════════════
+   DATA
+══════════════════════════════════════════ */
+let books=JSON.parse(localStorage.getItem('tbcal6')||'null');
 if(!books){
   books=[
     {id:1,title:'英語長文ハイパートレーニング レベル3',author:'安河内哲也',publisher:'桐原書店',date:'2026-04-05',tags:['英語'],img:'',amazon:'',isbn:'',created:'2026/4/10 09:00',updated:'2026/4/10 09:00'},
@@ -379,96 +421,268 @@ if(!books){
     {id:7,title:'物理のエッセンス 力学・波動',author:'浜島清利',publisher:'河合出版',date:'2026-04-25',tags:['物理'],img:'',amazon:'',isbn:'',created:'2026/4/16 10:00',updated:'2026/4/16 10:00'},
     {id:8,title:'古文上達 基礎編 読解と演習45',author:'Z会出版編集部',publisher:'Z会',date:'2026-04-25',tags:['古文'],img:'',amazon:'',isbn:'',created:'2026/4/16 12:00',updated:'2026/4/16 12:00'},
   ];
-  localStorage.setItem('tbcal5',JSON.stringify(books));
+  localStorage.setItem('tbcal6',JSON.stringify(books));
 }
-function saveBooks(){localStorage.setItem('tbcal5',JSON.stringify(books));}
+function saveBooks(){localStorage.setItem('tbcal6',JSON.stringify(books))}
 
-/* ── STATE ── */
+/* ══════════════════════════════════════════
+   STATE
+══════════════════════════════════════════ */
 const today=new Date();
 const todayStr=ds(today);
 let curYear=2026,curMonth=3;
-let viewMode=localStorage.getItem('tbcal5-view')||'list';
+let viewMode=localStorage.getItem('tbcal6-view')||'list';
 let activeDate='';
 let dateOpen=false,detailOpen=false;
+let drumOpen=false;
+let drumSelYear=2026,drumSelMonth=3;
 
-function ds(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`;}
-function addM(y,m,d){let nm=m+d,ny=y;while(nm<0){nm+=12;ny--;}while(nm>11){nm-=12;ny++;}return{y:ny,m:nm};}
-function addDays(s,n){const d=new Date(s);d.setDate(d.getDate()+n);return ds(d);}
-
-/* ── TABS ── */
+/* ══════════════════════════════════════════
+   TABS
+══════════════════════════════════════════ */
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.tab-page').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('tab-'+t.dataset.tab).classList.add('active');
+    // タブ切替時にスクロール位置をリセット
+    const page=document.getElementById('tab-'+t.dataset.tab);
+    const scroll=page.querySelector('.admin-scroll,.cal-panel,.center-msg');
+    if(scroll)scroll.scrollTop=0;
+    // 管理タブの場合は admin-scroll をリセット
+    document.getElementById('adminScroll').scrollTop=0;
   });
 });
-
-/* ── TAB BAR HIDE/SHOW ── */
 const tabBar=document.getElementById('tabBar');
-function hideTabBar(){tabBar.classList.add('hidden');}
-function showTabBar(){tabBar.classList.remove('hidden');}
+function hideTabBar(){tabBar.classList.add('hidden')}
+function showTabBar(){tabBar.classList.remove('hidden')}
 
-/* ── CALENDAR ── */
+/* ══════════════════════════════════════════
+   IOS DRUM ROLLER
+   - max-height アニメーションで上から展開
+   - 指に追従する慣性スクロール
+══════════════════════════════════════════ */
+const years=[];for(let y=2020;y<=2030;y++)years.push(y);
+const months=Array.from({length:12},(_,i)=>i);
+
+function buildDrumItems(innerId,items,labelFn,selIdx){
+  const inner=document.getElementById(innerId);
+  inner.innerHTML='';
+  // top padding
+  for(let i=0;i<DRUM_PAD;i++){
+    const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);
+  }
+  items.forEach((item,i)=>{
+    const d=document.createElement('div');
+    d.className='drum-item'+(i===selIdx?' sel':'');
+    d.textContent=labelFn(item);
+    inner.appendChild(d);
+  });
+  // bottom padding
+  for(let i=0;i<DRUM_PAD;i++){
+    const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);
+  }
+  inner.style.transform=`translateY(${-selIdx*DRUM_ITEM_H}px)`;
+  updateDrumSel(inner,selIdx);
+}
+
+function updateDrumSel(inner,idx){
+  inner.querySelectorAll('.drum-item').forEach((d,i)=>{
+    d.classList.toggle('sel',i-DRUM_PAD===idx);
+  });
+}
+
+function makeDrum(colId,innerId,items,onSelect){
+  const col=document.getElementById(colId);
+  const inner=document.getElementById(innerId);
+  let startY=0,startT=0,curIdx=0,dragging=false,lastY=0,velY=0;
+
+  function clamp(i){return Math.max(0,Math.min(items.length-1,i));}
+  function getIdx(){return Math.round(-getTranslateY(inner)/DRUM_ITEM_H);}
+  function setIdx(idx,animate=true){
+    idx=clamp(idx);curIdx=idx;
+    setTranslateY(inner,-idx*DRUM_ITEM_H,animate?'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)':'none');
+    updateDrumSel(inner,idx);
+    onSelect(items[idx]);
+  }
+
+  function onStart(e){
+    dragging=true;
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    startY=y;lastY=y;velY=0;startT=Date.now();
+    curIdx=getIdx();
+    col.style.cursor='grabbing';
+    inner.style.transition='none';
+    e.preventDefault();
+  }
+  function onMove(e){
+    if(!dragging)return;
+    const y=e.touches?e.touches[0].clientY:e.clientY;
+    velY=y-lastY;lastY=y;
+    const dy=y-startY;
+    const rawIdx=curIdx-dy/DRUM_ITEM_H;
+    setTranslateY(inner,-clamp(rawIdx)*DRUM_ITEM_H+(-(rawIdx-clamp(rawIdx))*DRUM_ITEM_H*0.3),'none');
+    updateDrumSel(inner,Math.round(rawIdx));
+    e.preventDefault();
+  }
+  function onEnd(e){
+    if(!dragging)return;dragging=false;
+    col.style.cursor='grab';
+    const dy=(e.touches?e.changedTouches[0].clientY:e.clientY)-startY;
+    const vel=velY/DRUM_ITEM_H*6;
+    setIdx(Math.round(curIdx-dy/DRUM_ITEM_H-vel));
+  }
+  col.addEventListener('touchstart',onStart,{passive:false});
+  col.addEventListener('touchmove',onMove,{passive:false});
+  col.addEventListener('touchend',onEnd,{passive:true});
+  col.addEventListener('mousedown',onStart);
+  window.addEventListener('mousemove',e=>{if(dragging)onMove(e);});
+  window.addEventListener('mouseup',e=>{if(dragging)onEnd(e);});
+
+  return{setIdx};
+}
+
+function getTranslateY(el){
+  const t=el.style.transform;
+  const m=t.match(/translateY\(([^)]+)px\)/);
+  return m?parseFloat(m[1]):0;
+}
+function setTranslateY(el,y,transition){
+  el.style.transition=transition;
+  el.style.transform=`translateY(${y}px)`;
+}
+
+let drumYearCtrl,drumMonthCtrl;
+
+function openDrum(){
+  drumOpen=true;
+  drumSelYear=curYear;drumSelMonth=curMonth;
+  buildDrumItems('drumInnerYear',years,y=>`${y}年`,years.indexOf(drumSelYear));
+  buildDrumItems('drumInnerMonth',months,m=>`${m+1}月`,drumSelMonth);
+  drumYearCtrl=makeDrum('drumColYear','drumInnerYear',years,v=>drumSelYear=v);
+  drumMonthCtrl=makeDrum('drumColMonth','drumInnerMonth',months,v=>drumSelMonth=v);
+  document.getElementById('drumPickerWrap').classList.add('open');
+  document.getElementById('drumCaret').classList.add('open');
+}
+function closeDrum(){
+  drumOpen=false;
+  document.getElementById('drumPickerWrap').classList.remove('open');
+  document.getElementById('drumCaret').classList.remove('open');
+}
+document.getElementById('drumTrigger').addEventListener('click',()=>{
+  drumOpen?closeDrum():openDrum();
+});
+document.getElementById('drumCancel').addEventListener('click',closeDrum);
+document.getElementById('drumOk').addEventListener('click',()=>{
+  curYear=drumSelYear;curMonth=drumSelMonth;
+  closeDrum();renderCal();
+});
+document.getElementById('todayBtn').addEventListener('click',()=>{
+  curYear=today.getFullYear();curMonth=today.getMonth();renderCal();
+});
+
+/* ══════════════════════════════════════════
+   CALENDAR  — 指追従スワイプ
+══════════════════════════════════════════ */
 function buildGrid(el,y,m){
   el.innerHTML='';
   const first=new Date(y,m,1),last=new Date(y,m+1,0);
   const cells=Math.ceil((first.getDay()+last.getDate())/7)*7;
   for(let i=0;i<cells;i++){
     const d=new Date(y,m,i-first.getDay()+1);
-    const s=ds(d),isOther=d.getMonth()!==m,dow=d.getDay(),hol=HOLIDAYS.has(s);
+    const s=ds(d);
+    const isOther=d.getMonth()!==m,dow=d.getDay(),hol=HOLIDAYS.has(s);
     const hasB=books.some(b=>b.date===s);
     const div=document.createElement('div');
     let cls='day';
-    if(isOther)cls+=' other';
-    if(s===todayStr)cls+=' today';
+    if(isOther)cls+=' other';if(s===todayStr)cls+=' today';
     if(dow===0||hol)cls+=' sun';else if(dow===6)cls+=' sat';
     div.className=cls;
     div.innerHTML=`<div class="day-num">${d.getDate()}</div>${hasB?'<div class="dot"></div>':''}`;
-    div.addEventListener('click',()=>openDate(s));
+    div.addEventListener('click',()=>{if(dateOpen)return;openDate(s);});
     el.appendChild(div);
   }
 }
-function renderCal(anim=null){
+
+function renderCal(){
   const p=addM(curYear,curMonth,-1),n=addM(curYear,curMonth,1);
   buildGrid(document.getElementById('calGridPrev'),p.y,p.m);
   buildGrid(document.getElementById('calGridCurr'),curYear,curMonth);
   buildGrid(document.getElementById('calGridNext'),n.y,n.m);
   document.getElementById('drumLabel').textContent=`${curYear}年${curMonth+1}月`;
-  const sl=document.getElementById('calSlider');
-  if(anim){
-    sl.style.transition='none';
-    sl.style.transform=anim==='next'?'translateX(-200%)':'translateX(0%)';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      sl.style.transition=`transform var(--dur) cubic-bezier(0.32,0.72,0,1)`;
-      sl.style.transform='translateX(-100%)';
-    }));
-  }else{sl.style.transition='none';sl.style.transform='translateX(-100%)';}
+  // 中央パネルに即座に移動（アニメなし）
+  const track=document.getElementById('calTrack');
+  track.style.transition='none';
+  track.style.transform='translateX(-100%)';
 }
 renderCal();
 
-/* カレンダー横スワイプ */
+// カレンダー横スワイプ（指追従）
 (()=>{
   const vp=document.getElementById('calViewport');
-  let sx=0,sy=0,tr=false;
-  vp.addEventListener('touchstart',e=>{if(dateOpen)return;sx=e.touches[0].clientX;sy=e.touches[0].clientY;tr=true;},{passive:true});
+  const track=document.getElementById('calTrack');
+  const W=()=>vp.offsetWidth;
+  let sx=0,sy=0,tracking=false,dragging=false;
+
+  vp.addEventListener('touchstart',e=>{
+    if(dateOpen||drumOpen)return;
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+    tracking=true;dragging=false;
+    track.style.transition='none';
+  },{passive:true});
+
+  vp.addEventListener('touchmove',e=>{
+    if(!tracking)return;
+    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(!dragging){
+      if(Math.abs(dx)<Math.abs(dy))return; // 縦スクロール優先
+      dragging=true;
+    }
+    // -100% がベース（中央）、そこから dx だけずらす
+    const base=-W();
+    track.style.transform=`translateX(${base+dx}px)`;
+  },{passive:true});
+
   vp.addEventListener('touchend',e=>{
-    if(!tr)return;tr=false;
-    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>40){
-      if(dx<0){const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;renderCal('next');}
-      else{const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;renderCal('prev');}
+    if(!tracking)return;tracking=false;
+    if(!dragging){return;}
+    dragging=false;
+    const dx=e.changedTouches[0].clientX-sx;
+    const w=W();
+    track.style.transition=`transform 0.28s cubic-bezier(0.32,0.72,0,1)`;
+    if(Math.abs(dx)>w*0.2){
+      if(dx<0){
+        // 次月へ
+        track.style.transform=`translateX(${-w*2}px)`;
+        setTimeout(()=>{
+          const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;
+          renderCal();
+        },280);
+      }else{
+        // 前月へ
+        track.style.transform=`translateX(0px)`;
+        setTimeout(()=>{
+          const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;
+          renderCal();
+        },280);
+      }
+    }else{
+      // 元に戻す
+      track.style.transform=`translateX(${-w}px)`;
     }
   },{passive:true});
 })();
 
-/* ── SHEET OPEN/CLOSE ── */
+/* ══════════════════════════════════════════
+   SHEETS
+══════════════════════════════════════════ */
 const overlay=document.getElementById('overlay');
 const dateSheet=document.getElementById('date-sheet');
 const detailSheet=document.getElementById('detail-sheet');
 
 function openDate(s){
+  if(drumOpen)closeDrum();
   activeDate=s;
   setDateLabel(s);
   buildDatePanels(s);
@@ -494,36 +708,63 @@ function closeDetail(){
   detailOpen=false;detailSheet.classList.remove('open');
 }
 
-/* ── DATE SHEET ── */
+/* ══════════════════════════════════════════
+   DATE SHEET — 指追従スワイプ
+══════════════════════════════════════════ */
 function setDateLabel(s){
-  const[y,m,d]=s.split('-');
-  document.getElementById('sheet-date-label').textContent=`${y}年${parseInt(m)}月${parseInt(d)}日`;
+  document.getElementById('sheetDateLabel').textContent=fmtDate(s);
 }
-function buildDatePanels(s,anim=null){
+
+function buildDatePanels(s){
   activeDate=s;setDateLabel(s);
   renderDay(document.getElementById('datePanelPrev'),addDays(s,-1));
   renderDay(document.getElementById('datePanelCurr'),s);
   renderDay(document.getElementById('datePanelNext'),addDays(s,1));
-  const sl=document.getElementById('dateSlider');
-  if(anim){
-    sl.style.transition='none';
-    sl.style.transform=anim==='next'?'translateX(-200%)':'translateX(0%)';
-    requestAnimationFrame(()=>requestAnimationFrame(()=>{
-      sl.style.transition=`transform var(--dur) cubic-bezier(0.32,0.72,0,1)`;
-      sl.style.transform='translateX(-100%)';
-    }));
-  }else{sl.style.transition='none';sl.style.transform='translateX(-100%)';}
+  // 中央に即移動
+  const track=document.getElementById('dateTrack');
+  track.style.transition='none';
+  track.style.transform='translateX(-100%)';
 }
 
-/* 日付パネル横スワイプ */
+// 日付シート内横スワイプ（指追従）
 (()=>{
   const vp=document.querySelector('.date-viewport');
-  let sx=0,sy=0;
-  vp.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;},{passive:true});
+  const track=document.getElementById('dateTrack');
+  const W=()=>vp.offsetWidth;
+  let sx=0,sy=0,tracking=false,dragging=false;
+
+  vp.addEventListener('touchstart',e=>{
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+    tracking=true;dragging=false;
+    track.style.transition='none';
+  },{passive:true});
+
+  vp.addEventListener('touchmove',e=>{
+    if(!tracking)return;
+    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(!dragging){
+      if(Math.abs(dx)<Math.abs(dy))return;
+      dragging=true;
+    }
+    track.style.transform=`translateX(${-W()+dx}px)`;
+  },{passive:true});
+
   vp.addEventListener('touchend',e=>{
-    const dx=e.changedTouches[0].clientX-sx,dy=e.changedTouches[0].clientY-sy;
-    if(Math.abs(dx)>Math.abs(dy)&&Math.abs(dx)>50)
-      buildDatePanels(addDays(activeDate,dx<0?1:-1),dx<0?'next':'prev');
+    if(!tracking)return;tracking=false;
+    if(!dragging)return;dragging=false;
+    const dx=e.changedTouches[0].clientX-sx,w=W();
+    track.style.transition=`transform 0.28s cubic-bezier(0.32,0.72,0,1)`;
+    if(Math.abs(dx)>w*0.2){
+      if(dx<0){
+        track.style.transform=`translateX(${-w*2}px)`;
+        setTimeout(()=>buildDatePanels(addDays(activeDate,1)),280);
+      }else{
+        track.style.transform=`translateX(0px)`;
+        setTimeout(()=>buildDatePanels(addDays(activeDate,-1)),280);
+      }
+    }else{
+      track.style.transform=`translateX(${-w}px)`;
+    }
   },{passive:true});
 })();
 
@@ -533,8 +774,10 @@ const ICON_GRID=`<svg viewBox="0 0 16 16" fill="#666" width="16" height="16"><re
 function updToggle(){document.getElementById('viewToggle').innerHTML=viewMode==='list'?ICON_GRID:ICON_LIST;}
 updToggle();
 document.getElementById('viewToggle').addEventListener('click',e=>{
-  e.stopPropagation();viewMode=viewMode==='list'?'card':'list';
-  localStorage.setItem('tbcal5-view',viewMode);updToggle();buildDatePanels(activeDate);
+  e.stopPropagation();
+  viewMode=viewMode==='list'?'card':'list';
+  localStorage.setItem('tbcal6-view',viewMode);
+  updToggle();buildDatePanels(activeDate);
 });
 
 function renderDay(el,s){
@@ -565,44 +808,46 @@ function renderDay(el,s){
   });
 }
 
-/* ── DETAIL ── */
+/* ══════════════════════════════════════════
+   DETAIL  — 発売日は左上に表示済みなので本文から除外
+══════════════════════════════════════════ */
 function setDetailContent(b){
-  const[y,m,d]=b.date.split('-');
-  document.getElementById('detail-date-label').textContent=`${y}年${parseInt(m)}月${parseInt(d)}日発売`;
-  const zone=document.getElementById('detail-cover-zone');
-  if(b.img){
-    zone.innerHTML=`<div class="detail-cover-side">
-      <div class="cover-side-l"><img src="${b.img}" alt=""></div>
-      <div class="cover-side-center"><div class="detail-cover-main"><img src="${b.img}" alt="${b.title}"></div></div>
-      <div class="cover-side-r"><img src="${b.img}" alt=""></div>
-    </div>`;
-  }else{
-    zone.innerHTML=`<div class="detail-cover-side" style="background:#f0f0f0;">
-      <div class="cover-side-l"></div>
-      <div class="cover-side-center"><div class="detail-cover-main"><div class="cover-ph">${b.title.substring(0,12)}</div></div></div>
-      <div class="cover-side-r"></div>
-    </div>`;
-  }
+  document.getElementById('detailDateLabel').textContent=fmtDate(b.date)+'発売';
+  const zone=document.getElementById('detailCoverZone');
+  zone.innerHTML=b.img
+    ?`<div class="detail-cover-side">
+        <div class="cover-side-l"><img src="${b.img}" alt=""></div>
+        <div class="cover-side-center"><div class="detail-cover-main"><img src="${b.img}" alt="${b.title}"></div></div>
+        <div class="cover-side-r"><img src="${b.img}" alt=""></div>
+      </div>`
+    :`<div class="detail-cover-side" style="background:#f0f0f0;">
+        <div class="cover-side-l"></div>
+        <div class="cover-side-center"><div class="detail-cover-main"><div class="cover-ph">${b.title.substring(0,12)}</div></div></div>
+        <div class="cover-side-r"></div>
+      </div>`;
+  // 発売日を除いたメタ行
   const rows=[
     b.author?`<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author}</span></div>`:'',
     b.publisher?`<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher}</span></div>`:'',
-    `<div class="meta-row"><span class="meta-label">発売日</span><span class="meta-val">${b.date}</span></div>`,
     b.isbn?`<div class="meta-row"><span class="meta-label">ISBN</span><span class="meta-val">${b.isbn}</span></div>`:'',
   ].filter(Boolean).join('');
-  document.getElementById('detail-body').innerHTML=`
+  document.getElementById('detailBody').innerHTML=`
     <div class="detail-title">${b.title}</div>
     <div class="detail-tags">${b.tags.map(t=>`<span class="detail-tag tag" style="${tagStyle(t)}">${t}</span>`).join('')}</div>
-    <div class="meta-rows">${rows}</div>
+    ${rows?`<div class="meta-rows">${rows}</div>`:''}
     ${b.amazon?`<a class="amazon-btn" href="${b.amazon}" target="_blank">Amazonで見る →</a>`:''}
     <div class="timestamps">作成：${b.created}<br>更新：${b.updated}</div>`;
 }
 
-/* ── SWIPE TO CLOSE ── */
+/* ══════════════════════════════════════════
+   SWIPE TO CLOSE SHEETS
+══════════════════════════════════════════ */
 function enableSwipe(sheetEl,closeFn){
   let sy=0,dy=0,t0=0,on=false,moved=false;
   sheetEl.addEventListener('touchstart',e=>{
+    // スクロール中の子要素は無視
     let el=e.target;
-    while(el&&el!==sheetEl){if(el.scrollTop>0)return;el=el.parentElement;}
+    while(el&&el!==sheetEl){if(el.scrollTop>0&&el.scrollHeight>el.clientHeight)return;el=el.parentElement;}
     on=true;moved=false;dy=0;sy=e.touches[0].clientY;t0=Date.now();
     sheetEl.style.transition='none';
   },{passive:true});
@@ -623,67 +868,36 @@ function enableSwipe(sheetEl,closeFn){
 enableSwipe(dateSheet,closeDate);
 enableSwipe(detailSheet,closeDetail);
 
-/* ── DRUM ── */
-const ITEM_H=40,OFFSET=2;
-let dSY=curYear,dSM=curMonth;
-const years=[];for(let y=2020;y<=2030;y++)years.push(y);
-const months=Array.from({length:12},(_,i)=>i);
-
-function buildDrum(innerId,items,lFn,selIdx){
-  const inner=document.getElementById(innerId);inner.innerHTML='';
-  for(let i=0;i<OFFSET;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
-  items.forEach((item,i)=>{const d=document.createElement('div');d.className='drum-item'+(i===selIdx?' selected':'');d.textContent=lFn(item);inner.appendChild(d);});
-  for(let i=0;i<OFFSET;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
-  inner.style.transform=`translateY(-${selIdx*ITEM_H}px)`;
-}
-function makeDrum(colId,innerId,items,onSel){
-  const col=document.getElementById(colId),inner=document.getElementById(innerId);
-  let sy=0,t0=0,ci=0,on=false;
-  function gIdx(){return Math.round(-(parseFloat(inner.style.transform.replace('translateY(',''))||0)/ITEM_H);}
-  function sIdx(idx,anim=true){
-    idx=Math.max(0,Math.min(items.length-1,idx));ci=idx;
-    inner.style.transition=anim?'transform 0.18s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
-    inner.style.transform=`translateY(-${idx*ITEM_H}px)`;
-    inner.querySelectorAll('.drum-item').forEach((d,i)=>d.classList.toggle('selected',i-OFFSET===idx));
-    onSel(items[idx]);
-  }
-  col.addEventListener('touchstart',e=>{on=true;sy=e.touches[0].clientY;t0=Date.now();ci=gIdx();inner.style.transition='none';},{passive:true});
-  col.addEventListener('touchmove',e=>{if(!on)return;const dy=e.touches[0].clientY-sy;const ni=Math.max(0,Math.min(items.length-1,ci-dy/ITEM_H));inner.style.transform=`translateY(-${ni*ITEM_H}px)`;inner.querySelectorAll('.drum-item').forEach((d,i)=>d.classList.toggle('selected',Math.round(i-OFFSET)===Math.round(ni)));},{passive:true});
-  col.addEventListener('touchend',e=>{if(!on)return;on=false;const dy=e.changedTouches[0].clientY-sy,vel=(e.changedTouches[0].clientY-sy)/(Date.now()-t0);sIdx(ci-Math.round(dy/ITEM_H)-Math.round(vel*4));});
-  col.addEventListener('mousedown',e=>{on=true;sy=e.clientY;t0=Date.now();ci=gIdx();inner.style.transition='none';});
-  window.addEventListener('mousemove',e=>{if(!on)return;const dy=e.clientY-sy;inner.style.transform=`translateY(-${Math.max(0,Math.min(items.length-1,ci-dy/ITEM_H))*ITEM_H}px)`;});
-  window.addEventListener('mouseup',e=>{if(!on)return;on=false;sIdx(Math.round(ci-(e.clientY-sy)/ITEM_H));});
-}
-document.getElementById('drumTrigger').addEventListener('click',()=>{
-  dSY=curYear;dSM=curMonth;
-  buildDrum('drumYearInner',years,y=>`${y}年`,years.indexOf(dSY));
-  buildDrum('drumMonthInner',months,m=>`${m+1}月`,dSM);
-  makeDrum('drumYear','drumYearInner',years,v=>dSY=v);
-  makeDrum('drumMonth','drumMonthInner',months,v=>dSM=v);
-  document.getElementById('drumOverlay').classList.add('show');
-});
-document.getElementById('drumCancel').addEventListener('click',()=>document.getElementById('drumOverlay').classList.remove('show'));
-document.getElementById('drumOk').addEventListener('click',()=>{
-  document.getElementById('drumOverlay').classList.remove('show');
-  curYear=dSY;curMonth=dSM;renderCal();
-});
-document.getElementById('todayBtn').addEventListener('click',()=>{curYear=today.getFullYear();curMonth=today.getMonth();renderCal();});
-
-/* ── ADMIN ── */
+/* ══════════════════════════════════════════
+   ADMIN
+══════════════════════════════════════════ */
 ALL_TAGS.forEach(t=>{
-  const btn=document.createElement('button');btn.className='tag-pick-btn';btn.textContent=t;btn.dataset.tag=t;btn.type='button';
+  const btn=document.createElement('button');
+  btn.className='tag-pick-btn';btn.textContent=t;btn.dataset.tag=t;btn.type='button';
   btn.addEventListener('click',()=>btn.classList.toggle('on'));
   document.getElementById('tags-pick').appendChild(btn);
 });
 document.getElementById('submit-btn').addEventListener('click',()=>{
-  const title=document.getElementById('f-title').value.trim(),date=document.getElementById('f-date').value;
+  const title=document.getElementById('f-title').value.trim();
+  const date=document.getElementById('f-date').value;
   if(!title||!date){alert('タイトルと発売日は必須です');return;}
   const selTags=[...document.querySelectorAll('.tag-pick-btn.on')].map(b=>b.dataset.tag);
-  const now=new Date(),ts=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  books.push({id:Date.now(),title,author:document.getElementById('f-author').value.trim(),publisher:document.getElementById('f-publisher').value.trim(),date,tags:selTags,img:document.getElementById('f-img').value.trim(),amazon:document.getElementById('f-amazon').value.trim(),isbn:document.getElementById('f-isbn').value.trim(),created:ts,updated:ts});
+  const now=new Date();
+  const ts=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+  books.push({
+    id:Date.now(),title,
+    author:document.getElementById('f-author').value.trim(),
+    publisher:document.getElementById('f-publisher').value.trim(),
+    date,tags:selTags,
+    img:document.getElementById('f-img').value.trim(),
+    amazon:document.getElementById('f-amazon').value.trim(),
+    isbn:document.getElementById('f-isbn').value.trim(),
+    created:ts,updated:ts
+  });
   saveBooks();
   ['f-title','f-author','f-publisher','f-img','f-amazon','f-isbn'].forEach(id=>document.getElementById(id).value='');
   document.querySelectorAll('.tag-pick-btn.on').forEach(b=>b.classList.remove('on'));
+  document.getElementById('adminScroll').scrollTop=0;
   alert('登録しました');renderCal();
 });
 </script>

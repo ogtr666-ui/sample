@@ -81,26 +81,29 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .drum-btn.cancel{color:var(--text3);}
 
 /* ─── CALENDAR AREA ─── */
-/* 曜日ヘッダー＋カレンダーグリッドをまとめてスライドする */
-/* touch-action:none でJSが横スワイプを完全制御→ヘッダー引っ張り防止 */
-.cal-viewport{flex:1;overflow:hidden;position:relative;touch-action:none;}
+/* 新構造: cal-sheet は常時表示の角丸なし白シート
+   ヘッダー(年月)と同じ白背景なので境界線が出ない */
+.cal-sheet{
+  flex:1;background:#fff;display:flex;flex-direction:column;overflow:hidden;
+  touch-action:none;
+  position:relative;z-index:1;
+}
+/* 固定曜日行 (スライドしない) */
+.cal-weekdays-fixed{
+  display:grid;grid-template-columns:repeat(7,1fr);
+  padding:6px 10px 2px;background:#fff;flex-shrink:0;
+}
+.cal-weekday-item{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:2px 0;}
+.cal-weekday-item:first-child{color:var(--sun);}
+.cal-weekday-item:last-child{color:var(--sat);}
+/* グリッドのスライドトラック */
+.cal-track-wrap{flex:1;overflow:hidden;position:relative;}
 .cal-track{display:flex;height:100%;will-change:transform;}
-/* 各パネルは曜日行＋グリッドをセットで持つ */
 .cal-panel{
   flex:0 0 100%;height:100%;
-  display:flex;flex-direction:column;
-  overflow:hidden;
+  overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;
+  background:#fff;
 }
-.cal-panel-weekdays{
-  display:grid;grid-template-columns:repeat(7,1fr);
-  padding:6px 10px 2px;background:var(--bg);flex-shrink:0;height:var(--week-h);
-  border:none;
-}
-.cal-panel-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:2px 0;}
-.cal-panel-weekday:first-child{color:var(--sun);}
-.cal-panel-weekday:last-child{color:var(--sat);}
-/* グリッド上部の背景をヘッダーと同色にしてシームを消す */
-.cal-panel-grid{flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;background:var(--bg);}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
   height:56px;border-radius:var(--r);padding:6px 5px 4px;
@@ -185,16 +188,16 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .sheet.open{transform:translateY(0);}
 
-/* 日付シート: ヘッダーにぴったり接する(1px隙間なし) */
+/* 日付シート: もう少し下げる */
 #date-sheet{
   z-index:200;
-  top:var(--header-h);
+  top:calc(var(--header-h) + 80px);
   border-radius:var(--rs) var(--rs) 0 0;
 }
 /* 詳細シート: 日付シートの角丸(20px)分だけ下 */
 #detail-sheet{
   z-index:300;
-  top:calc(var(--header-h) + 20px);
+  top:calc(var(--header-h) + 100px);
   border-radius:12px 12px 0 0;
 }
 .handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
@@ -284,35 +287,20 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
       </div>
     </div>
 
-    <!-- 曜日行＋カレンダーグリッドをまとめてスライド -->
-    <div class="cal-viewport" id="calViewport">
-      <div class="cal-track" id="calTrack">
-        <!-- prev -->
-        <div class="cal-panel" id="calPanelPrev">
-          <div class="cal-panel-weekdays">
-            <div class="cal-panel-weekday">日</div><div class="cal-panel-weekday">月</div><div class="cal-panel-weekday">火</div>
-            <div class="cal-panel-weekday">水</div><div class="cal-panel-weekday">木</div><div class="cal-panel-weekday">金</div>
-            <div class="cal-panel-weekday">土</div>
-          </div>
-          <div class="cal-panel-grid"><div class="calendar" id="calGridPrev"></div></div>
-        </div>
-        <!-- curr -->
-        <div class="cal-panel" id="calPanelCurr">
-          <div class="cal-panel-weekdays">
-            <div class="cal-panel-weekday">日</div><div class="cal-panel-weekday">月</div><div class="cal-panel-weekday">火</div>
-            <div class="cal-panel-weekday">水</div><div class="cal-panel-weekday">木</div><div class="cal-panel-weekday">金</div>
-            <div class="cal-panel-weekday">土</div>
-          </div>
-          <div class="cal-panel-grid"><div class="calendar" id="calGridCurr"></div></div>
-        </div>
-        <!-- next -->
-        <div class="cal-panel" id="calPanelNext">
-          <div class="cal-panel-weekdays">
-            <div class="cal-panel-weekday">日</div><div class="cal-panel-weekday">月</div><div class="cal-panel-weekday">火</div>
-            <div class="cal-panel-weekday">水</div><div class="cal-panel-weekday">木</div><div class="cal-panel-weekday">金</div>
-            <div class="cal-panel-weekday">土</div>
-          </div>
-          <div class="cal-panel-grid"><div class="calendar" id="calGridNext"></div></div>
+    <!-- 曜日(固定)＋日付グリッド(スワイプ) を白シートとして常時表示 -->
+    <div class="cal-sheet" id="calSheet">
+      <!-- 曜日行: スワイプしない固定 -->
+      <div class="cal-weekdays-fixed">
+        <div class="cal-weekday-item">日</div><div class="cal-weekday-item">月</div><div class="cal-weekday-item">火</div>
+        <div class="cal-weekday-item">水</div><div class="cal-weekday-item">木</div><div class="cal-weekday-item">金</div>
+        <div class="cal-weekday-item">土</div>
+      </div>
+      <!-- グリッドのみスワイプ -->
+      <div class="cal-track-wrap">
+        <div class="cal-track" id="calTrack">
+          <div class="cal-panel"><div class="calendar" id="calGridPrev"></div></div>
+          <div class="cal-panel"><div class="calendar" id="calGridCurr"></div></div>
+          <div class="cal-panel"><div class="calendar" id="calGridNext"></div></div>
         </div>
       </div>
     </div>
@@ -606,9 +594,9 @@ function renderCal(){
 }
 renderCal();
 
-/* カレンダー横スワイプ (指追従、曜日行ごと移動) */
+/* カレンダー横スワイプ (cal-sheet内で完結) */
 (()=>{
-  const vp=document.getElementById('calViewport');
+  const vp=document.getElementById('calSheet');
   const track=document.getElementById('calTrack');
   const W=()=>vp.offsetWidth;
   let sx=0,sy=0,tracking=false,dragging=false;
@@ -631,14 +619,14 @@ renderCal();
     if(!tracking)return;tracking=false;
     if(!dragging)return;dragging=false;
     const dx=e.changedTouches[0].clientX-sx,w=W();
-    track.style.transition=`transform 0.28s cubic-bezier(0.32,0.72,0,1)`;
+    track.style.transition=`transform 0.42s cubic-bezier(0.23,1,0.32,1)`;
     if(Math.abs(dx)>w*0.2){
       if(dx<0){
         track.style.transform=`translateX(${-w*2}px)`;
-        setTimeout(()=>{const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;renderCal();},280);
+        setTimeout(()=>{const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;renderCal();},420);
       }else{
         track.style.transform=`translateX(0px)`;
-        setTimeout(()=>{const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;renderCal();},280);
+        setTimeout(()=>{const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;renderCal();},420);
       }
     }else{
       track.style.transform=`translateX(${-w}px)`;
@@ -714,10 +702,10 @@ function buildDatePanels(s){
   vp.addEventListener('touchend',e=>{
     if(!tracking)return;tracking=false;if(!dragging)return;dragging=false;
     const dx=e.changedTouches[0].clientX-sx,w=W();
-    track.style.transition=`transform 0.28s cubic-bezier(0.32,0.72,0,1)`;
+    track.style.transition=`transform 0.42s cubic-bezier(0.23,1,0.32,1)`;
     if(Math.abs(dx)>w*0.2){
-      if(dx<0){track.style.transform=`translateX(${-w*2}px)`;setTimeout(()=>buildDatePanels(addDays(activeDate,1)),280);}
-      else{track.style.transform=`translateX(0px)`;setTimeout(()=>buildDatePanels(addDays(activeDate,-1)),280);}
+      if(dx<0){track.style.transform=`translateX(${-w*2}px)`;setTimeout(()=>buildDatePanels(addDays(activeDate,1)),420);}
+      else{track.style.transform=`translateX(0px)`;setTimeout(()=>buildDatePanels(addDays(activeDate,-1)),420);}
     }else{track.style.transform=`translateX(${-w}px)`;}
   },{passive:true});
 })();

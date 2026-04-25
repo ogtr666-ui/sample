@@ -18,7 +18,7 @@
   --tab-h:56px;
   --header-h:48px;
   --week-h:30px;
-  --drum-h:260px; /* ドラムピッカーの高さ */
+  --drum-h:260px;
 }
 html,body{height:100%;overflow:hidden;touch-action:pan-y;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;display:flex;flex-direction:column;}
@@ -31,11 +31,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   transition:opacity var(--dur) ease,transform var(--dur) ease;
 }
 .tab-bar.hidden{opacity:0;pointer-events:none;transform:translateY(100%);}
-.tab{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;color:var(--text3);border-top:2px solid transparent;
-  transition:color 0.15s;user-select:none;
-}
+.tab{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);border-top:2px solid transparent;transition:color 0.15s;user-select:none;}
 .tab.active{color:var(--text);border-top-color:var(--text);}
 .tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 
@@ -44,104 +40,63 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .tab-page{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
 .tab-page.active{display:flex;}
 
-/* ─── CAL HEADER ─── */
+/* ─── CAL HEADER (固定) ─── */
 .cal-header{
   display:flex;align-items:center;justify-content:space-between;
   padding:10px 14px 7px;background:var(--bg);flex-shrink:0;
   height:var(--header-h);border-bottom:0.5px solid var(--border);
   position:relative;z-index:5;
 }
-.today-btn{
-  font-size:11px;font-weight:600;color:var(--text2);
-  border:0.5px solid #ddd;border-radius:6px;
-  padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);
-}
+.today-btn{font-size:11px;font-weight:600;color:var(--text2);border:0.5px solid #ddd;border-radius:6px;padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);}
 .drum-trigger{display:flex;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
 .drum-label{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
 .drum-caret{font-size:10px;color:var(--text3);transition:transform 0.2s;}
 .drum-caret.open{transform:rotate(180deg);}
 
-/* ─── iOS風ドラムロール (上から落下) ─── */
+/* ─── ドラムロール ─── */
 .drum-picker-wrap{
   position:absolute;top:var(--header-h);left:0;right:0;
-  background:#fff;
-  border-bottom:0.5px solid var(--border2);
-  z-index:400;
-  overflow:hidden;
-  max-height:0;
-  transition:max-height var(--dur) cubic-bezier(0.4,0,0.2,1),
-             box-shadow var(--dur) ease;
-  box-shadow:none;
+  background:#fff;border-bottom:0.5px solid var(--border2);
+  z-index:400;overflow:hidden;max-height:0;
+  transition:max-height var(--dur) cubic-bezier(0.4,0,0.2,1),box-shadow var(--dur) ease;
 }
-.drum-picker-wrap.open{
-  max-height:var(--drum-h);
-  box-shadow:0 8px 24px rgba(0,0,0,0.12);
-}
-.drum-picker-inner{
-  display:flex;flex-direction:column;
-  height:var(--drum-h);
-}
-.drum-cols{
-  flex:1;display:flex;justify-content:center;align-items:stretch;
-  position:relative;overflow:hidden;
-}
-/* 中央選択ライン */
-.drum-cols::before,.drum-cols::after{
-  content:'';position:absolute;left:20px;right:20px;height:1px;
-  background:var(--border2);z-index:2;pointer-events:none;
-}
+.drum-picker-wrap.open{max-height:var(--drum-h);box-shadow:0 8px 24px rgba(0,0,0,0.12);}
+.drum-picker-inner{display:flex;flex-direction:column;height:var(--drum-h);}
+.drum-cols{flex:1;display:flex;justify-content:center;align-items:stretch;position:relative;overflow:hidden;}
+.drum-cols::before,.drum-cols::after{content:'';position:absolute;left:20px;right:20px;height:1px;background:var(--border2);z-index:2;pointer-events:none;}
 .drum-cols::before{top:calc(50% - 22px);}
 .drum-cols::after{top:calc(50% + 21px);}
-/* 上下フェード */
-.drum-fade-top,.drum-fade-bottom{
-  position:absolute;left:0;right:0;height:80px;z-index:1;pointer-events:none;
-}
+.drum-fade-top,.drum-fade-bottom{position:absolute;left:0;right:0;height:80px;z-index:1;pointer-events:none;}
 .drum-fade-top{top:0;background:linear-gradient(to bottom,rgba(255,255,255,0.95),transparent);}
 .drum-fade-bottom{bottom:0;background:linear-gradient(to top,rgba(255,255,255,0.95),transparent);}
-.drum-col{
-  width:140px;overflow:hidden;position:relative;
-  cursor:grab;touch-action:none;
-}
-.drum-col-inner{
-  display:flex;flex-direction:column;
-  will-change:transform;
-}
-.drum-item{
-  height:44px;display:flex;align-items:center;justify-content:center;
-  font-size:18px;font-weight:400;color:var(--text3);
-  flex-shrink:0;user-select:none;
-  transition:color 0.12s,font-weight 0.12s;
-}
+.drum-col{width:140px;overflow:hidden;position:relative;cursor:grab;touch-action:none;}
+.drum-col-inner{display:flex;flex-direction:column;will-change:transform;}
+.drum-item{height:44px;display:flex;align-items:center;justify-content:center;font-size:18px;font-weight:400;color:var(--text3);flex-shrink:0;user-select:none;transition:color 0.12s,font-weight 0.12s;}
 .drum-item.sel{color:var(--text);font-weight:600;font-size:20px;}
 .drum-sep-line{width:1px;background:var(--border2);margin:16px 0;flex-shrink:0;}
-.drum-actions{
-  display:flex;border-top:0.5px solid var(--border);
-  flex-shrink:0;
-}
-.drum-btn{
-  flex:1;padding:12px 0;border:none;background:none;
-  font-size:15px;font-family:var(--font);cursor:pointer;
-}
+.drum-actions{display:flex;border-top:0.5px solid var(--border);flex-shrink:0;}
+.drum-btn{flex:1;padding:12px 0;border:none;background:none;font-size:15px;font-family:var(--font);cursor:pointer;}
 .drum-btn.ok{font-weight:700;color:var(--text);border-left:0.5px solid var(--border);}
 .drum-btn.cancel{color:var(--text3);}
 
-/* ─── WEEKDAYS ─── */
-.weekdays{
+/* ─── CALENDAR AREA ─── */
+/* 曜日ヘッダー＋カレンダーグリッドをまとめてスライドする */
+.cal-viewport{flex:1;overflow:hidden;position:relative;}
+.cal-track{display:flex;height:100%;will-change:transform;}
+/* 各パネルは曜日行＋グリッドをセットで持つ */
+.cal-panel{
+  flex:0 0 100%;height:100%;
+  display:flex;flex-direction:column;
+  overflow:hidden;
+}
+.cal-panel-weekdays{
   display:grid;grid-template-columns:repeat(7,1fr);
   padding:4px 10px 2px;background:var(--bg);flex-shrink:0;height:var(--week-h);
 }
-.weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;}
-.weekday:first-child{color:var(--sun);}
-.weekday:last-child{color:var(--sat);}
-
-/* ─── CALENDAR (指追従スワイプ) ─── */
-.cal-viewport{flex:1;overflow:hidden;position:relative;}
-.cal-track{
-  display:flex;height:100%;
-  /* transition はJS側で動的に付け外し */
-  will-change:transform;
-}
-.cal-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
+.cal-panel-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;}
+.cal-panel-weekday:first-child{color:var(--sun);}
+.cal-panel-weekday:last-child{color:var(--sat);}
+.cal-panel-grid{flex:1;overflow-y:auto;overscroll-behavior:contain;}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
   height:56px;border-radius:var(--r);padding:6px 5px 4px;
@@ -165,17 +120,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .form-group{display:flex;flex-direction:column;gap:4px;width:100%;}
 .form-label{font-size:11px;font-weight:600;color:var(--text2);}
 .form-input{
-  /* width:100% + box-sizing:border-box で確実に揃える */
   box-sizing:border-box;width:100%;
   background:#f4f4f4;border:0.5px solid #e0e0e0;
   border-radius:8px;padding:10px 12px;
-  font-size:16px; /* iOS zoom防止 */
-  color:var(--text);font-family:var(--font);outline:none;
-  -webkit-appearance:none;appearance:none;
-  display:block;
+  font-size:16px;color:var(--text);font-family:var(--font);outline:none;
+  -webkit-appearance:none;appearance:none;display:block;
 }
 .form-input:focus{border-color:#aaa;}
-.tags-pick{display:flex;flex-wrap:wrap;gap:6px;margin-top:4px;}
+
+/* タグ行グループ */
+.tag-group{display:flex;flex-wrap:wrap;gap:6px;margin-bottom:2px;}
+.tag-group-label{font-size:10px;color:var(--text3);margin-bottom:2px;}
+.tags-pick-grouped{display:flex;flex-direction:column;gap:8px;margin-top:4px;}
+
 .tag-pick-btn{
   font-size:11px;padding:4px 10px;border-radius:20px;
   border:0.5px solid #ddd;background:#fafafa;cursor:pointer;
@@ -190,10 +147,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 
 /* ─── OVERLAY ─── */
-#overlay{
-  position:fixed;inset:0;background:var(--overlay);z-index:100;
-  opacity:0;pointer-events:none;transition:opacity var(--dur) ease;
-}
+#overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity var(--dur) ease;}
 #overlay.active{opacity:1;pointer-events:all;}
 
 /* ─── SHEETS ─── */
@@ -207,7 +161,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .sheet.open{transform:translateY(0);}
 #date-sheet{z-index:200;top:calc(var(--header-h) + var(--week-h) + 6px);}
 #detail-sheet{z-index:300;top:40px;}
-
 .handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
 .handle{width:40px;height:4px;background:var(--handle);border-radius:2px;}
 .sheet-header{display:flex;align-items:center;justify-content:space-between;padding:4px 16px 10px;flex-shrink:0;}
@@ -217,8 +170,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .date-viewport{flex:1;overflow:hidden;position:relative;}
 .date-track{display:flex;height:100%;will-change:transform;}
 .date-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
-
-/* ─── VIEW TOGGLE ─── */
 .view-toggle-btn{width:32px;height:32px;border:none;background:#f2f2f2;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
 /* ─── LIST / CARD ─── */
@@ -253,7 +204,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .detail-cover-main img{height:100%;width:auto;object-fit:contain;display:block;}
 .detail-cover-main .cover-ph{width:110px;height:170px;display:flex;align-items:center;justify-content:center;background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;}
 .detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;}
-.detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 12px;border-bottom:0.5px solid var(--border);margin-bottom:14px;}
+/* 区切り線なし */
+.detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 12px;margin-bottom:14px;}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .meta-rows{display:flex;flex-direction:column;}
@@ -271,6 +223,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
   <!-- カレンダータブ -->
   <div class="tab-page active" id="tab-calendar">
+    <!-- ヘッダーは固定 -->
     <div class="cal-header">
       <div class="drum-trigger" id="drumTrigger">
         <span class="drum-label" id="drumLabel">2026年4月</span>
@@ -278,20 +231,15 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
     </div>
-
-    <!-- iOSスタイル ドラムロール (上から展開) -->
+    <!-- ドラムロール (ヘッダー直下から展開) -->
     <div class="drum-picker-wrap" id="drumPickerWrap">
       <div class="drum-picker-inner">
         <div class="drum-cols" id="drumCols">
           <div class="drum-fade-top"></div>
           <div class="drum-fade-bottom"></div>
-          <div class="drum-col" id="drumColYear">
-            <div class="drum-col-inner" id="drumInnerYear"></div>
-          </div>
+          <div class="drum-col" id="drumColYear"><div class="drum-col-inner" id="drumInnerYear"></div></div>
           <div class="drum-sep-line"></div>
-          <div class="drum-col" id="drumColMonth">
-            <div class="drum-col-inner" id="drumInnerMonth"></div>
-          </div>
+          <div class="drum-col" id="drumColMonth"><div class="drum-col-inner" id="drumInnerMonth"></div></div>
         </div>
         <div class="drum-actions">
           <button class="drum-btn cancel" id="drumCancel">キャンセル</button>
@@ -300,16 +248,36 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
       </div>
     </div>
 
-    <div class="weekdays">
-      <div class="weekday">日</div><div class="weekday">月</div><div class="weekday">火</div>
-      <div class="weekday">水</div><div class="weekday">木</div><div class="weekday">金</div>
-      <div class="weekday">土</div>
-    </div>
+    <!-- 曜日行＋カレンダーグリッドをまとめてスライド -->
     <div class="cal-viewport" id="calViewport">
       <div class="cal-track" id="calTrack">
-        <div class="cal-panel"><div class="calendar" id="calGridPrev"></div></div>
-        <div class="cal-panel"><div class="calendar" id="calGridCurr"></div></div>
-        <div class="cal-panel"><div class="calendar" id="calGridNext"></div></div>
+        <!-- prev -->
+        <div class="cal-panel" id="calPanelPrev">
+          <div class="cal-panel-weekdays">
+            <div class="cal-panel-weekday">日</div><div class="cal-panel-weekday">月</div><div class="cal-panel-weekday">火</div>
+            <div class="cal-panel-weekday">水</div><div class="cal-panel-weekday">木</div><div class="cal-panel-weekday">金</div>
+            <div class="cal-panel-weekday">土</div>
+          </div>
+          <div class="cal-panel-grid"><div class="calendar" id="calGridPrev"></div></div>
+        </div>
+        <!-- curr -->
+        <div class="cal-panel" id="calPanelCurr">
+          <div class="cal-panel-weekdays">
+            <div class="cal-panel-weekday">日</div><div class="cal-panel-weekday">月</div><div class="cal-panel-weekday">火</div>
+            <div class="cal-panel-weekday">水</div><div class="cal-panel-weekday">木</div><div class="cal-panel-weekday">金</div>
+            <div class="cal-panel-weekday">土</div>
+          </div>
+          <div class="cal-panel-grid"><div class="calendar" id="calGridCurr"></div></div>
+        </div>
+        <!-- next -->
+        <div class="cal-panel" id="calPanelNext">
+          <div class="cal-panel-weekdays">
+            <div class="cal-panel-weekday">日</div><div class="cal-panel-weekday">月</div><div class="cal-panel-weekday">火</div>
+            <div class="cal-panel-weekday">水</div><div class="cal-panel-weekday">木</div><div class="cal-panel-weekday">金</div>
+            <div class="cal-panel-weekday">土</div>
+          </div>
+          <div class="cal-panel-grid"><div class="calendar" id="calGridNext"></div></div>
+        </div>
       </div>
     </div>
   </div>
@@ -330,7 +298,10 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
         <div class="form-group"><label class="form-label">書影URL</label><input class="form-input" id="f-img" type="text" placeholder="https://…"></div>
         <div class="form-group"><label class="form-label">Amazonリンク</label><input class="form-input" id="f-amazon" type="text" placeholder="https://amazon.co.jp/…"></div>
         <div class="form-group"><label class="form-label">ISBN</label><input class="form-input" id="f-isbn" type="text" placeholder="978-4-…"></div>
-        <div class="form-group"><label class="form-label">科目タグ</label><div class="tags-pick" id="tags-pick"></div></div>
+        <div class="form-group">
+          <label class="form-label">科目タグ</label>
+          <div class="tags-pick-grouped" id="tags-pick-grouped"></div>
+        </div>
         <button class="submit-btn" id="submit-btn">登録する</button>
       </div>
     </div>
@@ -383,33 +354,70 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 <script>
 /* ══════════════════════════════════════════
-   CONSTANTS & CONFIG
+   TAG CONFIG
+   ・国語系 = 紫 (同一色)
+   ・理科系 = 緑 (同一色)
+   ・社会系 = 濃い黄 (同一色)
 ══════════════════════════════════════════ */
-const ALL_TAGS=['英語','数学','現代文','古文','漢文','物理','化学','生物','地学','歴史総合','日本史','世界史','地理','公共','政治経済','倫理','情報','小論文','共通テスト','過去問（赤本）'];
-const TAG_COLOR={
-  '英語':['#fdeaea','#c0392b'],'数学':['#e8f0fe','#1a56c4'],
-  '現代文':['#ede7f6','#5e35b1'],'古文':['#ede7f6','#4527a0'],'漢文':['#ede7f6','#6a1b9a'],
-  '物理':['#e8f5e9','#2e7d32'],'化学':['#e8f5e9','#388e3c'],'生物':['#e8f5e9','#1b5e20'],'地学':['#e8f5e9','#00695c'],
-  '歴史総合':['#fffde7','#b8860b'],'日本史':['#fffde7','#c17f00'],'世界史':['#fffde7','#a07000'],
-  '地理':['#fffde7','#8d6e00'],'公共':['#fffde7','#7a6000'],'政治経済':['#fffde7','#6d5400'],'倫理':['#fffde7','#5c4800'],
-  '情報':['#fce4ec','#c2185b'],'小論文':['#e0f7f4','#00796b'],
-  '共通テスト':['#efebe9','#6d4c41'],'過去問（赤本）':['#f5f5f5','#757575'],
+// 表示名と内部キーを分離 (「政治経済」→「政治･経済」表示)
+const TAG_DISPLAY = {
+  '英語':'英語','数学':'数学',
+  '現代文':'現代文','古文':'古文','漢文':'漢文',
+  '物理':'物理','化学':'化学','生物':'生物','地学':'地学',
+  '歴史総合':'歴史総合','日本史':'日本史','世界史':'世界史',
+  '地理':'地理','公共':'公共','政治経済':'政治･経済','倫理':'倫理',
+  '情報':'情報','小論文':'小論文','共通テスト':'共通テスト','過去問（赤本）':'過去問（赤本）'
 };
-const HOLIDAYS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
-const DRUM_ITEM_H = 44;
-const DRUM_VISIBLE = 3; // 上下に見える数
-const DRUM_PAD = DRUM_VISIBLE; // padding items
+const ALL_TAGS = Object.keys(TAG_DISPLAY);
+
+// グループ定義 (管理タブ用)
+const TAG_GROUPS = [
+  { label:'語学・数学', tags:['英語','数学','現代文','古文','漢文'] },
+  { label:'理科', tags:['物理','化学','生物','地学'] },
+  { label:'社会', tags:['歴史総合','日本史','世界史','地理','公共','政治経済','倫理'] },
+  { label:'その他', tags:['情報','小論文','共通テスト','過去問（赤本）'] },
+];
+
+const TAG_COLOR = {
+  '英語':      ['#fdeaea','#c0392b'],
+  '数学':      ['#e8f0fe','#1a56c4'],
+  // 国語系 = 同一紫
+  '現代文':    ['#ede7f6','#5e35b1'],
+  '古文':      ['#ede7f6','#5e35b1'],
+  '漢文':      ['#ede7f6','#5e35b1'],
+  // 理科系 = 同一緑
+  '物理':      ['#e8f5e9','#2e7d32'],
+  '化学':      ['#e8f5e9','#2e7d32'],
+  '生物':      ['#e8f5e9','#2e7d32'],
+  '地学':      ['#e8f5e9','#2e7d32'],
+  // 社会系 = 同一黄 (濃いめ)
+  '歴史総合':  ['#fff8e1','#9a6f00'],
+  '日本史':    ['#fff8e1','#9a6f00'],
+  '世界史':    ['#fff8e1','#9a6f00'],
+  '地理':      ['#fff8e1','#9a6f00'],
+  '公共':      ['#fff8e1','#9a6f00'],
+  '政治経済':  ['#fff8e1','#9a6f00'],
+  '倫理':      ['#fff8e1','#9a6f00'],
+  '情報':      ['#fce4ec','#c2185b'],
+  '小論文':    ['#e0f7f4','#00796b'],
+  '共通テスト':['#efebe9','#6d4c41'],
+  '過去問（赤本）':['#f5f5f5','#757575'],
+};
 
 function tagStyle(t){const c=TAG_COLOR[t];return c?`background:${c[0]};color:${c[1]};`:''}
+function tagDisp(t){return TAG_DISPLAY[t]||t}
+
+const HOLIDAYS=new Set(['2025-01-01','2025-01-13','2025-02-11','2025-02-23','2025-02-24','2025-03-20','2025-04-29','2025-05-03','2025-05-04','2025-05-05','2025-05-06','2025-07-21','2025-08-11','2025-09-15','2025-09-23','2025-10-13','2025-11-03','2025-11-24','2025-12-23','2026-01-01','2026-01-12','2026-02-11','2026-02-23','2026-03-20','2026-04-29','2026-05-03','2026-05-04','2026-05-05','2026-05-06','2026-07-20','2026-08-11','2026-09-21','2026-09-22','2026-09-23','2026-10-12','2026-11-03','2026-11-23','2026-12-23']);
+
+const DRUM_ITEM_H=44,DRUM_PAD=3;
+
 function ds(d){return`${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')}`}
 function addM(y,m,delta){let nm=m+delta,ny=y;while(nm<0){nm+=12;ny--}while(nm>11){nm-=12;ny++}return{y:ny,m:nm}}
 function addDays(s,n){const d=new Date(s);d.setDate(d.getDate()+n);return ds(d)}
 function fmtDate(s){const[y,m,d]=s.split('-');return`${y}年${parseInt(m)}月${parseInt(d)}日`}
 
-/* ══════════════════════════════════════════
-   DATA
-══════════════════════════════════════════ */
-let books=JSON.parse(localStorage.getItem('tbcal6')||'null');
+/* ── DATA ── */
+let books=JSON.parse(localStorage.getItem('tbcal7')||'null');
 if(!books){
   books=[
     {id:1,title:'英語長文ハイパートレーニング レベル3',author:'安河内哲也',publisher:'桐原書店',date:'2026-04-05',tags:['英語'],img:'',amazon:'',isbn:'',created:'2026/4/10 09:00',updated:'2026/4/10 09:00'},
@@ -421,36 +429,25 @@ if(!books){
     {id:7,title:'物理のエッセンス 力学・波動',author:'浜島清利',publisher:'河合出版',date:'2026-04-25',tags:['物理'],img:'',amazon:'',isbn:'',created:'2026/4/16 10:00',updated:'2026/4/16 10:00'},
     {id:8,title:'古文上達 基礎編 読解と演習45',author:'Z会出版編集部',publisher:'Z会',date:'2026-04-25',tags:['古文'],img:'',amazon:'',isbn:'',created:'2026/4/16 12:00',updated:'2026/4/16 12:00'},
   ];
-  localStorage.setItem('tbcal6',JSON.stringify(books));
+  localStorage.setItem('tbcal7',JSON.stringify(books));
 }
-function saveBooks(){localStorage.setItem('tbcal6',JSON.stringify(books))}
+function saveBooks(){localStorage.setItem('tbcal7',JSON.stringify(books))}
 
-/* ══════════════════════════════════════════
-   STATE
-══════════════════════════════════════════ */
-const today=new Date();
-const todayStr=ds(today);
+/* ── STATE ── */
+const today=new Date(),todayStr=ds(today);
 let curYear=2026,curMonth=3;
-let viewMode=localStorage.getItem('tbcal6-view')||'list';
+let viewMode=localStorage.getItem('tbcal7-view')||'list';
 let activeDate='';
-let dateOpen=false,detailOpen=false;
-let drumOpen=false;
+let dateOpen=false,detailOpen=false,drumOpen=false;
 let drumSelYear=2026,drumSelMonth=3;
 
-/* ══════════════════════════════════════════
-   TABS
-══════════════════════════════════════════ */
+/* ── TABS ── */
 document.querySelectorAll('.tab').forEach(t=>{
   t.addEventListener('click',()=>{
     document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
     document.querySelectorAll('.tab-page').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('tab-'+t.dataset.tab).classList.add('active');
-    // タブ切替時にスクロール位置をリセット
-    const page=document.getElementById('tab-'+t.dataset.tab);
-    const scroll=page.querySelector('.admin-scroll,.cal-panel,.center-msg');
-    if(scroll)scroll.scrollTop=0;
-    // 管理タブの場合は admin-scroll をリセット
     document.getElementById('adminScroll').scrollTop=0;
   });
 });
@@ -458,80 +455,54 @@ const tabBar=document.getElementById('tabBar');
 function hideTabBar(){tabBar.classList.add('hidden')}
 function showTabBar(){tabBar.classList.remove('hidden')}
 
-/* ══════════════════════════════════════════
-   IOS DRUM ROLLER
-   - max-height アニメーションで上から展開
-   - 指に追従する慣性スクロール
-══════════════════════════════════════════ */
+/* ── DRUM ── */
 const years=[];for(let y=2020;y<=2030;y++)years.push(y);
 const months=Array.from({length:12},(_,i)=>i);
 
 function buildDrumItems(innerId,items,labelFn,selIdx){
   const inner=document.getElementById(innerId);
   inner.innerHTML='';
-  // top padding
-  for(let i=0;i<DRUM_PAD;i++){
-    const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);
-  }
+  for(let i=0;i<DRUM_PAD;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
   items.forEach((item,i)=>{
     const d=document.createElement('div');
     d.className='drum-item'+(i===selIdx?' sel':'');
-    d.textContent=labelFn(item);
-    inner.appendChild(d);
+    d.textContent=labelFn(item);inner.appendChild(d);
   });
-  // bottom padding
-  for(let i=0;i<DRUM_PAD;i++){
-    const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);
-  }
+  for(let i=0;i<DRUM_PAD;i++){const d=document.createElement('div');d.className='drum-item';inner.appendChild(d);}
   inner.style.transform=`translateY(${-selIdx*DRUM_ITEM_H}px)`;
-  updateDrumSel(inner,selIdx);
 }
-
 function updateDrumSel(inner,idx){
-  inner.querySelectorAll('.drum-item').forEach((d,i)=>{
-    d.classList.toggle('sel',i-DRUM_PAD===idx);
-  });
+  inner.querySelectorAll('.drum-item').forEach((d,i)=>d.classList.toggle('sel',i-DRUM_PAD===idx));
 }
-
 function makeDrum(colId,innerId,items,onSelect){
-  const col=document.getElementById(colId);
-  const inner=document.getElementById(innerId);
-  let startY=0,startT=0,curIdx=0,dragging=false,lastY=0,velY=0;
-
-  function clamp(i){return Math.max(0,Math.min(items.length-1,i));}
-  function getIdx(){return Math.round(-getTranslateY(inner)/DRUM_ITEM_H);}
-  function setIdx(idx,animate=true){
+  const col=document.getElementById(colId),inner=document.getElementById(innerId);
+  let startY=0,curIdx=0,dragging=false,lastY=0,velY=0;
+  function clamp(i){return Math.max(0,Math.min(items.length-1,i))}
+  function getIdx(){const t=inner.style.transform;const m=t.match(/translateY\(([^)]+)px\)/);return Math.round(-(m?parseFloat(m[1]):0)/DRUM_ITEM_H)}
+  function setIdx(idx,anim=true){
     idx=clamp(idx);curIdx=idx;
-    setTranslateY(inner,-idx*DRUM_ITEM_H,animate?'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)':'none');
-    updateDrumSel(inner,idx);
-    onSelect(items[idx]);
+    inner.style.transition=anim?'transform 0.22s cubic-bezier(0.25,0.46,0.45,0.94)':'none';
+    inner.style.transform=`translateY(${-idx*DRUM_ITEM_H}px)`;
+    updateDrumSel(inner,idx);onSelect(items[idx]);
   }
-
   function onStart(e){
-    dragging=true;
-    const y=e.touches?e.touches[0].clientY:e.clientY;
-    startY=y;lastY=y;velY=0;startT=Date.now();
-    curIdx=getIdx();
-    col.style.cursor='grabbing';
-    inner.style.transition='none';
-    e.preventDefault();
+    dragging=true;const y=e.touches?e.touches[0].clientY:e.clientY;
+    startY=y;lastY=y;velY=0;curIdx=getIdx();
+    inner.style.transition='none';e.preventDefault();
   }
   function onMove(e){
     if(!dragging)return;
     const y=e.touches?e.touches[0].clientY:e.clientY;
     velY=y-lastY;lastY=y;
-    const dy=y-startY;
-    const rawIdx=curIdx-dy/DRUM_ITEM_H;
-    setTranslateY(inner,-clamp(rawIdx)*DRUM_ITEM_H+(-(rawIdx-clamp(rawIdx))*DRUM_ITEM_H*0.3),'none');
-    updateDrumSel(inner,Math.round(rawIdx));
-    e.preventDefault();
+    const dy=y-startY,rawIdx=curIdx-dy/DRUM_ITEM_H;
+    const ci=clamp(rawIdx);
+    inner.style.transform=`translateY(${-ci*DRUM_ITEM_H+(-(rawIdx-ci)*DRUM_ITEM_H*0.3)}px)`;
+    updateDrumSel(inner,Math.round(rawIdx));e.preventDefault();
   }
   function onEnd(e){
     if(!dragging)return;dragging=false;
-    col.style.cursor='grab';
     const dy=(e.touches?e.changedTouches[0].clientY:e.clientY)-startY;
-    const vel=velY/DRUM_ITEM_H*6;
-    setIdx(Math.round(curIdx-dy/DRUM_ITEM_H-vel));
+    setIdx(Math.round(curIdx-dy/DRUM_ITEM_H-velY/DRUM_ITEM_H*6));
   }
   col.addEventListener('touchstart',onStart,{passive:false});
   col.addEventListener('touchmove',onMove,{passive:false});
@@ -539,29 +510,14 @@ function makeDrum(colId,innerId,items,onSelect){
   col.addEventListener('mousedown',onStart);
   window.addEventListener('mousemove',e=>{if(dragging)onMove(e);});
   window.addEventListener('mouseup',e=>{if(dragging)onEnd(e);});
-
-  return{setIdx};
 }
-
-function getTranslateY(el){
-  const t=el.style.transform;
-  const m=t.match(/translateY\(([^)]+)px\)/);
-  return m?parseFloat(m[1]):0;
-}
-function setTranslateY(el,y,transition){
-  el.style.transition=transition;
-  el.style.transform=`translateY(${y}px)`;
-}
-
-let drumYearCtrl,drumMonthCtrl;
 
 function openDrum(){
-  drumOpen=true;
-  drumSelYear=curYear;drumSelMonth=curMonth;
+  drumOpen=true;drumSelYear=curYear;drumSelMonth=curMonth;
   buildDrumItems('drumInnerYear',years,y=>`${y}年`,years.indexOf(drumSelYear));
   buildDrumItems('drumInnerMonth',months,m=>`${m+1}月`,drumSelMonth);
-  drumYearCtrl=makeDrum('drumColYear','drumInnerYear',years,v=>drumSelYear=v);
-  drumMonthCtrl=makeDrum('drumColMonth','drumInnerMonth',months,v=>drumSelMonth=v);
+  makeDrum('drumColYear','drumInnerYear',years,v=>drumSelYear=v);
+  makeDrum('drumColMonth','drumInnerMonth',months,v=>drumSelMonth=v);
   document.getElementById('drumPickerWrap').classList.add('open');
   document.getElementById('drumCaret').classList.add('open');
 }
@@ -570,29 +526,23 @@ function closeDrum(){
   document.getElementById('drumPickerWrap').classList.remove('open');
   document.getElementById('drumCaret').classList.remove('open');
 }
-document.getElementById('drumTrigger').addEventListener('click',()=>{
-  drumOpen?closeDrum():openDrum();
-});
+document.getElementById('drumTrigger').addEventListener('click',()=>{drumOpen?closeDrum():openDrum();});
 document.getElementById('drumCancel').addEventListener('click',closeDrum);
 document.getElementById('drumOk').addEventListener('click',()=>{
-  curYear=drumSelYear;curMonth=drumSelMonth;
-  closeDrum();renderCal();
+  curYear=drumSelYear;curMonth=drumSelMonth;closeDrum();renderCal();
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{
   curYear=today.getFullYear();curMonth=today.getMonth();renderCal();
 });
 
-/* ══════════════════════════════════════════
-   CALENDAR  — 指追従スワイプ
-══════════════════════════════════════════ */
+/* ── CALENDAR ── */
 function buildGrid(el,y,m){
   el.innerHTML='';
   const first=new Date(y,m,1),last=new Date(y,m+1,0);
   const cells=Math.ceil((first.getDay()+last.getDate())/7)*7;
   for(let i=0;i<cells;i++){
     const d=new Date(y,m,i-first.getDay()+1);
-    const s=ds(d);
-    const isOther=d.getMonth()!==m,dow=d.getDay(),hol=HOLIDAYS.has(s);
+    const s=ds(d),isOther=d.getMonth()!==m,dow=d.getDay(),hol=HOLIDAYS.has(s);
     const hasB=books.some(b=>b.date===s);
     const div=document.createElement('div');
     let cls='day';
@@ -604,21 +554,19 @@ function buildGrid(el,y,m){
     el.appendChild(div);
   }
 }
-
 function renderCal(){
   const p=addM(curYear,curMonth,-1),n=addM(curYear,curMonth,1);
   buildGrid(document.getElementById('calGridPrev'),p.y,p.m);
   buildGrid(document.getElementById('calGridCurr'),curYear,curMonth);
   buildGrid(document.getElementById('calGridNext'),n.y,n.m);
   document.getElementById('drumLabel').textContent=`${curYear}年${curMonth+1}月`;
-  // 中央パネルに即座に移動（アニメなし）
   const track=document.getElementById('calTrack');
   track.style.transition='none';
   track.style.transform='translateX(-100%)';
 }
 renderCal();
 
-// カレンダー横スワイプ（指追従）
+/* カレンダー横スワイプ (指追従、曜日行ごと移動) */
 (()=>{
   const vp=document.getElementById('calViewport');
   const track=document.getElementById('calTrack');
@@ -635,117 +583,7 @@ renderCal();
   vp.addEventListener('touchmove',e=>{
     if(!tracking)return;
     const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
-    if(!dragging){
-      if(Math.abs(dx)<Math.abs(dy))return; // 縦スクロール優先
-      dragging=true;
-    }
-    // -100% がベース（中央）、そこから dx だけずらす
-    const base=-W();
-    track.style.transform=`translateX(${base+dx}px)`;
-  },{passive:true});
-
-  vp.addEventListener('touchend',e=>{
-    if(!tracking)return;tracking=false;
-    if(!dragging){return;}
-    dragging=false;
-    const dx=e.changedTouches[0].clientX-sx;
-    const w=W();
-    track.style.transition=`transform 0.28s cubic-bezier(0.32,0.72,0,1)`;
-    if(Math.abs(dx)>w*0.2){
-      if(dx<0){
-        // 次月へ
-        track.style.transform=`translateX(${-w*2}px)`;
-        setTimeout(()=>{
-          const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;
-          renderCal();
-        },280);
-      }else{
-        // 前月へ
-        track.style.transform=`translateX(0px)`;
-        setTimeout(()=>{
-          const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;
-          renderCal();
-        },280);
-      }
-    }else{
-      // 元に戻す
-      track.style.transform=`translateX(${-w}px)`;
-    }
-  },{passive:true});
-})();
-
-/* ══════════════════════════════════════════
-   SHEETS
-══════════════════════════════════════════ */
-const overlay=document.getElementById('overlay');
-const dateSheet=document.getElementById('date-sheet');
-const detailSheet=document.getElementById('detail-sheet');
-
-function openDate(s){
-  if(drumOpen)closeDrum();
-  activeDate=s;
-  setDateLabel(s);
-  buildDatePanels(s);
-  if(!dateOpen){
-    dateOpen=true;
-    dateSheet.classList.add('open');
-    overlay.classList.add('active');
-    hideTabBar();
-  }
-}
-function closeDate(){
-  dateOpen=false;detailOpen=false;
-  dateSheet.classList.remove('open');
-  detailSheet.classList.remove('open');
-  overlay.classList.remove('active');
-  showTabBar();
-}
-function openDetail(b){
-  setDetailContent(b);
-  if(!detailOpen){detailOpen=true;detailSheet.classList.add('open');}
-}
-function closeDetail(){
-  detailOpen=false;detailSheet.classList.remove('open');
-}
-
-/* ══════════════════════════════════════════
-   DATE SHEET — 指追従スワイプ
-══════════════════════════════════════════ */
-function setDateLabel(s){
-  document.getElementById('sheetDateLabel').textContent=fmtDate(s);
-}
-
-function buildDatePanels(s){
-  activeDate=s;setDateLabel(s);
-  renderDay(document.getElementById('datePanelPrev'),addDays(s,-1));
-  renderDay(document.getElementById('datePanelCurr'),s);
-  renderDay(document.getElementById('datePanelNext'),addDays(s,1));
-  // 中央に即移動
-  const track=document.getElementById('dateTrack');
-  track.style.transition='none';
-  track.style.transform='translateX(-100%)';
-}
-
-// 日付シート内横スワイプ（指追従）
-(()=>{
-  const vp=document.querySelector('.date-viewport');
-  const track=document.getElementById('dateTrack');
-  const W=()=>vp.offsetWidth;
-  let sx=0,sy=0,tracking=false,dragging=false;
-
-  vp.addEventListener('touchstart',e=>{
-    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
-    tracking=true;dragging=false;
-    track.style.transition='none';
-  },{passive:true});
-
-  vp.addEventListener('touchmove',e=>{
-    if(!tracking)return;
-    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
-    if(!dragging){
-      if(Math.abs(dx)<Math.abs(dy))return;
-      dragging=true;
-    }
+    if(!dragging){if(Math.abs(dx)<Math.abs(dy))return;dragging=true;}
     track.style.transform=`translateX(${-W()+dx}px)`;
   },{passive:true});
 
@@ -757,14 +595,66 @@ function buildDatePanels(s){
     if(Math.abs(dx)>w*0.2){
       if(dx<0){
         track.style.transform=`translateX(${-w*2}px)`;
-        setTimeout(()=>buildDatePanels(addDays(activeDate,1)),280);
+        setTimeout(()=>{const n=addM(curYear,curMonth,1);curYear=n.y;curMonth=n.m;renderCal();},280);
       }else{
         track.style.transform=`translateX(0px)`;
-        setTimeout(()=>buildDatePanels(addDays(activeDate,-1)),280);
+        setTimeout(()=>{const n=addM(curYear,curMonth,-1);curYear=n.y;curMonth=n.m;renderCal();},280);
       }
     }else{
       track.style.transform=`translateX(${-w}px)`;
     }
+  },{passive:true});
+})();
+
+/* ── SHEETS ── */
+const overlay=document.getElementById('overlay');
+const dateSheet=document.getElementById('date-sheet');
+const detailSheet=document.getElementById('detail-sheet');
+
+function openDate(s){
+  if(drumOpen)closeDrum();
+  activeDate=s;setDateLabel(s);buildDatePanels(s);
+  if(!dateOpen){dateOpen=true;dateSheet.classList.add('open');overlay.classList.add('active');hideTabBar();}
+}
+function closeDate(){
+  dateOpen=false;detailOpen=false;
+  dateSheet.classList.remove('open');detailSheet.classList.remove('open');
+  overlay.classList.remove('active');showTabBar();
+}
+function openDetail(b){setDetailContent(b);if(!detailOpen){detailOpen=true;detailSheet.classList.add('open');}}
+function closeDetail(){detailOpen=false;detailSheet.classList.remove('open');}
+
+/* ── DATE SHEET ── */
+function setDateLabel(s){document.getElementById('sheetDateLabel').textContent=fmtDate(s);}
+function buildDatePanels(s){
+  activeDate=s;setDateLabel(s);
+  renderDay(document.getElementById('datePanelPrev'),addDays(s,-1));
+  renderDay(document.getElementById('datePanelCurr'),s);
+  renderDay(document.getElementById('datePanelNext'),addDays(s,1));
+  const track=document.getElementById('dateTrack');
+  track.style.transition='none';track.style.transform='translateX(-100%)';
+}
+
+(()=>{
+  const vp=document.querySelector('.date-viewport');
+  const track=document.getElementById('dateTrack');
+  const W=()=>vp.offsetWidth;
+  let sx=0,sy=0,tracking=false,dragging=false;
+  vp.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;dragging=false;track.style.transition='none';},{passive:true});
+  vp.addEventListener('touchmove',e=>{
+    if(!tracking)return;
+    const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
+    if(!dragging){if(Math.abs(dx)<Math.abs(dy))return;dragging=true;}
+    track.style.transform=`translateX(${-W()+dx}px)`;
+  },{passive:true});
+  vp.addEventListener('touchend',e=>{
+    if(!tracking)return;tracking=false;if(!dragging)return;dragging=false;
+    const dx=e.changedTouches[0].clientX-sx,w=W();
+    track.style.transition=`transform 0.28s cubic-bezier(0.32,0.72,0,1)`;
+    if(Math.abs(dx)>w*0.2){
+      if(dx<0){track.style.transform=`translateX(${-w*2}px)`;setTimeout(()=>buildDatePanels(addDays(activeDate,1)),280);}
+      else{track.style.transform=`translateX(0px)`;setTimeout(()=>buildDatePanels(addDays(activeDate,-1)),280);}
+    }else{track.style.transform=`translateX(${-w}px)`;}
   },{passive:true});
 })();
 
@@ -774,10 +664,8 @@ const ICON_GRID=`<svg viewBox="0 0 16 16" fill="#666" width="16" height="16"><re
 function updToggle(){document.getElementById('viewToggle').innerHTML=viewMode==='list'?ICON_GRID:ICON_LIST;}
 updToggle();
 document.getElementById('viewToggle').addEventListener('click',e=>{
-  e.stopPropagation();
-  viewMode=viewMode==='list'?'card':'list';
-  localStorage.setItem('tbcal6-view',viewMode);
-  updToggle();buildDatePanels(activeDate);
+  e.stopPropagation();viewMode=viewMode==='list'?'card':'list';
+  localStorage.setItem('tbcal7-view',viewMode);updToggle();buildDatePanels(activeDate);
 });
 
 function renderDay(el,s){
@@ -789,28 +677,22 @@ function renderDay(el,s){
         <div class="thumb">${b.img?`<img src="${b.img}" alt="">`:b.title.substring(0,10)}</div>
         <div class="list-info">
           <div class="list-title">${b.title}</div>
-          <div class="tags">${b.tags.map(t=>`<span class="tag" style="${tagStyle(t)}">${t}</span>`).join('')}</div>
+          <div class="tags">${b.tags.map(t=>`<span class="tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
         </div>
       </div>`).join('')}</div>`;
   }else{
     el.innerHTML=`<div class="grid">${items.map(b=>`
       <div class="card" data-id="${b.id}">
         ${b.img?`<img src="${b.img}" alt="">`:`<div class="card-ph">${b.title.substring(0,14)}</div>`}
-        <div class="card-over">${b.tags.slice(0,2).map(t=>`<span class="card-tag">${t}</span>`).join('')}</div>
+        <div class="card-over">${b.tags.slice(0,2).map(t=>`<span class="card-tag">${tagDisp(t)}</span>`).join('')}</div>
       </div>`).join('')}</div>`;
   }
   el.querySelectorAll('[data-id]').forEach(el2=>{
-    el2.addEventListener('click',e=>{
-      e.stopPropagation();
-      const b=books.find(x=>x.id==el2.dataset.id);
-      if(b)openDetail(b);
-    });
+    el2.addEventListener('click',e=>{e.stopPropagation();const b=books.find(x=>x.id==el2.dataset.id);if(b)openDetail(b);});
   });
 }
 
-/* ══════════════════════════════════════════
-   DETAIL  — 発売日は左上に表示済みなので本文から除外
-══════════════════════════════════════════ */
+/* ── DETAIL ── */
 function setDetailContent(b){
   document.getElementById('detailDateLabel').textContent=fmtDate(b.date)+'発売';
   const zone=document.getElementById('detailCoverZone');
@@ -825,7 +707,6 @@ function setDetailContent(b){
         <div class="cover-side-center"><div class="detail-cover-main"><div class="cover-ph">${b.title.substring(0,12)}</div></div></div>
         <div class="cover-side-r"></div>
       </div>`;
-  // 発売日を除いたメタ行
   const rows=[
     b.author?`<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author}</span></div>`:'',
     b.publisher?`<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher}</span></div>`:'',
@@ -833,27 +714,23 @@ function setDetailContent(b){
   ].filter(Boolean).join('');
   document.getElementById('detailBody').innerHTML=`
     <div class="detail-title">${b.title}</div>
-    <div class="detail-tags">${b.tags.map(t=>`<span class="detail-tag tag" style="${tagStyle(t)}">${t}</span>`).join('')}</div>
+    <div class="detail-tags">${b.tags.map(t=>`<span class="detail-tag tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
     ${rows?`<div class="meta-rows">${rows}</div>`:''}
     ${b.amazon?`<a class="amazon-btn" href="${b.amazon}" target="_blank">Amazonで見る →</a>`:''}
     <div class="timestamps">作成：${b.created}<br>更新：${b.updated}</div>`;
 }
 
-/* ══════════════════════════════════════════
-   SWIPE TO CLOSE SHEETS
-══════════════════════════════════════════ */
+/* ── SWIPE TO CLOSE ── */
 function enableSwipe(sheetEl,closeFn){
   let sy=0,dy=0,t0=0,on=false,moved=false;
   sheetEl.addEventListener('touchstart',e=>{
-    // スクロール中の子要素は無視
     let el=e.target;
     while(el&&el!==sheetEl){if(el.scrollTop>0&&el.scrollHeight>el.clientHeight)return;el=el.parentElement;}
     on=true;moved=false;dy=0;sy=e.touches[0].clientY;t0=Date.now();
     sheetEl.style.transition='none';
   },{passive:true});
   sheetEl.addEventListener('touchmove',e=>{
-    if(!on)return;
-    const d=e.touches[0].clientY-sy;
+    if(!on)return;const d=e.touches[0].clientY-sy;
     if(d>5){moved=true;dy=d;sheetEl.style.transform=`translateY(${d}px)`;}
     if(e.cancelable)e.preventDefault();
   },{passive:false});
@@ -868,15 +745,22 @@ function enableSwipe(sheetEl,closeFn){
 enableSwipe(dateSheet,closeDate);
 enableSwipe(detailSheet,closeDetail);
 
-/* ══════════════════════════════════════════
-   ADMIN
-══════════════════════════════════════════ */
-ALL_TAGS.forEach(t=>{
-  const btn=document.createElement('button');
-  btn.className='tag-pick-btn';btn.textContent=t;btn.dataset.tag=t;btn.type='button';
-  btn.addEventListener('click',()=>btn.classList.toggle('on'));
-  document.getElementById('tags-pick').appendChild(btn);
+/* ── ADMIN: グループ化タグ ── */
+const tagPickGrouped=document.getElementById('tags-pick-grouped');
+TAG_GROUPS.forEach(group=>{
+  const wrap=document.createElement('div');
+  const row=document.createElement('div');
+  row.className='tag-group';
+  group.tags.forEach(t=>{
+    const btn=document.createElement('button');
+    btn.className='tag-pick-btn';btn.textContent=tagDisp(t);btn.dataset.tag=t;btn.type='button';
+    btn.addEventListener('click',()=>btn.classList.toggle('on'));
+    row.appendChild(btn);
+  });
+  wrap.appendChild(row);
+  tagPickGrouped.appendChild(wrap);
 });
+
 document.getElementById('submit-btn').addEventListener('click',()=>{
   const title=document.getElementById('f-title').value.trim();
   const date=document.getElementById('f-date').value;

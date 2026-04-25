@@ -14,13 +14,13 @@
   --overlay:rgba(0,0,0,0.32);
   --sun:#e5503a;--sat:#3a7ee5;
   --r:10px;--rs:20px;
-  --dur:0.3s;
+  --dur:0.46s;
   --tab-h:56px;
   --header-h:48px;
   --week-h:30px;
   --drum-h:260px;
 }
-html,body{height:100%;overflow:hidden;touch-action:pan-y;}
+html,body{height:100%;overflow:hidden;touch-action:none;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;display:flex;flex-direction:column;}
 
 /* ─── TAB BAR ─── */
@@ -81,7 +81,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── CALENDAR AREA ─── */
 /* 曜日ヘッダー＋カレンダーグリッドをまとめてスライドする */
-.cal-viewport{flex:1;overflow:hidden;position:relative;}
+/* touch-action:none でJSが横スワイプを完全制御→ヘッダー引っ張り防止 */
+.cal-viewport{flex:1;overflow:hidden;position:relative;touch-action:none;}
 .cal-track{display:flex;height:100%;will-change:transform;}
 /* 各パネルは曜日行＋グリッドをセットで持つ */
 .cal-panel{
@@ -96,7 +97,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .cal-panel-weekday{text-align:center;font-size:11px;font-weight:500;color:var(--text3);padding:4px 0;}
 .cal-panel-weekday:first-child{color:var(--sun);}
 .cal-panel-weekday:last-child{color:var(--sat);}
-.cal-panel-grid{flex:1;overflow-y:auto;overscroll-behavior:contain;}
+.cal-panel-grid{flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
   height:56px;border-radius:var(--r);padding:6px 5px 4px;
@@ -115,7 +116,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 /* ─── SEARCH / ADMIN ─── */
 .center-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);font-size:14px;text-align:center;padding:32px;}
 .center-msg .big{font-size:36px;}
-.admin-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;}
+.admin-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
 .admin-form{padding:16px;display:flex;flex-direction:column;gap:14px;}
 .form-group{display:flex;flex-direction:column;gap:4px;width:100%;}
 .form-label{font-size:11px;font-weight:600;color:var(--text2);}
@@ -136,9 +137,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .tag-pick-btn{
   font-size:11px;padding:4px 10px;border-radius:20px;
   border:0.5px solid #ddd;background:#fafafa;cursor:pointer;
-  color:var(--text2);font-family:var(--font);transition:all 0.1s;
+  color:var(--text2);font-family:var(--font);transition:all 0.15s;
 }
-.tag-pick-btn.on{background:#111;color:#fff;border-color:#111;}
+/* .on は JS側でインラインスタイルとして各タグ色を直接付与するため、
+   デフォルトのフォールバックだけ残す */
+.tag-pick-btn.on{border-width:1.5px;}
 .submit-btn{
   box-sizing:border-box;width:100%;
   background:#111;color:#fff;border:none;border-radius:10px;
@@ -147,7 +150,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 
 /* ─── OVERLAY ─── */
-#overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity var(--dur) ease;}
+#overlay{position:fixed;inset:0;background:var(--overlay);z-index:100;opacity:0;pointer-events:none;transition:opacity 0.48s ease;}
 #overlay.active{opacity:1;pointer-events:all;}
 
 /* ─── SHEETS ─── */
@@ -155,7 +158,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   position:fixed;left:0;width:100%;bottom:0;
   transform:translateY(100%);
   background:var(--sheet-bg);border-radius:var(--rs) var(--rs) 0 0;
-  transition:transform var(--dur) cubic-bezier(0.32,0.72,0,1);
+  transition:transform 0.48s cubic-bezier(0.23,1,0.32,1);
   will-change:transform;display:flex;flex-direction:column;overflow:hidden;
 }
 .sheet.open{transform:translateY(0);}
@@ -167,9 +170,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .sheet-title{font-size:15px;font-weight:700;}
 
 /* ─── DATE SHEET (指追従スワイプ) ─── */
-.date-viewport{flex:1;overflow:hidden;position:relative;}
+.date-viewport{flex:1;overflow:hidden;position:relative;touch-action:none;}
 .date-track{display:flex;height:100%;will-change:transform;}
-.date-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;}
+.date-panel{flex:0 0 100%;height:100%;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;}
 .view-toggle-btn{width:32px;height:32px;border:none;background:#f2f2f2;border-radius:8px;cursor:pointer;display:flex;align-items:center;justify-content:center;}
 
 /* ─── LIST / CARD ─── */
@@ -203,9 +206,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .detail-cover-main{height:170px;width:auto;max-width:130px;border-radius:4px;overflow:hidden;box-shadow:0 4px 20px rgba(0,0,0,0.22);display:flex;align-items:center;justify-content:center;}
 .detail-cover-main img{height:100%;width:auto;object-fit:contain;display:block;}
 .detail-cover-main .cover-ph{width:110px;height:170px;display:flex;align-items:center;justify-content:center;background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;}
-.detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;}
-/* 区切り線なし */
-.detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 12px;margin-bottom:14px;}
+.detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;touch-action:pan-y;}
+/* 区切り線なし、タグとの間隔を詰める */
+.detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 6px;margin-bottom:8px;}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .meta-rows{display:flex;flex-direction:column;}
@@ -737,7 +740,9 @@ function enableSwipe(sheetEl,closeFn){
   sheetEl.addEventListener('touchend',()=>{
     if(!on)return;on=false;
     const vel=dy/(Date.now()-t0);
-    sheetEl.style.transition='';sheetEl.style.transform='';
+    // 離した瞬間だけ同じイージングで戻す/閉じる
+    sheetEl.style.transition='transform 0.48s cubic-bezier(0.23,1,0.32,1)';
+    sheetEl.style.transform='';
     if(moved&&(dy>sheetEl.offsetHeight*0.25||vel>0.4))closeFn();
     dy=0;
   });
@@ -747,6 +752,23 @@ enableSwipe(detailSheet,closeDetail);
 
 /* ── ADMIN: グループ化タグ ── */
 const tagPickGrouped=document.getElementById('tags-pick-grouped');
+
+function applyTagBtnStyle(btn,on){
+  const t=btn.dataset.tag;
+  const c=TAG_COLOR[t];
+  if(on&&c){
+    btn.style.background=c[0];
+    btn.style.color=c[1];
+    btn.style.borderColor=c[1];
+    btn.style.borderWidth='1.5px';
+  }else{
+    btn.style.background='';
+    btn.style.color='';
+    btn.style.borderColor='';
+    btn.style.borderWidth='';
+  }
+}
+
 TAG_GROUPS.forEach(group=>{
   const wrap=document.createElement('div');
   const row=document.createElement('div');
@@ -754,7 +776,10 @@ TAG_GROUPS.forEach(group=>{
   group.tags.forEach(t=>{
     const btn=document.createElement('button');
     btn.className='tag-pick-btn';btn.textContent=tagDisp(t);btn.dataset.tag=t;btn.type='button';
-    btn.addEventListener('click',()=>btn.classList.toggle('on'));
+    btn.addEventListener('click',()=>{
+      btn.classList.toggle('on');
+      applyTagBtnStyle(btn,btn.classList.contains('on'));
+    });
     row.appendChild(btn);
   });
   wrap.appendChild(row);
@@ -780,7 +805,10 @@ document.getElementById('submit-btn').addEventListener('click',()=>{
   });
   saveBooks();
   ['f-title','f-author','f-publisher','f-img','f-amazon','f-isbn'].forEach(id=>document.getElementById(id).value='');
-  document.querySelectorAll('.tag-pick-btn.on').forEach(b=>b.classList.remove('on'));
+  document.querySelectorAll('.tag-pick-btn.on').forEach(b=>{
+    b.classList.remove('on');
+    applyTagBtnStyle(b,false);
+  });
   document.getElementById('adminScroll').scrollTop=0;
   alert('登録しました');renderCal();
 });

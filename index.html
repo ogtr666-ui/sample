@@ -303,7 +303,19 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .tags{display:flex;gap:4px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;}
 
-.grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;}
+.grid{
+  display:grid;
+  grid-template-columns:repeat(3,1fr);
+  gap:8px;padding:10px;
+}
+@media(min-width:768px){
+  .grid{
+    grid-template-columns:repeat(auto-fill,minmax(120px,1fr));
+  }
+}
+@media(min-width:600px){
+  .grid{grid-template-columns:repeat(auto-fill,minmax(140px,1fr));}
+}
 .card{
   aspect-ratio:1/1.414;background:transparent;
   cursor:pointer;position:relative;

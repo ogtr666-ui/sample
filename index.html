@@ -252,13 +252,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 /* 日付シート: もう少し下げる */
 #date-sheet{
   z-index:200;
-  top:calc(var(--title-h) + var(--header-h) + 80px);
+  top:calc(var(--title-h) + var(--header-h) + 50px);
   border-radius:var(--rs) var(--rs) 0 0;
 }
 /* 詳細シート: 日付シートの角丸(20px)分だけ下 */
 #detail-sheet{
   z-index:300;
-  top:calc(var(--title-h) + var(--header-h) + 100px);
+  top:calc(var(--title-h) + var(--header-h) + 70px);
   border-radius:12px 12px 0 0;
 }
 .handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
@@ -385,7 +385,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   word-break:break-all;
   box-shadow:0 4px 20px rgba(0,0,0,0.18);
 }
-.detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;touch-action:pan-y;}
+/* 書影+ボディをまとめてスクロールするコンテナ */
+.detail-scroll{
+  flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;
+}
+.detail-body{padding:0 20px 32px;}
 .detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 6px;margin-bottom:8px;}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
@@ -536,8 +540,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   <div class="sheet-header" style="padding-bottom:4px;">
     <div style="font-size:12px;font-weight:400;color:var(--text3);" id="detailDateLabel"></div>
   </div>
-  <div class="detail-cover-zone" id="detailCoverZone"></div>
-  <div class="detail-body" id="detailBody"></div>
+  <!-- 書影+ボディをまとめてスクロール -->
+  <div class="detail-scroll">
+    <div class="detail-cover-zone" id="detailCoverZone"></div>
+    <div class="detail-body" id="detailBody"></div>
+  </div>
 </div>
 
 <!-- 書影選択アクションシート (URL入力復活時のためコメントアウトで保持)

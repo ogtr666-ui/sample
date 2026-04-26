@@ -128,44 +128,47 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .img-action-overlay{
   position:fixed;inset:0;z-index:600;
-  background:rgba(0,0,0,0.3);
-  display:none;align-items:flex-end;
+  background:rgba(0,0,0,0);
+  display:flex;align-items:flex-end;
+  pointer-events:none;
+  transition:background 0.32s ease;
 }
-.img-action-overlay.show{display:flex;}
+.img-action-overlay.show{
+  background:rgba(0,0,0,0.3);
+  pointer-events:all;
+}
 .img-action-sheet{
   width:100%;background:#fff;border-radius:16px 16px 0 0;
   padding:8px 0 32px;
+  transform:translateY(100%);
+  transition:transform 0.36s cubic-bezier(0.23,1,0.32,1);
 }
-.img-action-title{
-  text-align:center;font-size:12px;color:var(--text3);
-  padding:8px 16px 10px;border-bottom:0.5px solid var(--border);
-}
-.img-action-btn{
-  display:block;width:100%;padding:15px 20px;
-  text-align:left;font-size:15px;color:var(--text);
-  background:none;border:none;border-bottom:0.5px solid var(--border);
-  font-family:var(--font);cursor:pointer;
-}
+.img-action-overlay.show .img-action-sheet{transform:translateY(0);}
+.img-action-title{text-align:center;font-size:12px;color:var(--text3);padding:8px 16px 10px;border-bottom:0.5px solid var(--border);}
+.img-action-btn{display:block;width:100%;padding:15px 20px;text-align:left;font-size:15px;color:var(--text);background:none;border:none;border-bottom:0.5px solid var(--border);font-family:var(--font);cursor:pointer;}
 .img-action-btn:last-child{border-bottom:none;}
 .img-action-btn:active{background:#f5f5f5;}
 .img-url-input-wrap{
-  display:none;padding:10px 16px 4px;
+  max-height:0;overflow:hidden;
+  transition:max-height 0.28s cubic-bezier(0.23,1,0.32,1),padding 0.28s ease;
+  padding:0 16px;
 }
-.img-url-input-wrap.show{display:block;}
-.img-url-input{
-  box-sizing:border-box;width:100%;
-  background:#f4f4f4;border:0.5px solid #e0e0e0;
-  border-radius:8px;padding:7px 10px;
-  font-size:13px;color:var(--text);font-family:var(--font);outline:none;
-}
-.img-url-confirm{
-  display:block;width:calc(100% - 32px);margin:8px 16px 0;
-  background:#111;color:#fff;border:none;border-radius:8px;
-  padding:10px;font-size:13px;font-weight:700;
-  font-family:var(--font);cursor:pointer;
-}
+.img-url-input-wrap.show{max-height:120px;padding:10px 16px 4px;}
+.img-url-input{box-sizing:border-box;width:100%;background:#f4f4f4;border:0.5px solid #e0e0e0;border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;}
+.img-url-confirm{display:block;width:100%;margin:8px 0 0;background:#111;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;}
 
-/* オプション折りたたみ */
+/* ─── TOAST ─── */
+.toast{
+  position:fixed;bottom:calc(var(--tab-h) + 16px);left:50%;
+  transform:translateX(-50%) translateY(0);
+  background:rgba(30,30,30,0.88);color:#fff;
+  font-size:13px;font-weight:500;
+  padding:10px 20px;border-radius:20px;
+  white-space:nowrap;z-index:900;
+  opacity:0;pointer-events:none;
+  transition:opacity 0.3s ease,transform 0.3s ease;
+}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
 .optional-toggle{
   display:flex;align-items:center;gap:6px;
   font-size:11px;color:var(--text3);cursor:pointer;
@@ -243,7 +246,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── LIST / CARD ─── */
 .list-view{display:flex;flex-direction:column;}
-.list-item{display:flex;align-items:center;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
+.list-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
 .list-item:last-child{border-bottom:none;}
 .list-item:active{background:#fafafa;}
 .thumb{width:52px;height:72px;background:#e8e8e8;border-radius:4px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#888;text-align:center;line-height:1.3;padding:3px;}
@@ -263,46 +266,50 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── DETAIL ─── */
 .detail-cover-zone{
-  position:relative;overflow:hidden;height:220px;
-  display:flex;align-items:center;justify-content:center;
-  flex-shrink:0;background:#222;
+  position:relative;overflow:hidden;
+  height:220px;flex-shrink:0;
+  display:flex;align-items:stretch;
 }
-/* 背景: 書影を横幅いっぱいに拡大してブラー+暗め */
-.detail-cover-bg{
-  position:absolute;inset:0;
-  background-size:cover;background-position:center;
-  filter:blur(24px);
-  transform:scale(1.15);
-  opacity:0.6;
+/* 左右ブラー背景 */
+.detail-cover-side-l,.detail-cover-side-r{
+  flex:1;overflow:hidden;position:relative;
 }
-/* メイン書影: 角丸なし、ゾーン高さいっぱい */
-.detail-cover-main{
-  position:relative;z-index:1;
-  height:100%;width:auto;
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 24px rgba(0,0,0,0.4);
+.detail-cover-side-l img,.detail-cover-side-r img{
+  position:absolute;top:0;height:100%;width:auto;
+  object-fit:cover;
+  filter:blur(16px);opacity:0.45;transform:scale(1.1);
 }
-.detail-cover-main img{
-  height:100%;width:auto;
-  object-fit:contain;display:block;
+.detail-cover-side-l img{right:0;}
+.detail-cover-side-r img{left:0;}
+/* 中央書影 */
+.detail-cover-center{
+  flex-shrink:0;display:flex;align-items:center;justify-content:center;
+  position:relative;z-index:1;padding:12px 0;
 }
-.detail-cover-main .cover-ph{
-  width:110px;height:100%;display:flex;align-items:center;justify-content:center;
-  background:rgba(255,255,255,0.15);font-size:11px;color:#fff;
-  text-align:center;padding:6px;line-height:1.4;
+.detail-cover-center img{
+  height:196px;width:auto;object-fit:contain;display:block;
+  box-shadow:0 4px 20px rgba(0,0,0,0.2);border-radius:3px;
+}
+.detail-cover-center .cover-ph{
+  width:130px;height:196px;display:flex;align-items:center;justify-content:center;
+  background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;
+  border-radius:3px;
 }
 .detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;touch-action:pan-y;}
-/* 区切り線なし、タグとの間隔を詰める */
 .detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 6px;margin-bottom:8px;}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .meta-rows{display:flex;flex-direction:column;}
-.meta-row{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.meta-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
 .meta-row:last-of-type{border-bottom:none;}
-.meta-label{color:var(--text3);font-size:11px;width:58px;flex-shrink:0;}
+.meta-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);}
+.meta-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 .meta-val{color:var(--text);flex:1;}
-.amazon-btn{display:block;margin-top:14px;background:#FF9900;color:#111;text-align:center;text-decoration:none;font-weight:700;font-size:13px;padding:11px;border-radius:9px;}
-.timestamps{margin-top:14px;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
+.url-btn{display:flex;align-items:center;gap:12px;padding:10px 0;width:100%;border:none;background:none;cursor:pointer;font-family:var(--font);border-bottom:0.5px solid var(--border);text-decoration:none;color:var(--text);}
+.url-btn-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#e47911;}
+.url-btn-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.url-btn-label{font-size:13px;font-weight:500;color:#e47911;}
+.timestamps{padding:12px 0 0;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
 </style>
 </head>
 <body>
@@ -449,6 +456,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   </div>
 </div>
 
+<div class="toast" id="toast"></div>
+
 <script>
 /* ══════════════════════════════════════════
    TAG CONFIG
@@ -536,15 +545,15 @@ let viewMode=localStorage.getItem('tbcal7-view')||'list';
 let activeDate='';
 let dateOpen=false,detailOpen=false;
 
-/* ── TABS ── */
+/* ── RESET ADMIN FORM ── */
 function resetAdminForm(){
   ['f-title','f-author','f-publisher','f-date','f-img','f-amazon','f-isbn']
     .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
   document.querySelectorAll('.tag-pick-btn.on').forEach(b=>{
     b.classList.remove('on');
-    if(typeof applyTagBtnStyle==='function') applyTagBtnStyle(b,false);
+    applyTagBtnStyle(b,false);
   });
-  if(typeof imgMode!=='undefined'){ imgMode='none'; imgFileDataUrl=''; }
+  try{ imgMode='none'; imgFileDataUrl=''; }catch(e){}
   const lbl=document.getElementById('imgTriggerLabel');
   if(lbl){ lbl.textContent='タップして選択…'; lbl.style.color='var(--text3)'; }
   document.getElementById('optionalToggle')?.classList.remove('open');
@@ -558,7 +567,8 @@ document.querySelectorAll('.tab').forEach(t=>{
     document.querySelectorAll('.tab-page').forEach(x=>x.classList.remove('active'));
     t.classList.add('active');
     document.getElementById('tab-'+t.dataset.tab).classList.add('active');
-    resetAdminForm();
+    // 全定義が終わった後に実行されるよう遅延
+    setTimeout(resetAdminForm, 0);
   });
 });
 const tabBar=document.getElementById('tabBar');
@@ -567,36 +577,34 @@ function showTabBar(){tabBar.classList.remove('hidden')}
 
 /* ── YEAR/MONTH NATIVE SELECT ── */
 function buildSelects(){
+  // 年と月を1つのセレクトに統合、前後3ヶ月のみ表示
   const ySel=document.getElementById('ymYearSel');
   const mSel=document.getElementById('ymMonthSel');
+  // ymYearSel を結合セレクトとして使い、ymMonthSel は非表示にする
+  mSel.style.display='none';
   ySel.innerHTML='';
-  for(let y=2020;y<=2030;y++){
+  for(let i=-1;i<=1;i++){
+    const nm=curMonth+i;
+    let y=curYear,m=nm;
+    while(m<0){m+=12;y--;}
+    while(m>11){m-=12;y++;}
     const o=document.createElement('option');
-    o.value=y;o.textContent=`${y}年`;
-    if(y===curYear)o.selected=true;
+    o.value=`${y}-${m}`;
+    o.textContent=`${y}年${m+1}月`;
+    if(y===curYear&&m===curMonth)o.selected=true;
     ySel.appendChild(o);
-  }
-  mSel.innerHTML='';
-  for(let m=0;m<12;m++){
-    const o=document.createElement('option');
-    o.value=m;o.textContent=`${m+1}月`;
-    if(m===curMonth)o.selected=true;
-    mSel.appendChild(o);
   }
 }
 function syncSelects(){
-  document.getElementById('ymYearSel').value=curYear;
-  document.getElementById('ymMonthSel').value=curMonth;
+  buildSelects(); // 現在月を中心に7ヶ月を再構築
 }
 document.getElementById('ymYearSel').addEventListener('change',e=>{
-  curYear=parseInt(e.target.value);renderCal();
-});
-document.getElementById('ymMonthSel').addEventListener('change',e=>{
-  curMonth=parseInt(e.target.value);renderCal();
+  const[y,m]=e.target.value.split('-').map(Number);
+  curYear=y;curMonth=m;buildSelects();renderCal();
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{
   curYear=today.getFullYear();curMonth=today.getMonth();
-  syncSelects();renderCal();
+  buildSelects();renderCal();
 });
 buildSelects();
 
@@ -788,7 +796,6 @@ function renderDay(el,s){
     el.innerHTML=`<div class="grid">${items.map(b=>`
       <div class="card" data-id="${b.id}">
         ${b.img?`<img src="${b.img}" alt="">`:`<div class="card-ph">${b.title.substring(0,14)}</div>`}
-        <div class="card-over">${b.tags.slice(0,2).map(t=>`<span class="card-tag">${tagDisp(t)}</span>`).join('')}</div>
       </div>`).join('')}</div>`;
   }
   el.querySelectorAll('[data-id]').forEach(el2=>{
@@ -798,26 +805,31 @@ function renderDay(el,s){
 
 /* ── DETAIL ── */
 function setDetailContent(b){
-  document.getElementById('detailDateLabel').textContent=fmtDate(b.date)+'発売';
   const zone=document.getElementById('detailCoverZone');
-  if(b.img){
-    zone.innerHTML=`
-      <div class="detail-cover-bg" style="background-image:url('${b.img}')"></div>
-      <div class="detail-cover-main"><img src="${b.img}" alt="${b.title}"></div>`;
-  }else{
-    zone.innerHTML=`
-      <div class="detail-cover-main"><div class="cover-ph">${b.title.substring(0,12)}</div></div>`;
-  }
-  const rows=[
-    b.author?`<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author}</span></div>`:'',
-    b.publisher?`<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher}</span></div>`:'',
-    b.isbn?`<div class="meta-row"><span class="meta-label">ISBN</span><span class="meta-val">${b.isbn}</span></div>`:'',
-  ].filter(Boolean).join('');
+  const imgTag=b.img?`<img src="${b.img}" alt="${b.title}">`:`<div class="cover-ph">${b.title.substring(0,12)}</div>`;
+  const sideImg=b.img?`<img src="${b.img}" alt="">`:'';
+  zone.innerHTML=`
+    <div class="detail-cover-side-l">${sideImg}</div>
+    <div class="detail-cover-center">${imgTag}</div>
+    <div class="detail-cover-side-r">${sideImg}</div>`;
+
+  const iconCal=`<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>`;
+  const iconPerson=`<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
+  const iconHash=`<svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`;
+  const iconLink=`<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
+
+  const[y,m,d]=b.date.split('-');
+  let rows=`<div class="meta-row"><span class="meta-icon">${iconCal}</span><span class="meta-val">${y}年${parseInt(m)}月${parseInt(d)}日発売</span></div>`;
+  const auth=[b.author,b.publisher].filter(Boolean).join(' / ');
+  if(auth)rows+=`<div class="meta-row"><span class="meta-icon">${iconPerson}</span><span class="meta-val">${auth}</span></div>`;
+  if(b.isbn)rows+=`<div class="meta-row"><span class="meta-icon">${iconHash}</span><span class="meta-val">${b.isbn}</span></div>`;
+  const urlBtn=b.amazon?`<a class="url-btn" href="${b.amazon}" target="_blank"><span class="url-btn-icon">${iconLink}</span><span class="url-btn-label">リンクを開く</span></a>`:'';
+
   document.getElementById('detailBody').innerHTML=`
     <div class="detail-title">${b.title}</div>
-    <div class="detail-tags">${b.tags.map(t=>`<span class="detail-tag tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
-    ${rows?`<div class="meta-rows">${rows}</div>`:''}
-    ${b.amazon?`<a class="amazon-btn" href="${b.amazon}" target="_blank">Amazonで見る →</a>`:''}
+    <div class="detail-tags">${b.tags.map(t=>`<span class="detail-tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
+    <div class="meta-rows">${rows}</div>
+    ${urlBtn}
     <div class="timestamps">作成：${b.created}<br>更新：${b.updated}</div>`;
 }
 
@@ -1015,7 +1027,13 @@ TAG_GROUPS.forEach(group=>{
   tagPickGrouped.appendChild(wrap);
 });
 
-/* ── ADMIN UI ── */
+/* ── TOAST ── */
+function showToast(msg){
+  const t=document.getElementById('toast');
+  t.textContent=msg;
+  t.classList.add('show');
+  setTimeout(()=>t.classList.remove('show'),2000);
+}
 let imgMode = 'none'; // 'url' | 'file' | 'none'
 let imgFileDataUrl = '';
 
@@ -1109,7 +1127,7 @@ document.getElementById('submit-btn').addEventListener('click',()=>{
     applyTagBtnStyle(b,false);
   });
   document.getElementById('adminScroll').scrollTop=0;
-  alert('登録しました');renderCal();
+  showToast('登録しました');renderCal();
 });
 </script>
 </body>

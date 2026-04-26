@@ -53,15 +53,23 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .drum-caret{font-size:10px;color:var(--text3);transition:transform 0.2s;}
 .drum-caret.open{transform:rotate(180deg);}
 
-/* ─── 年月セレクト (iOSネイティブドラムロール) ─── */
-.ym-selects{display:flex;align-items:center;gap:2px;}
-.ym-select{
+/* ─── 年月ピッカー (input type=month → iOSで年・月独立ドラムロール) ─── */
+.ym-input{
   font-size:17px;font-weight:700;letter-spacing:-0.3px;
   color:var(--text);font-family:var(--font);
   background:none;border:none;outline:none;
   -webkit-appearance:none;appearance:none;
-  /* タップ領域を確保しつつ見た目はテキストのみ */
   padding:4px 0;cursor:pointer;
+  /* type=month のデフォルトUIを非表示にしてテキストで表示 */
+  position:relative;
+}
+/* PCブラウザでは年月ラベルを重ねて表示 */
+.ym-label-display{
+  font-size:17px;font-weight:700;letter-spacing:-0.5px;
+  pointer-events:none;
+}
+.ym-input-wrap{
+  position:relative;display:flex;align-items:center;
 }
 
 /* ─── CALENDAR AREA ─── */
@@ -249,67 +257,80 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .list-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
 .list-item:last-child{border-bottom:none;}
 .list-item:active{background:#fafafa;}
-.thumb{width:52px;height:72px;background:#e8e8e8;border-radius:4px;flex-shrink:0;overflow:hidden;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:600;color:#888;text-align:center;line-height:1.3;padding:3px;}
-.thumb img{width:100%;height:100%;object-fit:cover;display:block;}
+/* リスト書影: 大きめ・画像のみ・角丸・影 */
+.thumb{
+  width:64px;height:90px;
+  background:#d0d0d0; /* 影に被らないグレー */
+  border-radius:5px;flex-shrink:0;overflow:hidden;
+  display:flex;align-items:center;justify-content:center;
+  font-size:9px;font-weight:600;color:#888;text-align:center;line-height:1.3;padding:3px;
+  box-shadow:0 2px 10px rgba(0,0,0,0.15);
+}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;}
 .list-info{flex:1;min-width:0;}
 .list-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
 .tags{display:flex;gap:4px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;}
+
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;}
-.card{aspect-ratio:2/3;background:#eee;border-radius:var(--r);box-shadow:0 2px 8px rgba(0,0,0,0.09);overflow:hidden;cursor:pointer;position:relative;transition:transform 0.12s;}
+.card{aspect-ratio:2/3;background:#eee;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.09);overflow:hidden;cursor:pointer;position:relative;transition:transform 0.12s;}
 .card:active{transform:scale(0.97);}
 .card img{width:100%;height:100%;object-fit:cover;display:block;}
 .card-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ebebeb;font-size:10px;font-weight:600;color:#888;text-align:center;padding:8px;line-height:1.4;}
-.card-over{position:absolute;bottom:0;left:0;right:0;padding:18px 5px 5px;background:linear-gradient(transparent,rgba(0,0,0,0.42));display:flex;flex-wrap:wrap;gap:2px;}
-.card-tag{font-size:9px;font-weight:600;color:#fff;background:rgba(255,255,255,0.18);padding:1px 5px;border-radius:20px;}
 .empty{padding:36px 16px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* ─── DETAIL ─── */
+/* 書影ゾーン: 幅いっぱいブラー背景 + 中央に実書影を高さいっぱい */
 .detail-cover-zone{
   position:relative;overflow:hidden;
   height:220px;flex-shrink:0;
-  display:flex;align-items:stretch;
 }
-/* 左右ブラー背景 */
-.detail-cover-side-l,.detail-cover-side-r{
-  flex:1;overflow:hidden;position:relative;
+/* 背景: 書影を幅・高さいっぱいに拡大してブラー */
+.detail-cover-bg{
+  position:absolute;inset:0;
+  background-size:cover;background-position:center;
+  filter:blur(20px);
+  transform:scale(1.15);
+  opacity:0.5;
 }
-.detail-cover-side-l img,.detail-cover-side-r img{
-  position:absolute;top:0;height:100%;width:auto;
-  object-fit:cover;
-  filter:blur(16px);opacity:0.45;transform:scale(1.1);
+.detail-cover-bg-empty{
+  position:absolute;inset:0;
+  background:#c0c0c0;
 }
-.detail-cover-side-l img{right:0;}
-.detail-cover-side-r img{left:0;}
-/* 中央書影 */
-.detail-cover-center{
-  flex-shrink:0;display:flex;align-items:center;justify-content:center;
-  position:relative;z-index:1;padding:12px 0;
+/* 前面: 実書影を中央・高さいっぱい */
+.detail-cover-front{
+  position:absolute;inset:0;
+  display:flex;align-items:center;justify-content:center;
+  z-index:1;
 }
-.detail-cover-center img{
-  height:196px;width:auto;object-fit:contain;display:block;
-  box-shadow:0 4px 20px rgba(0,0,0,0.2);border-radius:3px;
+.detail-cover-front img{
+  height:100%;width:auto;
+  object-fit:contain;display:block;
+  box-shadow:0 4px 20px rgba(0,0,0,0.25);
 }
-.detail-cover-center .cover-ph{
-  width:130px;height:196px;display:flex;align-items:center;justify-content:center;
-  background:#e0e0e0;font-size:11px;color:#888;text-align:center;padding:6px;line-height:1.4;
-  border-radius:3px;
+/* 書影なし時のプレースホルダー: A判比率(1:√2)のグレー */
+.detail-cover-front .cover-ph{
+  /* A判比率 height:220px → width = 220/1.414 ≈ 156px */
+  width:calc(220px / 1.414);
+  height:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:#d0d0d0;
+  font-size:12px;font-weight:500;color:#555;
+  text-align:center;padding:16px 12px;line-height:1.6;
+  word-break:break-all;
+  box-shadow:0 4px 20px rgba(0,0,0,0.18);
 }
 .detail-body{flex:1;overflow-y:auto;overscroll-behavior:contain;padding:0 20px 32px;touch-action:pan-y;}
 .detail-title{font-size:17px;font-weight:700;line-height:1.55;padding:16px 0 6px;margin-bottom:8px;}
 .detail-tags{display:flex;gap:5px;flex-wrap:wrap;margin-bottom:14px;}
 .detail-tag{font-size:11px;font-weight:500;padding:3px 9px;border-radius:20px;}
 .meta-rows{display:flex;flex-direction:column;}
-.meta-row{display:flex;align-items:center;gap:12px;padding:10px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
+.meta-row{display:flex;align-items:baseline;gap:10px;padding:9px 0;border-bottom:0.5px solid var(--border);font-size:13px;}
 .meta-row:last-of-type{border-bottom:none;}
-.meta-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:var(--text3);}
-.meta-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
+.meta-label{color:var(--text3);font-size:11px;width:58px;flex-shrink:0;}
 .meta-val{color:var(--text);flex:1;}
-.url-btn{display:flex;align-items:center;gap:12px;padding:10px 0;width:100%;border:none;background:none;cursor:pointer;font-family:var(--font);border-bottom:0.5px solid var(--border);text-decoration:none;color:var(--text);}
-.url-btn-icon{width:20px;height:20px;flex-shrink:0;display:flex;align-items:center;justify-content:center;color:#e47911;}
-.url-btn-icon svg{width:16px;height:16px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
-.url-btn-label{font-size:13px;font-weight:500;color:#e47911;}
-.timestamps{padding:12px 0 0;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
+.amazon-btn{display:block;margin-top:14px;background:#FF9900;color:#111;text-align:center;text-decoration:none;font-weight:700;font-size:13px;padding:11px;border-radius:9px;}
+.timestamps{margin-top:14px;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
 </style>
 </head>
 <body>
@@ -320,9 +341,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   <div class="tab-page active" id="tab-calendar">
     <!-- 年月ヘッダー -->
     <div class="cal-header">
-      <div class="ym-selects">
-        <select class="ym-select" id="ymYearSel"></select>
-        <select class="ym-select" id="ymMonthSel"></select>
+      <div class="ym-input-wrap">
+        <!-- iOSでは type=month が年・月独立ドラムロールになる -->
+        <!-- ラベル表示の上に透明inputを重ねてタップを拾う -->
+        <span class="ym-label-display" id="ymLabelDisplay">2026年4月</span>
+        <input type="month" id="ymMonthInput"
+          style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
     </div>
@@ -436,7 +460,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <div class="sheet" id="detail-sheet">
   <div class="handle-wrap"><div class="handle"></div></div>
   <div class="sheet-header" style="padding-bottom:4px;">
-    <div style="font-size:13px;font-weight:500;color:var(--text3);" id="detailDateLabel"></div>
+    <div style="font-size:12px;font-weight:400;color:var(--text3);" id="detailDateLabel"></div>
   </div>
   <div class="detail-cover-zone" id="detailCoverZone"></div>
   <div class="detail-body" id="detailBody"></div>
@@ -576,31 +600,20 @@ function hideTabBar(){tabBar.classList.add('hidden')}
 function showTabBar(){tabBar.classList.remove('hidden')}
 
 /* ── YEAR/MONTH NATIVE SELECT ── */
+/* ── YEAR/MONTH PICKER (input type=month) ── */
+function ymVal(y,m){ return `${y}-${String(m+1).padStart(2,'0')}`; }
 function buildSelects(){
-  // 年と月を1つのセレクトに統合、前後3ヶ月のみ表示
-  const ySel=document.getElementById('ymYearSel');
-  const mSel=document.getElementById('ymMonthSel');
-  // ymYearSel を結合セレクトとして使い、ymMonthSel は非表示にする
-  mSel.style.display='none';
-  ySel.innerHTML='';
-  for(let i=-1;i<=1;i++){
-    const nm=curMonth+i;
-    let y=curYear,m=nm;
-    while(m<0){m+=12;y--;}
-    while(m>11){m-=12;y++;}
-    const o=document.createElement('option');
-    o.value=`${y}-${m}`;
-    o.textContent=`${y}年${m+1}月`;
-    if(y===curYear&&m===curMonth)o.selected=true;
-    ySel.appendChild(o);
-  }
+  const inp=document.getElementById('ymMonthInput');
+  inp.value=ymVal(curYear,curMonth);
+  document.getElementById('ymLabelDisplay').textContent=`${curYear}年${curMonth+1}月`;
 }
-function syncSelects(){
-  buildSelects(); // 現在月を中心に7ヶ月を再構築
-}
-document.getElementById('ymYearSel').addEventListener('change',e=>{
+function syncSelects(){ buildSelects(); }
+
+document.getElementById('ymMonthInput').addEventListener('change',e=>{
+  if(!e.target.value)return;
   const[y,m]=e.target.value.split('-').map(Number);
-  curYear=y;curMonth=m;buildSelects();renderCal();
+  curYear=y;curMonth=m-1;
+  buildSelects();renderCal();
 });
 document.getElementById('todayBtn').addEventListener('click',()=>{
   curYear=today.getFullYear();curMonth=today.getMonth();
@@ -805,31 +818,30 @@ function renderDay(el,s){
 
 /* ── DETAIL ── */
 function setDetailContent(b){
-  const zone=document.getElementById('detailCoverZone');
-  const imgTag=b.img?`<img src="${b.img}" alt="${b.title}">`:`<div class="cover-ph">${b.title.substring(0,12)}</div>`;
-  const sideImg=b.img?`<img src="${b.img}" alt="">`:'';
-  zone.innerHTML=`
-    <div class="detail-cover-side-l">${sideImg}</div>
-    <div class="detail-cover-center">${imgTag}</div>
-    <div class="detail-cover-side-r">${sideImg}</div>`;
-
-  const iconCal=`<svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>`;
-  const iconPerson=`<svg viewBox="0 0 24 24"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>`;
-  const iconHash=`<svg viewBox="0 0 24 24"><line x1="4" y1="9" x2="20" y2="9"/><line x1="4" y1="15" x2="20" y2="15"/><line x1="10" y1="3" x2="8" y2="21"/><line x1="16" y1="3" x2="14" y2="21"/></svg>`;
-  const iconLink=`<svg viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"/><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"/></svg>`;
-
   const[y,m,d]=b.date.split('-');
-  let rows=`<div class="meta-row"><span class="meta-icon">${iconCal}</span><span class="meta-val">${y}年${parseInt(m)}月${parseInt(d)}日発売</span></div>`;
-  const auth=[b.author,b.publisher].filter(Boolean).join(' / ');
-  if(auth)rows+=`<div class="meta-row"><span class="meta-icon">${iconPerson}</span><span class="meta-val">${auth}</span></div>`;
-  if(b.isbn)rows+=`<div class="meta-row"><span class="meta-icon">${iconHash}</span><span class="meta-val">${b.isbn}</span></div>`;
-  const urlBtn=b.amazon?`<a class="url-btn" href="${b.amazon}" target="_blank"><span class="url-btn-icon">${iconLink}</span><span class="url-btn-label">リンクを開く</span></a>`:'';
+  document.getElementById('detailDateLabel').textContent=`${y}年${parseInt(m)}月${parseInt(d)}日発売`;
 
+  const zone=document.getElementById('detailCoverZone');
+  if(b.img){
+    zone.innerHTML=`
+      <div class="detail-cover-bg" style="background-image:url('${b.img}')"></div>
+      <div class="detail-cover-front"><img src="${b.img}" alt="${b.title}"></div>`;
+  }else{
+    zone.innerHTML=`
+      <div class="detail-cover-bg-empty"></div>
+      <div class="detail-cover-front"><div class="cover-ph">${b.title}</div></div>`;
+  }
+
+  const rows=[
+    b.author?`<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author}</span></div>`:'',
+    b.publisher?`<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher}</span></div>`:'',
+    b.isbn?`<div class="meta-row"><span class="meta-label">ISBN</span><span class="meta-val">${b.isbn}</span></div>`:'',
+  ].filter(Boolean).join('');
   document.getElementById('detailBody').innerHTML=`
     <div class="detail-title">${b.title}</div>
     <div class="detail-tags">${b.tags.map(t=>`<span class="detail-tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
-    <div class="meta-rows">${rows}</div>
-    ${urlBtn}
+    ${rows?`<div class="meta-rows">${rows}</div>`:''}
+    ${b.amazon?`<a class="amazon-btn" href="${b.amazon}" target="_blank">Amazonで見る →</a>`:''}
     <div class="timestamps">作成：${b.created}<br>更新：${b.updated}</div>`;
 }
 

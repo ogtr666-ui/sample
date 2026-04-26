@@ -839,16 +839,32 @@ function buildDatePanels(s){
   const vp=document.querySelector('.date-viewport');
   const track=document.getElementById('dateTrack');
   const W=()=>vp.offsetWidth;
-  let sx=0,sy=0,tracking=false,dragging=false;
-  vp.addEventListener('touchstart',e=>{sx=e.touches[0].clientX;sy=e.touches[0].clientY;tracking=true;dragging=false;track.style.transition='none';},{passive:true});
+  let sx=0,sy=0,tracking=false,dragging=false,scrolling=false;
+  vp.addEventListener('touchstart',e=>{
+    sx=e.touches[0].clientX;sy=e.touches[0].clientY;
+    tracking=true;dragging=false;scrolling=false;
+    track.style.transition='none';
+  },{passive:true});
   vp.addEventListener('touchmove',e=>{
     if(!tracking)return;
     const dx=e.touches[0].clientX-sx,dy=e.touches[0].clientY-sy;
-    if(!dragging){if(Math.abs(dx)<Math.abs(dy))return;dragging=true;}
-    track.style.transform=`translateX(${-W()+dx}px)`;
-  },{passive:true});
+    if(!dragging&&!scrolling){
+      if(Math.abs(dy)>Math.abs(dx)){
+        // 縦スクロール判定 → 横スワイプ無効、縦スクロールに任せる
+        scrolling=true;return;
+      }
+      if(Math.abs(dx)>6) dragging=true;
+    }
+    if(scrolling)return;
+    if(dragging){
+      e.preventDefault(); // 横ドラッグ中のみ縦スクロールを止める
+      track.style.transform=`translateX(${-W()+dx}px)`;
+    }
+  },{passive:false});
   vp.addEventListener('touchend',e=>{
-    if(!tracking)return;tracking=false;if(!dragging)return;dragging=false;
+    if(!tracking)return;tracking=false;
+    if(!dragging){dragging=false;scrolling=false;return;}
+    dragging=false;scrolling=false;
     const dx=e.changedTouches[0].clientX-sx,w=W();
     track.style.transition=`transform 0.42s cubic-bezier(0.23,1,0.32,1)`;
     if(Math.abs(dx)>w*0.2){
@@ -1222,7 +1238,10 @@ document.getElementById('optionalToggle').addEventListener('click',()=>{
   fields.classList.toggle('show');
 });
 
-document.getElementById('submit-btn').addEventListener('click',()=>{
+document.getElementById('submit-btn').addEventListener('click',e=>{
+  e.preventDefault();
+  // iOSでの非同期処理対策
+  setTimeout(()=>{
   const title=document.getElementById('f-title').value.trim();
   const date=document.getElementById('f-date').value;
   if(!title||!date){alert('タイトルと発売日は必須です');return;}
@@ -1259,6 +1278,7 @@ document.getElementById('submit-btn').addEventListener('click',()=>{
   });
   document.getElementById('adminScroll').scrollTop=0;
   showToast('登録しました');renderCal();
+  },0);
 });
 </script>
 </body>

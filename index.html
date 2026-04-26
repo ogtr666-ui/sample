@@ -16,13 +16,33 @@
   --r:10px;--rs:20px;
   --dur:0.46s;
   --tab-h:56px;
+  --title-h:44px;
   --header-h:48px;
   --week-h:30px;
 }
 html,body{height:100%;overflow:hidden;touch-action:none;}
 body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-behavior:none;display:flex;flex-direction:column;}
+.app-title-bar{order:0;}
+.pages{order:1;}
+.tab-bar{order:2;}
 
-/* ─── TAB BAR ─── */
+/* ─── APP TITLE BAR ─── */
+.app-title-bar{
+  display:flex;align-items:center;
+  padding:0 18px;
+  height:var(--title-h);
+  flex-shrink:0;
+  background:linear-gradient(135deg,#3a7ee5,#6c4fd4);
+  position:relative;z-index:20;
+  order:0;
+}
+.app-title-text{
+  font-size:17px;
+  font-weight:700;
+  letter-spacing:0.06em;
+  color:#fff;
+  font-family:var(--font);
+}
 .tab-bar{
   display:flex;align-items:stretch;background:var(--bg);
   border-top:0.5px solid var(--border2);height:var(--tab-h);
@@ -94,7 +114,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .cal-weekday:last-child{color:var(--sat);}
 .calendar{display:grid;grid-template-columns:repeat(7,1fr);gap:5px;padding:4px 10px 16px;}
 .day{
-  height:56px;border-radius:var(--r);padding:6px 5px 4px;
+  height:68px;border-radius:var(--r);padding:6px 5px 4px;
   font-size:13px;font-weight:500;background:var(--cell-bg);cursor:pointer;
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;
   transition:background 0.1s;
@@ -232,13 +252,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 /* 日付シート: もう少し下げる */
 #date-sheet{
   z-index:200;
-  top:calc(var(--header-h) + 80px);
+  top:calc(var(--title-h) + var(--header-h) + 80px);
   border-radius:var(--rs) var(--rs) 0 0;
 }
 /* 詳細シート: 日付シートの角丸(20px)分だけ下 */
 #detail-sheet{
   z-index:300;
-  top:calc(var(--header-h) + 100px);
+  top:calc(var(--title-h) + var(--header-h) + 100px);
   border-radius:12px 12px 0 0;
 }
 .handle-wrap{padding:10px 0 4px;display:flex;justify-content:center;flex-shrink:0;cursor:grab;user-select:none;}
@@ -362,6 +382,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 </style>
 </head>
 <body>
+
+<!-- アプリタイトル (常時表示) -->
+<div class="app-title-bar">
+  <span class="app-title-text">参考書新刊カレンダー</span>
+</div>
 
 <div class="pages">
 

@@ -285,19 +285,26 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:10px;}
 .card{
-  aspect-ratio:2/3;background:#f0f0f0;border-radius:6px;
-  box-shadow:0 2px 8px rgba(0,0,0,0.09);
-  overflow:hidden;cursor:pointer;position:relative;
+  aspect-ratio:1/1.414;background:transparent;
+  cursor:pointer;position:relative;
   transition:transform 0.12s;
   display:flex;align-items:center;justify-content:center;
 }
 .card:active{transform:scale(0.97);}
 .card img{
-  width:100%;height:100%;
-  object-fit:contain; /* 画像全体をセル内に収める */
+  max-width:100%;max-height:100%;
+  width:auto;height:auto;
   display:block;
+  border-radius:6px;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
 }
-.card-ph{width:100%;height:100%;display:flex;align-items:center;justify-content:center;background:#ebebeb;font-size:10px;font-weight:600;color:#888;text-align:center;padding:8px;line-height:1.4;}
+.card-ph{
+  width:100%;height:100%;
+  display:flex;align-items:center;justify-content:center;
+  background:#d0d0d0;border-radius:6px;
+  font-size:13px;font-weight:600;color:#888;
+  box-shadow:0 2px 8px rgba(0,0,0,0.15);
+}
 .empty{padding:36px 16px;text-align:center;color:var(--text3);font-size:13px;}
 
 /* ─── DETAIL ─── */
@@ -557,7 +564,7 @@ const TAG_COLOR = {
   '倫理':      ['#fff8e1','#9a6f00'],
   '情報':      ['#fce4ec','#c2185b'],
   '小論文':    ['#e0f7f4','#00796b'],
-  '共通テスト':['#efebe9','#6d4c41'],
+  '共通テスト':['#f0e0da','#5d3a30'],
   '過去問（赤本）':['#e0e0e0','#333333'],
 };
 
@@ -834,7 +841,7 @@ function renderDay(el,s){
   }else{
     el.innerHTML=`<div class="grid">${items.map(b=>`
       <div class="card" data-id="${b.id}">
-        ${b.img?`<img src="${b.img}" alt="">`:`<div class="card-ph">${b.title.substring(0,14)}</div>`}
+        ${b.img?`<img src="${b.img}" alt="">`:`<div class="card-ph">NO IMAGE</div>`}
       </div>`).join('')}</div>`;
   }
   el.querySelectorAll('[data-id]').forEach(el2=>{
@@ -859,8 +866,8 @@ function setDetailContent(b){
   }
 
   const rows=[
-    b.author?`<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author}</span></div>`:'',
-    b.publisher?`<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher}</span></div>`:'',
+    `<div class="meta-row"><span class="meta-label">著者</span><span class="meta-val">${b.author||'—'}</span></div>`,
+    `<div class="meta-row"><span class="meta-label">出版社</span><span class="meta-val">${b.publisher||'—'}</span></div>`,
     b.isbn?`<div class="meta-row"><span class="meta-label">ISBN</span><span class="meta-val">${b.isbn}</span></div>`:'',
   ].filter(Boolean).join('');
   document.getElementById('detailBody').innerHTML=`
@@ -1011,10 +1018,13 @@ function enableSwipe(sheetEl, closeFn, overlayEl){
     if(!on) return; on=false;
     const vel = dy/(Date.now()-t0);
     const closing = moved && (dy > getTravelDist(sheetEl)*0.25 || vel>0.4);
+    if(!moved){
+      // タップのみ（移動なし）→ 何もしない。オーバーレイのtouchendに任せる
+      return;
+    }
     if(closing){
       closeFn();
     } else {
-      // 元の位置に戻す
       const mat = new DOMMatrix(window.getComputedStyle(sheetEl).transform);
       const curY = Math.max(0, mat.m42);
       animateSheet(sheetEl, curY, 0, overlayEl);
@@ -1025,9 +1035,19 @@ function enableSwipe(sheetEl, closeFn, overlayEl){
 enableSwipe(dateSheet, closeDate, overlay);
 enableSwipe(detailSheet, closeDetail, document.getElementById('detail-overlay'));
 
-/* 背景タップで閉じる */
-overlay.addEventListener('click', closeDate);
-document.getElementById('detail-overlay').addEventListener('click', closeDetail);
+/* 背景タップで閉じる（touchでのみ判定してアニメーション競合を防ぐ） */
+function addOverlayTapClose(el, closeFn){
+  let startY=0;
+  el.addEventListener('touchstart',e=>{startY=e.touches[0].clientY;},{passive:true});
+  el.addEventListener('touchend',e=>{
+    const dy=Math.abs(e.changedTouches[0].clientY-startY);
+    if(dy<8) closeFn(); // 8px以内の移動 = タップとみなす
+  },{passive:true});
+  // PCはclickで
+  el.addEventListener('click', closeFn);
+}
+addOverlayTapClose(overlay, closeDate);
+addOverlayTapClose(document.getElementById('detail-overlay'), closeDetail);
 
 /* ── INIT SHEET POSITIONS ── */
 setTimeout(()=>{

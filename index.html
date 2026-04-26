@@ -1071,39 +1071,77 @@ function closeDetail(){
 /* ─ swipe to close ─ */
 function enableSwipe(sheetEl, closeFn, overlayEl){
   let sy=0, dy=0, t0=0, on=false, moved=false;
+  let inScrollable=false; // タッチ開始がスクロール領域内かどうか
+
+  // タッチ開始点がスクロール可能な要素の子孫かを判定
+  function isInsideScrollable(target){
+    let el=target;
+    while(el && el!==sheetEl){
+      if(el.scrollHeight > el.clientHeight+2) return el;
+      el=el.parentElement;
+    }
+    return null;
+  }
+
   sheetEl.addEventListener('touchstart', e=>{
-    let el=e.target;
-    while(el&&el!==sheetEl){ if(el.scrollTop>0&&el.scrollHeight>el.clientHeight) return; el=el.parentElement; }
-    on=true; moved=false; dy=0; sy=e.touches[0].clientY; t0=Date.now();
-    // 進行中アニメを止める
-    const state = sheetState[sheetEl.id]||{};
-    if(state.raf){ cancelAnimationFrame(state.raf); state.raf=null; }
+    sy=e.touches[0].clientY; dy=0; t0=Date.now();
+    on=true; moved=false;
+    inScrollable=!!isInsideScrollable(e.target);
+    const state=sheetState[sheetEl.id]||{};
+    if(state.raf){cancelAnimationFrame(state.raf);state.raf=null;}
     sheetEl.style.transition='none';
   },{passive:true});
+
   sheetEl.addEventListener('touchmove', e=>{
     if(!on) return;
-    const d = e.touches[0].clientY - sy;
-    if(d>5){
-      moved=true; dy=d;
-      setSheetY(sheetEl, d);
-      syncOverlay(sheetEl, overlayEl);
-    }
-    if(e.cancelable) e.preventDefault();
-  },{passive:false});
-  sheetEl.addEventListener('touchend', ()=>{
-    if(!on) return; on=false;
-    const vel = dy/(Date.now()-t0);
-    const closing = moved && (dy > getTravelDist(sheetEl)*0.25 || vel>0.4);
+    const d=e.touches[0].clientY-sy;
+
     if(!moved){
-      // タップのみ（移動なし）→ 何もしない。オーバーレイのtouchendに任せる
-      return;
+      if(inScrollable){
+        // スクロール領域内
+        const scrollEl=isInsideScrollable(e.target);
+        const scrollTop=scrollEl ? scrollEl.scrollTop : 0;
+        if(d>0 && scrollTop<=0){
+          // 上端で下スワイプ → モーダルを閉じる
+          moved=true; dy=d;
+          setSheetY(sheetEl, d);
+          syncOverlay(sheetEl, overlayEl);
+          if(e.cancelable) e.preventDefault();
+        } else {
+          // スクロール途中 or 上スワイプ → 縦スクロール優先・モーダル動かさない
+          on=false; return;
+        }
+      } else {
+        // スクロール領域外（ヘッダー・日付ラベル等）→ 下スワイプのみモーダルを閉じる
+        if(d>5){
+          moved=true; dy=d;
+          setSheetY(sheetEl, d);
+          syncOverlay(sheetEl, overlayEl);
+          if(e.cancelable) e.preventDefault();
+        } else if(d<-5){
+          on=false; return;
+        }
+      }
+    } else {
+      dy=d;
+      setSheetY(sheetEl, Math.max(0, d));
+      syncOverlay(sheetEl, overlayEl);
+      if(e.cancelable) e.preventDefault();
     }
+  },{passive:false});
+
+  sheetEl.addEventListener('touchend', ()=>{
+    if(!on){on=false;return;}
+    on=false;
+    if(!moved) return;
+    const vel=dy/(Date.now()-t0);
+    const closing=dy>getTravelDist(sheetEl)*0.25||vel>0.4;
     if(closing){
       closeFn();
     } else {
-      const mat = new DOMMatrix(window.getComputedStyle(sheetEl).transform);
-      const curY = Math.max(0, mat.m42);
-      animateSheet(sheetEl, curY, 0, overlayEl);
+      const mat=new DOMMatrix(window.getComputedStyle(sheetEl).transform);
+      const curY=Math.max(0,mat.m42);
+      animateSheet(sheetEl,curY,0,overlayEl);
     }
     dy=0;
   });
@@ -1240,8 +1278,6 @@ document.getElementById('optionalToggle').addEventListener('click',()=>{
 
 document.getElementById('submit-btn').addEventListener('click',e=>{
   e.preventDefault();
-  // iOSでの非同期処理対策
-  setTimeout(()=>{
   const title=document.getElementById('f-title').value.trim();
   const date=document.getElementById('f-date').value;
   if(!title||!date){alert('タイトルと発売日は必須です');return;}
@@ -1278,7 +1314,6 @@ document.getElementById('submit-btn').addEventListener('click',e=>{
   });
   document.getElementById('adminScroll').scrollTop=0;
   showToast('登録しました');renderCal();
-  },0);
 });
 </script>
 </body>

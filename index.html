@@ -108,7 +108,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .tab.active .tab-icon svg{ stroke:#fff; transform:scale(1.15); }
 .tab.active .tab-label{ opacity:0; }
-/* ─── PAGES ─── */
+.tab-bar, #tabBarSvg{
+  opacity:0;
+}
 .pages{flex:1;overflow:hidden;order:1;position:relative;}
 .tab-page{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
 .tab-page.active{display:flex;}
@@ -643,7 +645,11 @@ document.querySelectorAll('.tab[data-tab]').forEach(btn => {
 });
 
 document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
-setTimeout(drawTabBg, 100);
+setTimeout(()=>{
+  drawTabBg();
+  tabBar.style.opacity = '1';
+  tabBarSvg.style.opacity = '1';
+}, 100);
 window.addEventListener('resize', drawTabBg);
 
 function hideTabBar(){}

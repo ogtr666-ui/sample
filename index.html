@@ -609,6 +609,7 @@ function drawTabBg(){
 
   tabBarSvg.setAttribute('viewBox', `0 ${-OUTER_R} ${W} ${H + OUTER_R}`);
   tabBarSvg.setAttribute('height', H + OUTER_R);
+  tabBarSvg.style.height = (H + OUTER_R) + 'px';
   tabBarSvg.innerHTML = `
     <defs>
       <filter id="barShadow" x="-5%" y="-50%" width="110%" height="200%">
@@ -642,8 +643,7 @@ document.querySelectorAll('.tab[data-tab]').forEach(btn => {
 });
 
 document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
-// レイアウト完了を確実に待つ
-requestAnimationFrame(()=>requestAnimationFrame(drawTabBg));
+setTimeout(drawTabBg, 100);
 window.addEventListener('resize', drawTabBg);
 
 function hideTabBar(){}

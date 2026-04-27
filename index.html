@@ -194,13 +194,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── OVERLAY ─── */
 #overlay{
-  position:fixed;inset:0;background:var(--overlay);z-index:5;
+  position:fixed;inset:0;background:var(--overlay);z-index:11;
   opacity:0;pointer-events:none;
 }
 #overlay.active{opacity:1;pointer-events:all;}
 
 #detail-overlay{
-  position:fixed;inset:0;background:var(--overlay);z-index:7;
+  position:fixed;inset:0;background:var(--overlay);z-index:13;
   opacity:0;pointer-events:none;
 }
 #detail-overlay.active{opacity:1;pointer-events:all;}
@@ -215,13 +215,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* 日付シート: もう少し下げる */
 #date-sheet{
-  z-index:6;
+  z-index:12;
   top:calc(var(--title-h) + var(--header-h) + 50px);
   border-radius:var(--rs) var(--rs) 0 0;
 }
 /* 詳細シート: 日付シートの角丸(20px)分だけ下 */
 #detail-sheet{
-  z-index:8;
+  z-index:14;
   top:calc(var(--title-h) + var(--header-h) + 70px);
   border-radius:12px 12px 0 0;
 }
@@ -626,7 +626,10 @@ function switchTab(name){
 }
 
 document.querySelectorAll('.tab[data-tab]').forEach(btn => {
-  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
+  btn.addEventListener('click', () => {
+    if(dateOpen || detailOpen) return; // モーダル展開中は無効
+    switchTab(btn.dataset.tab);
+  });
 });
 
 document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');

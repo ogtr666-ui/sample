@@ -16,9 +16,6 @@
   --r:10px;--rs:20px;
   --dur:0.46s;
   --tab-h:64px;
-  --tab-notch:28px;
-  --accent:linear-gradient(135deg,#3a7ee5,#6c4fd4);
-  --accent-solid:#4e6fd4;
   --title-h:44px;
   --header-h:48px;
   --week-h:30px;
@@ -31,7 +28,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── APP TITLE BAR ─── */
 .app-title-bar{
-  display:flex;align-items:center;justify-content:center;
+  display:flex;align-items:center;justify-content:flex-start;
   padding:0 18px;
   height:var(--title-h);
   flex-shrink:0;
@@ -49,57 +46,59 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── TAB BAR ─── */
 .tab-bar{
-  position:relative;
   display:flex;align-items:stretch;
+  justify-content:space-evenly;
   height:var(--tab-h);
   flex-shrink:0;
-  background:var(--bg);
+  background:#fff;
   z-index:10;
-  /* 上辺のボーダー線 */
-  border-top:0.5px solid var(--border2);
-}
-/* 中央のくぼみをSVGで描画 */
-.tab-bar-notch{
-  position:absolute;top:-1px;left:50%;
-  transform:translateX(-50%);
-  pointer-events:none;
-  z-index:1;
+  overflow:visible;
+  position:relative;
 }
 .tab{
-  flex:1;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;z-index:2;
+  display:flex;flex-direction:column;
+  align-items:center;justify-content:center;
+  gap:0px;padding-top:0px;margin-top:-8px;
+  padding-bottom:env(safe-area-inset-bottom, 8px);
+  cursor:pointer;position:relative;z-index:1;
   -webkit-tap-highlight-color:transparent;user-select:none;
 }
-/* 中央タブは円形ボタンを浮かせる */
-.tab-center{
-  flex:0 0 80px;display:flex;align-items:center;justify-content:center;
-  cursor:pointer;position:relative;z-index:2;
-  -webkit-tap-highlight-color:transparent;user-select:none;
-}
-.tab-center-btn{
-  width:52px;height:52px;
-  border-radius:50%;
-  background:linear-gradient(135deg,#3a7ee5,#6c4fd4);
-  display:flex;align-items:center;justify-content:center;
-  box-shadow:0 4px 16px rgba(74,111,212,0.38);
-  margin-top:-18px;
-  transition:transform 0.15s,box-shadow 0.15s;
-  position:relative;z-index:3;
-}
-.tab-center-btn:active{transform:scale(0.93);box-shadow:0 2px 8px rgba(74,111,212,0.28);}
-.tab-center-btn svg{stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
 .tab-icon{
   display:flex;align-items:center;justify-content:center;
   width:44px;height:44px;border-radius:50%;
-  transition:background 0.15s;
+  flex-shrink:0;
+  position:relative;
+}
+/* 円はposition:absoluteで位置固定 */
+.tab-icon::before{
+  content:'';
+  position:absolute;
+  inset:0;
+  border-radius:50%;
+  background:transparent;
+  transition:background 0.2s, box-shadow 0.2s, transform 0.2s;
 }
 .tab-icon svg{
-  width:24px;height:24px;fill:none;
-  stroke:var(--text3);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
-  transition:stroke 0.15s;
+  width:22px;height:22px;fill:none;
+  stroke:var(--text3);stroke-width:1.7;
+  stroke-linecap:round;stroke-linejoin:round;
+  transition:stroke 0.2s, transform 0.2s;
+  position:relative;z-index:1;
 }
-.tab.active .tab-icon svg{stroke:#4e6fd4;}
-.tab-icon:active{background:rgba(78,111,212,0.08);}
+.tab-label{
+  font-size:10px;font-weight:500;
+  color:var(--text3);
+  transition:color 0.2s, opacity 0.2s;
+  letter-spacing:0.02em;
+  margin-top:-2px;
+}
+.tab.active .tab-icon::before{
+  background:linear-gradient(135deg,#3a7ee5,#6c4fd4);
+  box-shadow:0 3px 10px rgba(74,111,212,0.35);
+  transform:scale(1.27); /* 44px → 56px */
+}
+.tab.active .tab-icon svg{ stroke:#fff; transform:scale(1.15); }
+.tab.active .tab-label{ opacity:0; }
 /* ─── PAGES ─── */
 .pages{flex:1;overflow:hidden;order:1;position:relative;}
 .tab-page{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
@@ -111,7 +110,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   padding:10px 14px 7px;background:var(--bg);flex-shrink:0;
   height:var(--header-h);
   border:none;border-bottom:none;
-  position:relative;z-index:5;
+  position:relative;z-index:4;
 }
 .today-btn{font-size:11px;font-weight:600;color:var(--text2);border:0.5px solid #ddd;border-radius:6px;padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);}
 .drum-trigger{display:flex;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
@@ -195,13 +194,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── OVERLAY ─── */
 #overlay{
-  position:fixed;inset:0;background:var(--overlay);z-index:100;
+  position:fixed;inset:0;background:var(--overlay);z-index:5;
   opacity:0;pointer-events:none;
 }
 #overlay.active{opacity:1;pointer-events:all;}
 
 #detail-overlay{
-  position:fixed;inset:0;background:var(--overlay);z-index:250;
+  position:fixed;inset:0;background:var(--overlay);z-index:7;
   opacity:0;pointer-events:none;
 }
 #detail-overlay.active{opacity:1;pointer-events:all;}
@@ -216,13 +215,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* 日付シート: もう少し下げる */
 #date-sheet{
-  z-index:200;
+  z-index:6;
   top:calc(var(--title-h) + var(--header-h) + 50px);
   border-radius:var(--rs) var(--rs) 0 0;
 }
 /* 詳細シート: 日付シートの角丸(20px)分だけ下 */
 #detail-sheet{
-  z-index:300;
+  z-index:8;
   top:calc(var(--title-h) + var(--header-h) + 70px);
   border-radius:12px 12px 0 0;
 }
@@ -418,30 +417,22 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 </div>
 
+<!-- タブバー背景SVG（タブバーの外に出してoverlay） -->
+<svg id="tabBarSvg" style="position:absolute;bottom:0;left:0;width:100%;pointer-events:none;z-index:9;overflow:visible;"></svg>
+
 <!-- タブバー -->
 <div class="tab-bar" id="tabBar">
-  <!-- くぼみSVG -->
-  <svg class="tab-bar-notch" width="90" height="36" viewBox="0 0 90 36" xmlns="http://www.w3.org/2000/svg">
-    <path d="M0 1 Q20 1 28 10 Q36 20 45 20 Q54 20 62 10 Q70 1 90 1" fill="none" stroke="rgba(0,0,0,0.13)" stroke-width="0.5"/>
-    <path d="M0 1 Q20 1 28 10 Q36 20 45 20 Q54 20 62 10 Q70 1 90 1 L90 36 L0 36 Z" fill="#fff"/>
-  </svg>
-  <!-- 検索タブ -->
-  <div class="tab" id="tab-btn-search" data-tab="search">
-    <div class="tab-icon">
-      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
-    </div>
+  <div class="tab" data-tab="search">
+    <div class="tab-icon"><svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg></div>
+    <span class="tab-label">検索</span>
   </div>
-  <!-- カレンダータブ（中央・浮き上がり） -->
-  <div class="tab-center" id="tab-btn-calendar" data-tab="calendar">
-    <div class="tab-center-btn">
-      <svg viewBox="0 0 24 24" width="24" height="24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
-    </div>
+  <div class="tab" data-tab="calendar">
+    <div class="tab-icon"><svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg></div>
+    <span class="tab-label">カレンダー</span>
   </div>
-  <!-- ブックマークタブ -->
-  <div class="tab" id="tab-btn-bookmark" data-tab="bookmark">
-    <div class="tab-icon">
-      <svg viewBox="0 0 24 24" stroke-width="1.6"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-    </div>
+  <div class="tab" data-tab="bookmark">
+    <div class="tab-icon"><svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg></div>
+    <span class="tab-label">お気に入り</span>
   </div>
 </div>
 
@@ -585,30 +576,62 @@ let viewMode=localStorage.getItem('tbcal7-view')||'list';
 let activeDate='';
 let dateOpen=false,detailOpen=false;
 
-/* ── TAB SWITCHING ── */
-const tabBar=document.getElementById('tabBar');
-let activeTab='calendar';
+/* ── TAB BAR ── */
+const tabBar = document.getElementById('tabBar');
+const tabBarSvg = document.getElementById('tabBarSvg');
+let activeTab = 'calendar';
 
-function switchTab(name){
-  if(activeTab===name)return;
-  activeTab=name;
-  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
-  const page=document.getElementById('tab-'+name);
-  if(page)page.classList.add('active');
-  // タブボタンのactive状態（検索・ブックマークのみ、カレンダーは常時グラデ）
-  document.querySelectorAll('.tab[data-tab]').forEach(t=>{
-    t.classList.toggle('active', t.dataset.tab===name);
-  });
+const OUTER_R = 33; // 背景円（一回り大きい）
+
+function drawTabBg(){
+  const W = tabBar.offsetWidth;
+  const H = tabBar.offsetHeight;
+  if(!W || !H) return;
+  const activeEl = tabBar.querySelector('.tab.active');
+  if(!activeEl) return;
+
+  const iconEl = activeEl.querySelector('.tab-icon');
+  const iconRect = iconEl ? iconEl.getBoundingClientRect() : activeEl.getBoundingClientRect();
+  const barRect = tabBar.getBoundingClientRect();
+
+  // 選択円の中心座標（バー相対）
+  const cx = iconRect.left - barRect.left + iconRect.width / 2;
+  const cy = iconRect.top  - barRect.top  + iconRect.height / 2;
+
+  tabBarSvg.setAttribute('viewBox', `0 ${-OUTER_R} ${W} ${H + OUTER_R}`);
+  tabBarSvg.setAttribute('height', H + OUTER_R);
+  tabBarSvg.innerHTML = `
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"
+      style="filter:drop-shadow(0 -2px 6px rgba(0,0,0,0.06))"/>
+    <circle cx="${cx}" cy="${cy}" r="${OUTER_R}" fill="#fff"
+      style="filter:drop-shadow(0 -2px 6px rgba(0,0,0,0.06))"/>
+    <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>
+    <circle cx="${cx}" cy="${cy}" r="${OUTER_R}" fill="#fff"/>
+  `;
 }
 
-document.querySelectorAll('[data-tab]').forEach(btn=>{
-  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
+function switchTab(name){
+  if(activeTab === name) return;
+  activeTab = name;
+  document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
+  const page = document.getElementById('tab-' + name);
+  if(page) page.classList.add('active');
+  document.querySelectorAll('.tab[data-tab]').forEach(t => {
+    t.classList.toggle('active', t.dataset.tab === name);
+  });
+  drawTabBg();
+}
+
+document.querySelectorAll('.tab[data-tab]').forEach(btn => {
+  btn.addEventListener('click', () => switchTab(btn.dataset.tab));
 });
 
-function hideTabBar(){tabBar.style.transform='translateY(100%)';tabBar.style.transition='transform 0.3s ease';}
-function showTabBar(){tabBar.style.transform='';tabBar.style.transition='transform 0.3s ease';}
+document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
+setTimeout(drawTabBg, 0);
+window.addEventListener('resize', drawTabBg);
 
-/* 🔍 検索ボタン廃止 - タブに移動 */
+function hideTabBar(){}
+function showTabBar(){}
 
 /* ── YEAR/MONTH NATIVE SELECT ── */
 /* ── YEAR/MONTH PICKER (input type=month) ── */

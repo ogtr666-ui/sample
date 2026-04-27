@@ -50,7 +50,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   justify-content:space-evenly;
   height:var(--tab-h);
   flex-shrink:0;
-  background:#fff;
+  background:transparent;
   z-index:10;
   overflow:visible;
   position:relative;
@@ -601,12 +601,15 @@ function drawTabBg(){
   tabBarSvg.setAttribute('viewBox', `0 ${-OUTER_R} ${W} ${H + OUTER_R}`);
   tabBarSvg.setAttribute('height', H + OUTER_R);
   tabBarSvg.innerHTML = `
-    <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"
-      style="filter:drop-shadow(0 -2px 6px rgba(0,0,0,0.06))"/>
-    <circle cx="${cx}" cy="${cy}" r="${OUTER_R}" fill="#fff"
-      style="filter:drop-shadow(0 -2px 6px rgba(0,0,0,0.06))"/>
-    <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>
-    <circle cx="${cx}" cy="${cy}" r="${OUTER_R}" fill="#fff"/>
+    <defs>
+      <filter id="barShadow" x="-5%" y="-50%" width="110%" height="200%">
+        <feDropShadow dx="0" dy="-3" stdDeviation="4" flood-color="rgba(0,0,0,0.10)"/>
+      </filter>
+    </defs>
+    <g filter="url(#barShadow)">
+      <circle cx="${cx}" cy="${cy}" r="${OUTER_R}" fill="#fff"/>
+      <rect x="0" y="0" width="${W}" height="${H}" fill="#fff"/>
+    </g>
   `;
 }
 

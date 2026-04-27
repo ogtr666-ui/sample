@@ -642,7 +642,8 @@ document.querySelectorAll('.tab[data-tab]').forEach(btn => {
 });
 
 document.querySelector(`.tab[data-tab="${activeTab}"]`)?.classList.add('active');
-setTimeout(drawTabBg, 0);
+// レイアウト完了を確実に待つ
+requestAnimationFrame(()=>requestAnimationFrame(drawTabBg));
 window.addEventListener('resize', drawTabBg);
 
 function hideTabBar(){}

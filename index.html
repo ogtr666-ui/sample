@@ -2,7 +2,9 @@
 <html lang="ja">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
 <style>
 *{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent;}
 :root{
@@ -48,18 +50,18 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .tab-bar{
   display:flex;align-items:stretch;
   justify-content:space-evenly;
-  height:var(--tab-h);
+  height:calc(var(--tab-h) + env(safe-area-inset-bottom));
   flex-shrink:0;
   background:transparent;
   z-index:10;
   overflow:visible;
   position:relative;
+  padding-bottom:env(safe-area-inset-bottom);
 }
 .tab{
   display:flex;flex-direction:column;
   align-items:center;justify-content:center;
   gap:0px;padding-top:0px;margin-top:-8px;
-  padding-bottom:env(safe-area-inset-bottom, 8px);
   cursor:pointer;position:relative;z-index:1;
   -webkit-tap-highlight-color:transparent;user-select:none;
 }

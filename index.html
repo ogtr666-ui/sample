@@ -15,7 +15,10 @@
   --sun:#e5503a;--sat:#3a7ee5;
   --r:10px;--rs:20px;
   --dur:0.46s;
-  --tab-h:56px;
+  --tab-h:64px;
+  --tab-notch:28px;
+  --accent:linear-gradient(135deg,#3a7ee5,#6c4fd4);
+  --accent-solid:#4e6fd4;
   --title-h:44px;
   --header-h:48px;
   --week-h:30px;
@@ -28,7 +31,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── APP TITLE BAR ─── */
 .app-title-bar{
-  display:flex;align-items:center;
+  display:flex;align-items:center;justify-content:center;
   padding:0 18px;
   height:var(--title-h);
   flex-shrink:0;
@@ -43,17 +46,60 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   color:#fff;
   font-family:var(--font);
 }
-.tab-bar{
-  display:flex;align-items:stretch;background:var(--bg);
-  border-top:0.5px solid var(--border2);height:var(--tab-h);
-  flex-shrink:0;order:2;position:relative;z-index:10;
-  transition:opacity var(--dur) ease,transform var(--dur) ease;
-}
-.tab-bar.hidden{opacity:0;pointer-events:none;transform:translateY(100%);}
-.tab{flex:1;display:flex;align-items:center;justify-content:center;cursor:pointer;color:var(--text3);border-top:2px solid transparent;transition:color 0.15s;user-select:none;}
-.tab.active{color:var(--text);border-top-color:var(--text);}
-.tab svg{width:22px;height:22px;fill:none;stroke:currentColor;stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;}
 
+/* ─── TAB BAR ─── */
+.tab-bar{
+  position:relative;
+  display:flex;align-items:stretch;
+  height:var(--tab-h);
+  flex-shrink:0;
+  background:var(--bg);
+  z-index:10;
+  /* 上辺のボーダー線 */
+  border-top:0.5px solid var(--border2);
+}
+/* 中央のくぼみをSVGで描画 */
+.tab-bar-notch{
+  position:absolute;top:-1px;left:50%;
+  transform:translateX(-50%);
+  pointer-events:none;
+  z-index:1;
+}
+.tab{
+  flex:1;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;z-index:2;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+/* 中央タブは円形ボタンを浮かせる */
+.tab-center{
+  flex:0 0 80px;display:flex;align-items:center;justify-content:center;
+  cursor:pointer;position:relative;z-index:2;
+  -webkit-tap-highlight-color:transparent;user-select:none;
+}
+.tab-center-btn{
+  width:52px;height:52px;
+  border-radius:50%;
+  background:linear-gradient(135deg,#3a7ee5,#6c4fd4);
+  display:flex;align-items:center;justify-content:center;
+  box-shadow:0 4px 16px rgba(74,111,212,0.38);
+  margin-top:-18px;
+  transition:transform 0.15s,box-shadow 0.15s;
+  position:relative;z-index:3;
+}
+.tab-center-btn:active{transform:scale(0.93);box-shadow:0 2px 8px rgba(74,111,212,0.28);}
+.tab-center-btn svg{stroke:#fff;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;}
+.tab-icon{
+  display:flex;align-items:center;justify-content:center;
+  width:44px;height:44px;border-radius:50%;
+  transition:background 0.15s;
+}
+.tab-icon svg{
+  width:24px;height:24px;fill:none;
+  stroke:var(--text3);stroke-width:1.6;stroke-linecap:round;stroke-linejoin:round;
+  transition:stroke 0.15s;
+}
+.tab.active .tab-icon svg{stroke:#4e6fd4;}
+.tab-icon:active{background:rgba(78,111,212,0.08);}
 /* ─── PAGES ─── */
 .pages{flex:1;overflow:hidden;order:1;position:relative;}
 .tab-page{position:absolute;inset:0;display:none;flex-direction:column;overflow:hidden;}
@@ -130,60 +176,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .dot{width:5px;height:5px;background:var(--dot);border-radius:50%;flex-shrink:0;}
 
-/* ─── SEARCH / ADMIN ─── */
+/* ─── SEARCH OVERLAY (placeholder) ─── */
 .center-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);font-size:14px;text-align:center;padding:32px;}
 .center-msg .big{font-size:36px;}
-.admin-scroll{flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;}
-.admin-form{padding:16px;display:flex;flex-direction:column;gap:12px;}
-.form-row{display:flex;gap:10px;align-items:flex-start;}
-.form-row .form-group{flex:1;min-width:0;}
-.form-group{display:flex;flex-direction:column;gap:3px;width:100%;}
-.form-label{font-size:10px;font-weight:600;color:var(--text2);}
-.form-input{
-  box-sizing:border-box;width:100%;
-  background:#f4f4f4;border:0.5px solid #e0e0e0;
-  border-radius:8px;padding:7px 10px;
-  font-size:13px;color:var(--text);font-family:var(--font);outline:none;
-  -webkit-appearance:none;appearance:none;display:block;
-  height:34px; /* 全フィールド統一 */
-}
-.form-input:focus{border-color:#aaa;}
-
-/* 書影アクションシート */
-.img-trigger{
-  cursor:pointer;display:flex;align-items:center;
-  min-height:34px;
-}
-.img-action-overlay{
-  position:fixed;inset:0;z-index:600;
-  background:rgba(0,0,0,0);
-  display:flex;align-items:flex-end;
-  pointer-events:none;
-  transition:background 0.32s ease;
-}
-.img-action-overlay.show{
-  background:rgba(0,0,0,0.3);
-  pointer-events:all;
-}
-.img-action-sheet{
-  width:100%;background:#fff;border-radius:16px 16px 0 0;
-  padding:8px 0 32px;
-  transform:translateY(100%);
-  transition:transform 0.36s cubic-bezier(0.23,1,0.32,1);
-}
-.img-action-overlay.show .img-action-sheet{transform:translateY(0);}
-.img-action-title{text-align:center;font-size:12px;color:var(--text3);padding:8px 16px 10px;border-bottom:0.5px solid var(--border);}
-.img-action-btn{display:block;width:100%;padding:15px 20px;text-align:left;font-size:15px;color:var(--text);background:none;border:none;border-bottom:0.5px solid var(--border);font-family:var(--font);cursor:pointer;}
-.img-action-btn:last-child{border-bottom:none;}
-.img-action-btn:active{background:#f5f5f5;}
-.img-url-input-wrap{
-  max-height:0;overflow:hidden;
-  transition:max-height 0.28s cubic-bezier(0.23,1,0.32,1),padding 0.28s ease;
-  padding:0 16px;
-}
-.img-url-input-wrap.show{max-height:120px;padding:10px 16px 4px;}
-.img-url-input{box-sizing:border-box;width:100%;background:#f4f4f4;border:0.5px solid #e0e0e0;border-radius:8px;padding:7px 10px;font-size:13px;color:var(--text);font-family:var(--font);outline:none;}
-.img-url-confirm{display:block;width:100%;margin:8px 0 0;background:#111;color:#fff;border:none;border-radius:8px;padding:10px;font-size:13px;font-weight:700;font-family:var(--font);cursor:pointer;}
 
 /* ─── TOAST ─── */
 .toast{
@@ -197,36 +192,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   transition:opacity 0.3s ease,transform 0.3s ease;
 }
 .toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
-.optional-toggle{
-  display:flex;align-items:center;gap:6px;
-  font-size:11px;color:var(--text3);cursor:pointer;
-  padding:2px 0;user-select:none;
-}
-.optional-toggle-arrow{font-size:9px;transition:transform 0.2s;}
-.optional-toggle.open .optional-toggle-arrow{transform:rotate(90deg);}
-.optional-fields{display:none;flex-direction:column;gap:12px;}
-.optional-fields.show{display:flex;}
-
-/* タグ行グループ — 自然なサイズで折り返し */
-.tag-group{
-  display:flex;flex-wrap:wrap;gap:5px;
-}
-.tags-pick-grouped{display:flex;flex-direction:column;gap:7px;margin-top:4px;}
-
-.tag-pick-btn{
-  font-size:11px;padding:5px 10px;border-radius:20px;
-  border:1.5px solid #ddd;background:#fafafa;cursor:pointer;
-  color:var(--text2);font-family:var(--font);
-  transition:background 0.15s,color 0.15s,border-color 0.15s;
-  white-space:nowrap;
-}
-.tag-pick-btn.on{}
-.submit-btn{
-  box-sizing:border-box;width:100%;
-  background:#111;color:#fff;border:none;border-radius:10px;
-  padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);
-  margin-bottom:40px;
-}
 
 /* ─── OVERLAY ─── */
 #overlay{
@@ -411,21 +376,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 <div class="pages">
 
+  <!-- 検索タブ -->
+  <div class="tab-page" id="tab-search">
+    <div class="center-msg"><div class="big">🔍</div><div>検索機能は近日公開予定です</div></div>
+  </div>
+
   <!-- カレンダータブ -->
   <div class="tab-page active" id="tab-calendar">
-    <!-- 年月ヘッダー -->
     <div class="cal-header">
       <div class="ym-input-wrap">
-        <!-- iOSでは type=month が年・月独立ドラムロールになる -->
-        <!-- ラベル表示の上に透明inputを重ねてタップを拾う -->
         <span class="ym-label-display" id="ymLabelDisplay">2026年4月</span>
         <input type="month" id="ymMonthInput"
           style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
       </div>
       <button class="today-btn" id="todayBtn">今日</button>
     </div>
-
-    <!-- 曜日+グリッドをまとめてスワイプ — 1ブロック、全白 -->
     <div class="cal-body" id="calBody">
       <div class="cal-track-outer">
         <div class="cal-track" id="calTrack">
@@ -446,68 +411,37 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
     </div>
   </div>
 
-  <!-- 検索タブ -->
-  <div class="tab-page" id="tab-search">
-    <div class="center-msg"><div class="big">🔍</div><div>検索機能は近日公開予定です</div></div>
+  <!-- ブックマークタブ -->
+  <div class="tab-page" id="tab-bookmark">
+    <div class="center-msg"><div class="big">♡</div><div>ブックマーク機能は近日公開予定です</div></div>
   </div>
 
-  <!-- 管理タブ -->
-  <div class="tab-page" id="tab-admin">
-    <div class="admin-scroll" id="adminScroll">
-      <div class="admin-form">
-        <div class="form-group"><label class="form-label">タイトル *</label><input class="form-input" id="f-title" type="text" placeholder="参考書のタイトル"></div>
-
-        <!-- 発売日 + 書影 -->
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">発売日 *</label><input class="form-input" id="f-date" type="date"></div>
-          <div class="form-group">
-            <label class="form-label">書影</label>
-            <!-- タップで写真ライブラリを直接開く -->
-            <div class="form-input img-trigger" id="imgTrigger">
-              <span id="imgTriggerLabel" style="color:var(--text3);">タップして選択…</span>
-            </div>
-            <!-- accept="image/*"のみ・capture属性なし → iOSで写真ライブラリが直接開く -->
-            <input type="file" id="f-img-file" accept="image/*" style="display:none;">
-            <!-- URL入力フィールド (将来のURL入力復活用・現在非使用)
-            <input type="text" id="f-img" style="display:none;">
-            -->
-          </div>
-        </div>
-
-        <!-- 著者 + 出版社 -->
-        <div class="form-row">
-          <div class="form-group"><label class="form-label">著者</label><input class="form-input" id="f-author" type="text" placeholder="著者名"></div>
-          <div class="form-group"><label class="form-label">出版社</label><input class="form-input" id="f-publisher" type="text" placeholder="出版社名"></div>
-        </div>
-
-        <div class="form-group"><label class="form-label">科目タグ</label><div class="tags-pick-grouped" id="tags-pick-grouped"></div></div>
-
-        <!-- オプション (URL, ISBN) -->
-        <div class="optional-toggle" id="optionalToggle">
-          <span class="optional-toggle-arrow">▶</span>
-          <span>オプション（URL・ISBN）</span>
-        </div>
-        <div class="optional-fields" id="optionalFields">
-          <div class="form-group"><label class="form-label">URL</label><input class="form-input" id="f-amazon" type="text" placeholder="https://…"></div>
-          <div class="form-group"><label class="form-label">ISBN</label><input class="form-input" id="f-isbn" type="text" placeholder="978-4-…"></div>
-        </div>
-
-        <button class="submit-btn" id="submit-btn">登録する</button>
-      </div>
-    </div>
-  </div>
 </div>
 
 <!-- タブバー -->
 <div class="tab-bar" id="tabBar">
-  <div class="tab active" data-tab="calendar">
-    <svg viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+  <!-- くぼみSVG -->
+  <svg class="tab-bar-notch" width="90" height="36" viewBox="0 0 90 36" xmlns="http://www.w3.org/2000/svg">
+    <path d="M0 1 Q20 1 28 10 Q36 20 45 20 Q54 20 62 10 Q70 1 90 1" fill="none" stroke="rgba(0,0,0,0.13)" stroke-width="0.5"/>
+    <path d="M0 1 Q20 1 28 10 Q36 20 45 20 Q54 20 62 10 Q70 1 90 1 L90 36 L0 36 Z" fill="#fff"/>
+  </svg>
+  <!-- 検索タブ -->
+  <div class="tab" id="tab-btn-search" data-tab="search">
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+    </div>
   </div>
-  <div class="tab" data-tab="search">
-    <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+  <!-- カレンダータブ（中央・浮き上がり） -->
+  <div class="tab-center" id="tab-btn-calendar" data-tab="calendar">
+    <div class="tab-center-btn">
+      <svg viewBox="0 0 24 24" width="24" height="24"><rect x="3" y="4" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="16" y1="2" x2="16" y2="6"/></svg>
+    </div>
   </div>
-  <div class="tab" data-tab="admin">
-    <svg viewBox="0 0 24 24"><path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+  <!-- ブックマークタブ -->
+  <div class="tab" id="tab-btn-bookmark" data-tab="bookmark">
+    <div class="tab-icon">
+      <svg viewBox="0 0 24 24" stroke-width="1.6"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+    </div>
   </div>
 </div>
 
@@ -651,35 +585,30 @@ let viewMode=localStorage.getItem('tbcal7-view')||'list';
 let activeDate='';
 let dateOpen=false,detailOpen=false;
 
-/* ── RESET ADMIN FORM ── */
-function resetAdminForm(){
-  ['f-title','f-author','f-publisher','f-date','f-amazon','f-isbn']
-    .forEach(id=>{ const el=document.getElementById(id); if(el) el.value=''; });
-  document.querySelectorAll('.tag-pick-btn.on').forEach(b=>{
-    b.classList.remove('on');
-    applyTagBtnStyle(b,false);
+/* ── TAB SWITCHING ── */
+const tabBar=document.getElementById('tabBar');
+let activeTab='calendar';
+
+function switchTab(name){
+  if(activeTab===name)return;
+  activeTab=name;
+  document.querySelectorAll('.tab-page').forEach(p=>p.classList.remove('active'));
+  const page=document.getElementById('tab-'+name);
+  if(page)page.classList.add('active');
+  // タブボタンのactive状態（検索・ブックマークのみ、カレンダーは常時グラデ）
+  document.querySelectorAll('.tab[data-tab]').forEach(t=>{
+    t.classList.toggle('active', t.dataset.tab===name);
   });
-  try{ imgMode='none'; imgFileDataUrl=''; }catch(e){}
-  const lbl=document.getElementById('imgTriggerLabel');
-  if(lbl){ lbl.textContent='タップして選択…'; lbl.style.color='var(--text3)'; }
-  document.getElementById('optionalToggle')?.classList.remove('open');
-  document.getElementById('optionalFields')?.classList.remove('show');
-  document.getElementById('adminScroll').scrollTop=0;
 }
 
-document.querySelectorAll('.tab').forEach(t=>{
-  t.addEventListener('click',()=>{
-    document.querySelectorAll('.tab').forEach(x=>x.classList.remove('active'));
-    document.querySelectorAll('.tab-page').forEach(x=>x.classList.remove('active'));
-    t.classList.add('active');
-    document.getElementById('tab-'+t.dataset.tab).classList.add('active');
-    // 全定義が終わった後に実行されるよう遅延
-    setTimeout(resetAdminForm, 0);
-  });
+document.querySelectorAll('[data-tab]').forEach(btn=>{
+  btn.addEventListener('click',()=>switchTab(btn.dataset.tab));
 });
-const tabBar=document.getElementById('tabBar');
-function hideTabBar(){tabBar.classList.add('hidden')}
-function showTabBar(){tabBar.classList.remove('hidden')}
+
+function hideTabBar(){tabBar.style.transform='translateY(100%)';tabBar.style.transition='transform 0.3s ease';}
+function showTabBar(){tabBar.style.transform='';tabBar.style.transition='transform 0.3s ease';}
+
+/* 🔍 検索ボタン廃止 - タブに移動 */
 
 /* ── YEAR/MONTH NATIVE SELECT ── */
 /* ── YEAR/MONTH PICKER (input type=month) ── */
@@ -1177,151 +1106,12 @@ setTimeout(()=>{
   });
 },0);
 
-const tagPickGrouped=document.getElementById('tags-pick-grouped');
-
-function applyTagBtnStyle(btn,on){
-  const t=btn.dataset.tag;
-  const c=TAG_COLOR[t];
-  if(on&&c){
-    btn.style.background=c[0];
-    btn.style.color=c[1];
-    btn.style.borderColor=c[1];
-  }else{
-    btn.style.background='';
-    btn.style.color='';
-    btn.style.borderColor='';
-  }
-}
-
-TAG_GROUPS.forEach(group=>{
-  const wrap=document.createElement('div');
-  const row=document.createElement('div');
-  row.className='tag-group';
-  group.tags.forEach(t=>{
-    const btn=document.createElement('button');
-    btn.className='tag-pick-btn';btn.textContent=tagDisp(t);btn.dataset.tag=t;btn.type='button';
-    btn.addEventListener('click',()=>{
-      btn.classList.toggle('on');
-      applyTagBtnStyle(btn,btn.classList.contains('on'));
-    });
-    row.appendChild(btn);
-  });
-  wrap.appendChild(row);
-  tagPickGrouped.appendChild(wrap);
-});
-
 /* ── TOAST ── */
 function showToast(msg){
   const t=document.getElementById('toast');
   t.textContent=msg;t.classList.add('show');
   setTimeout(()=>t.classList.remove('show'),2000);
 }
-
-/* ── ADMIN UI ── */
-let imgMode = 'none';
-let imgFileDataUrl = '';
-
-const imgTrigger = document.getElementById('imgTrigger');
-const imgTriggerLabel = document.getElementById('imgTriggerLabel');
-
-/* 書影: タップで写真ライブラリを直接開く
-   (アクションシート廃止・URL入力は将来復活予定のためコメントアウト保持) */
-imgTrigger.addEventListener('click', ()=>{
-  document.getElementById('f-img-file').click();
-});
-
-/* ── URL入力復活時はここをコメント解除 ──
-const imgActionOverlay = document.getElementById('imgActionOverlay');
-function openImgAction(){
-  imgActionOverlay.classList.add('show');
-  document.getElementById('imgUrlInputWrap').classList.remove('show');
-  document.getElementById('imgUrlInput').value='';
-}
-function closeImgAction(){ imgActionOverlay.classList.remove('show'); }
-imgTrigger.addEventListener('click', openImgAction);
-document.getElementById('imgChooseUrl').addEventListener('click',()=>{
-  document.getElementById('imgUrlInputWrap').classList.add('show');
-});
-document.getElementById('imgUrlConfirm').addEventListener('click',()=>{
-  const url = document.getElementById('imgUrlInput').value.trim();
-  if(url){
-    imgMode='url';
-    document.getElementById('f-img').value=url;
-    imgTriggerLabel.textContent=url.length>30?url.substring(0,30)+'…':url;
-    imgTriggerLabel.style.color='var(--text)';
-  }
-  closeImgAction();
-});
-document.getElementById('imgChooseFile').addEventListener('click',()=>{
-  document.getElementById('f-img-file').click();
-  closeImgAction();
-});
-document.getElementById('imgChooseCancel').addEventListener('click', closeImgAction);
-imgActionOverlay.addEventListener('click',e=>{
-  if(e.target===imgActionOverlay) closeImgAction();
-});
-── ここまでコメントアウト ── */
-
-document.getElementById('f-img-file').addEventListener('change',e=>{
-  const file=e.target.files[0];
-  if(!file)return;
-  const reader=new FileReader();
-  reader.onload=ev=>{
-    imgFileDataUrl=ev.target.result;
-    imgMode='file';
-    imgTriggerLabel.textContent=file.name;
-    imgTriggerLabel.style.color='var(--text)';
-  };
-  reader.readAsDataURL(file);
-});
-
-// オプション開閉
-document.getElementById('optionalToggle').addEventListener('click',()=>{
-  const tog=document.getElementById('optionalToggle');
-  const fields=document.getElementById('optionalFields');
-  tog.classList.toggle('open');
-  fields.classList.toggle('show');
-});
-
-document.getElementById('submit-btn').addEventListener('click',e=>{
-  e.preventDefault();
-  const title=document.getElementById('f-title').value.trim();
-  const date=document.getElementById('f-date').value;
-  if(!title||!date){alert('タイトルと発売日は必須です');return;}
-  const selTags=[...document.querySelectorAll('.tag-pick-btn.on')].map(b=>b.dataset.tag);
-  const now=new Date();
-  const ts=`${now.getFullYear()}/${String(now.getMonth()+1).padStart(2,'0')}/${String(now.getDate()).padStart(2,'0')} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-  const imgVal = imgMode==='file' ? imgFileDataUrl : '';
-  books.push({
-    id:Date.now(),title,
-    author:document.getElementById('f-author').value.trim(),
-    publisher:document.getElementById('f-publisher').value.trim(),
-    date,tags:selTags,
-    img:imgVal,
-    amazon:document.getElementById('f-amazon').value.trim(),
-    isbn:document.getElementById('f-isbn').value.trim(),
-    created:ts,updated:ts
-  });
-  saveBooks();
-  // フォームリセット (f-img は現在コメントアウト中のため除外)
-  ['f-title','f-author','f-publisher','f-amazon','f-isbn'].forEach(id=>{
-    const el=document.getElementById(id);if(el)el.value='';
-  });
-  // 発売日リセット
-  document.getElementById('f-date').value='';
-  // 書影リセット
-  imgFileDataUrl='';imgMode='none';
-  imgTriggerLabel.textContent='タップして選択…';
-  imgTriggerLabel.style.color='var(--text3)';
-  // f-img-file リセット (同じファイルを再選択できるように)
-  document.getElementById('f-img-file').value='';
-  document.querySelectorAll('.tag-pick-btn.on').forEach(b=>{
-    b.classList.remove('on');
-    applyTagBtnStyle(b,false);
-  });
-  document.getElementById('adminScroll').scrollTop=0;
-  showToast('登録しました');renderCal();
-});
 </script>
 </body>
 </html>

@@ -715,14 +715,21 @@ function getDotColors(dateStr){
   const dayBooks = getFilteredBooks(dateStr);
   if(!dayBooks.length) return [];
   const seenColors = new Set();
-  const colors = [];
   for(const b of dayBooks){
     if(!b.tags || b.tags.length === 0){
-      if(!seenColors.has('#555')){ seenColors.add('#555'); colors.push('#555'); }
+      seenColors.add('#555');
     } else {
-      const group = DOT_COLOR_ORDER.find(g => g.tags.includes(b.tags[0]));
-      const color = group ? group.color : '#555';
-      if(!seenColors.has(color)){ seenColors.add(color); colors.push(color); }
+      if(activeFilters.size > 0){
+        // フィルタ中：DOT_COLOR_ORDERの優先順位で最初にマッチした1色
+        const group = DOT_COLOR_ORDER.find(g =>
+          g.tags.some(t => activeFilters.has(t) && b.tags.includes(t))
+        );
+        if(group) seenColors.add(group.color);
+      } else {
+        // フィルタなし：1つ目のタグの色
+        const group = DOT_COLOR_ORDER.find(g => g.tags.includes(b.tags[0]));
+        if(group) seenColors.add(group.color);
+      }
     }
   }
   const ordered = DOT_COLOR_ORDER.map(g => g.color).filter(c => seenColors.has(c));

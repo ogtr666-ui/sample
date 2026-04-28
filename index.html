@@ -259,6 +259,69 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .list-item:active{background:#fafafa;}
 .list-item:has(.fav-btn:active){background:none !important;}
 
+/* ─── SEARCH PAGE ─── */
+.search-page{ display:flex;flex-direction:column;height:100%; }
+.search-header{
+  padding:10px 14px;
+  display:flex;align-items:center;gap:8px;
+  flex-shrink:0;
+  position:relative;z-index:4;
+}
+.search-input-wrap{
+  flex:1;display:flex;align-items:center;
+  background:#f2f2f2;border-radius:10px;
+  padding:0 10px;gap:6px;
+}
+.search-input-wrap svg{
+  width:16px;height:16px;stroke:#aaa;fill:none;
+  stroke-width:1.8;stroke-linecap:round;flex-shrink:0;
+}
+.search-input{
+  flex:1;border:none;background:none;outline:none;
+  font-size:15px;color:var(--text);font-family:var(--font);
+  padding:9px 0;
+}
+.search-input::placeholder{color:#bbb;}
+.search-clear-btn{
+  background:none;border:none;cursor:pointer;padding:2px;
+  display:none;color:#aaa;font-size:16px;line-height:1;
+  -webkit-tap-highlight-color:transparent;
+}
+.search-filter-btn{
+  background:none;border:none;cursor:pointer;
+  padding:4px 6px;border-radius:6px;
+  display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;
+  transition:background 0.15s;
+  height:36px;box-sizing:border-box;flex-shrink:0;
+}
+.search-filter-btn svg{ stroke:var(--text3);fill:none;stroke-linecap:round; }
+.search-filter-btn.active{ background:#e8e8e8; }
+.search-filter-btn.active svg{ stroke:#222; }
+.search-filter-dropdown{
+  position:absolute;top:100%;left:0;right:0;
+  background:var(--bg);padding:0 14px;
+  border-bottom:0.5px solid var(--border);
+  z-index:5;display:flex;flex-direction:column;gap:8px;
+  max-height:0;overflow:hidden;
+  transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.search-filter-dropdown.open{ max-height:200px;padding:10px 14px 12px; }
+.search-body{ flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch; }
+.search-history-item{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 16px;border-bottom:0.5px solid var(--border);
+  cursor:pointer;-webkit-tap-highlight-color:transparent;
+}
+.search-history-item:active{ background:#f8f8f8; }
+.search-history-item svg{
+  width:16px;height:16px;stroke:var(--text3);fill:none;
+  stroke-width:1.6;stroke-linecap:round;flex-shrink:0;
+}
+.search-history-text{ flex:1;font-size:14px;color:var(--text2); }
+.search-empty{ padding:40px 16px;text-align:center;color:var(--text3);font-size:14px; }
+.search-result-count{ padding:8px 16px;font-size:12px;color:var(--text3); }
+
 /* ─── SEARCH OVERLAY (placeholder) ─── */
 .fav-btn{
   background:none;border:none;cursor:pointer;
@@ -487,7 +550,27 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
   <!-- 検索タブ -->
   <div class="tab-page" id="tab-search">
-    <div class="center-msg"><div class="big">🔍</div><div>検索機能は近日公開予定です</div></div>
+    <div class="search-page">
+      <div class="search-header">
+        <div class="search-input-wrap">
+          <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><line x1="16.5" y1="16.5" x2="22" y2="22"/></svg>
+          <input class="search-input" id="searchInput" type="search" placeholder="タイトル・著者・出版社で検索" autocomplete="off">
+          <button class="search-clear-btn" id="searchClearBtn">✕</button>
+        </div>
+        <button class="search-filter-btn" id="searchFilterBtn">
+          <svg viewBox="0 0 24 24" width="20" height="20" stroke-width="2">
+            <line x1="3" y1="7" x2="15" y2="7"/>
+            <line x1="19" y1="7" x2="21" y2="7"/>
+            <line x1="15" y1="4" x2="15" y2="10"/>
+            <line x1="3" y1="17" x2="9" y2="17"/>
+            <line x1="13" y1="17" x2="21" y2="17"/>
+            <line x1="9" y1="14" x2="9" y2="20"/>
+          </svg>
+        </button>
+      </div>
+      <div class="search-filter-dropdown" id="searchFilterDropdown"></div>
+      <div class="search-body" id="searchBody"></div>
+    </div>
   </div>
 
   <!-- カレンダータブ -->
@@ -502,21 +585,14 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
         <div class="cal-header-right">
           <button class="filter-btn" id="filterBtn" aria-label="フィルタ">
             <svg viewBox="0 0 24 24" width="22" height="22" stroke-width="2" stroke-linecap="round">
-              <!-- 1本目の横線（つまみ位置x=8で分割、gap=1.5） -->
-              <line x1="3" y1="6" x2="6.5" y2="6"/>
-              <line x1="9.5" y1="6" x2="21" y2="6"/>
-              <!-- 1本目のつまみ -->
-              <line x1="8" y1="3.5" x2="8" y2="8.5"/>
-              <!-- 2本目の横線（つまみ位置x=16で分割） -->
-              <line x1="3" y1="12" x2="14.5" y2="12"/>
-              <line x1="17.5" y1="12" x2="21" y2="12"/>
-              <!-- 2本目のつまみ -->
-              <line x1="16" y1="9.5" x2="16" y2="14.5"/>
-              <!-- 3本目の横線（つまみ位置x=11で分割） -->
-              <line x1="3" y1="18" x2="9.5" y2="18"/>
-              <line x1="12.5" y1="18" x2="21" y2="18"/>
-              <!-- 3本目のつまみ -->
-              <line x1="11" y1="15.5" x2="11" y2="20.5"/>
+              <!-- 1本目(y=7)：右寄りつまみ(x=15)、右に広い隙間 -->
+              <line x1="3" y1="7" x2="15" y2="7"/>
+              <line x1="19" y1="7" x2="21" y2="7"/>
+              <line x1="15" y1="4" x2="15" y2="10"/>
+              <!-- 2本目(y=17)：左寄りつまみ(x=9)、右に広い隙間 -->
+              <line x1="3" y1="17" x2="9" y2="17"/>
+              <line x1="13" y1="17" x2="21" y2="17"/>
+              <line x1="9" y1="14" x2="9" y2="20"/>
             </svg>
           </button>
           <button class="today-btn" id="todayBtn">今日</button>
@@ -815,6 +891,7 @@ function switchTab(name){
   document.querySelectorAll('.tab[data-tab]').forEach(t => {
     t.classList.toggle('active', t.dataset.tab === name);
   });
+  if(name === 'search') renderSearchHistory();
   if(name === 'bookmark'){
     favSubTab = 'upcoming';
     document.getElementById('favTabUpcoming')?.classList.add('active');
@@ -1568,6 +1645,178 @@ document.addEventListener('click', e => {
   if(!filterDropdown.classList.contains('open')) return;
   if(e.target.closest('.cal-header-wrap')) return;
   closeFilterDropdown();
+});
+
+/* ── SEARCH ── */
+let searchFilters = new Set();
+let searchHistory = JSON.parse(localStorage.getItem('tbcal7-search-history') || '[]');
+
+const searchInput = document.getElementById('searchInput');
+const searchClearBtn = document.getElementById('searchClearBtn');
+const searchBody = document.getElementById('searchBody');
+const searchFilterBtn = document.getElementById('searchFilterBtn');
+const searchFilterDropdown = document.getElementById('searchFilterDropdown');
+
+function saveSearchHistory(){ localStorage.setItem('tbcal7-search-history', JSON.stringify(searchHistory)); }
+
+function addSearchHistory(q){
+  if(!q) return;
+  searchHistory = [q, ...searchHistory.filter(h => h !== q)].slice(0, 5);
+  saveSearchHistory();
+}
+
+function renderSearchBody(){
+  const q = searchInput.value.trim();
+  if(!q){ renderSearchHistory(); return; }
+  execSearch(q);
+}
+
+function renderSearchHistory(){
+  if(!searchHistory.length){
+    searchBody.innerHTML = '<div class="search-empty">検索履歴はありません</div>';
+    return;
+  }
+  searchBody.innerHTML = searchHistory.map(h => `
+    <div class="search-history-item" data-query="${h}">
+      <svg viewBox="0 0 24 24"><polyline points="12 8 12 12 14 14"/><path d="M3.05 11a9 9 0 1 0 .5-4.5"/><polyline points="3 3 3 7 7 7"/></svg>
+      <span class="search-history-text">${h}</span>
+    </div>
+  `).join('');
+  searchBody.querySelectorAll('.search-history-item').forEach(el => {
+    el.addEventListener('click', () => {
+      searchInput.value = el.dataset.query;
+      execSearch(el.dataset.query);
+    });
+  });
+}
+
+function execSearch(q){
+  q = q.trim();
+  searchClearBtn.style.display = q ? 'block' : 'none';
+  if(!q){ renderSearchHistory(); return; }
+  addSearchHistory(q);
+  const lower = q.toLowerCase();
+  let results = books.filter(b =>
+    b.title?.toLowerCase().includes(lower) ||
+    b.author?.toLowerCase().includes(lower) ||
+    b.publisher?.toLowerCase().includes(lower)
+  );
+  if(searchFilters.size > 0){
+    results = results.filter(b => b.tags && b.tags.some(t => searchFilters.has(t)));
+  }
+  if(!results.length){
+    searchBody.innerHTML = '<div class="search-empty">該当する参考書が見つかりませんでした</div>';
+    return;
+  }
+  searchBody.innerHTML = `
+    <div class="search-result-count">${results.length}件</div>
+    <div class="list-view">${results.map(b => `
+      <div class="list-item" data-id="${b.id}">
+        <div class="thumb"><img src="${b.img||NO_IMAGE_SRC}" alt=""></div>
+        <div class="list-info">
+          <div class="list-title">${b.title}</div>
+          <div class="tags">${b.tags.map(t=>`<span class="tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
+        </div>
+        <button class="fav-btn${isFav(b.id)?' active':''}" data-fav-id="${b.id}">
+          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
+        </button>
+      </div>`).join('')}
+    </div>`;
+  searchBody.querySelectorAll('.list-item[data-id]').forEach(el => {
+    el.addEventListener('click', e => {
+      if(e.target.closest('.fav-btn')) return;
+      const b = books.find(x => x.id == el.dataset.id);
+      if(b) openDetail(b);
+    });
+  });
+  searchBody.querySelectorAll('.fav-btn').forEach(btn => {
+    btn.addEventListener('touchstart', e => e.stopPropagation(), {passive:true});
+    btn.addEventListener('mousedown', e => e.stopPropagation());
+    btn.addEventListener('click', e => {
+      e.stopPropagation();
+      toggleFav(parseInt(btn.dataset.favId));
+      btn.classList.toggle('active', isFav(parseInt(btn.dataset.favId)));
+    });
+  });
+}
+
+searchInput.addEventListener('input', () => execSearch(searchInput.value));
+searchInput.addEventListener('keydown', e => { if(e.key==='Enter'){ searchInput.blur(); } });
+searchClearBtn.addEventListener('click', () => {
+  searchInput.value = '';
+  searchClearBtn.style.display = 'none';
+  renderSearchHistory();
+  searchInput.focus();
+});
+
+function buildSearchFilterDropdown(){
+  searchFilterDropdown.innerHTML = '';
+  const row = document.createElement('div');
+  row.className = 'filter-tag-group';
+  TAG_GROUPS.forEach(group => {
+    group.tags.forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tag-btn' + (searchFilters.has(t) ? ' on' : '');
+      btn.textContent = tagDisp(t);
+      if(searchFilters.has(t)){
+        const c = TAG_COLOR[t];
+        if(c){ btn.style.background=c[0]; btn.style.color=c[1]; btn.style.borderColor=c[1]; }
+      }
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if(searchFilters.has(t)){
+          searchFilters.delete(t);
+          btn.classList.remove('on');
+          btn.style.background=''; btn.style.color=''; btn.style.borderColor='';
+        } else {
+          searchFilters.add(t);
+          btn.classList.add('on');
+          const c = TAG_COLOR[t];
+          if(c){ btn.style.background=c[0]; btn.style.color=c[1]; btn.style.borderColor=c[1]; }
+        }
+        searchFilterBtn.classList.toggle('active', searchFilters.size > 0);
+        execSearch(searchInput.value);
+      });
+      row.appendChild(btn);
+    });
+  });
+  searchFilterDropdown.appendChild(row);
+
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-top:4px;';
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'filter-reset-btn';
+  resetBtn.textContent = 'リセット';
+  resetBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    searchFilters.clear();
+    searchFilterDropdown.querySelectorAll('.filter-tag-btn').forEach(b => {
+      b.classList.remove('on'); b.style.background=''; b.style.color=''; b.style.borderColor='';
+    });
+    searchFilterBtn.classList.remove('active');
+    execSearch(searchInput.value);
+  });
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'filter-reset-btn';
+  closeBtn.textContent = '閉じる';
+  closeBtn.addEventListener('click', e => { e.stopPropagation(); searchFilterDropdown.classList.remove('open'); });
+  btnRow.appendChild(resetBtn);
+  btnRow.appendChild(closeBtn);
+  searchFilterDropdown.appendChild(btnRow);
+}
+
+searchFilterBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = !searchFilterDropdown.classList.contains('open');
+  if(isOpen){ searchFilterDropdown.classList.add('open'); buildSearchFilterDropdown(); }
+  else { searchFilterDropdown.classList.remove('open'); }
+  searchFilterBtn.classList.toggle('active', searchFilters.size > 0);
+});
+
+document.addEventListener('click', e => {
+  if(!searchFilterDropdown.classList.contains('open')) return;
+  if(e.target.closest('.search-header')) return;
+  searchFilterDropdown.classList.remove('open');
 });
 
 function showToast(msg){

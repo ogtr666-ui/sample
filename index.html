@@ -1681,17 +1681,16 @@ function setDetailEditMode(b){
     zone.removeEventListener('click', zoneClick);
     zone.classList.remove('editable');
     document.body.removeChild(fileInput);
-    // detailBodyに追加したフッターを削除
     const footer = document.querySelector('#detailBody .detail-edit-footer');
     if(footer) footer.remove();
+    // editingクラスとinlineスタイルをリセット（transformはcloseDetailに任せる）
     sheet.classList.remove('editing');
     sheet.querySelector('.handle-wrap').style.visibility = '';
     sheet.style.height = '';
-    sheet.style.transition = '';
-    sheet.style.top = '';
-    sheet.style.transform = '';
+    // 現在のtransformを維持したまま閉じてから開き直す
+    detailOpen = true; // closeDetailが動くようにフラグを立てる
     closeDetail();
-    if(savedBook) setTimeout(()=> openDetail(savedBook), 350);
+    if(savedBook) setTimeout(()=> openDetail(savedBook), 420);
   }
 
   document.getElementById('editCancelBtn').onclick = ()=>{ exitEditMode(b); };

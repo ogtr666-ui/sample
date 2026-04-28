@@ -326,10 +326,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 /* リスト書影 */
 .thumb{
   width:68px;height:95px;
-  background:transparent;
-  border-radius:5px;flex-shrink:0;flex-grow:0;
+  flex-shrink:0;flex-grow:0;
   display:flex;align-items:center;justify-content:center;
-  overflow:hidden;
 }
 .thumb img{
   max-width:100%;max-height:100%;
@@ -1051,7 +1049,7 @@ function setDetailContent(b){
   }else{
     zone.innerHTML=`
       <div class="detail-cover-bg" style="background-image:url('${NO_IMAGE_SRC}')"></div>
-      <div class="detail-cover-front"><img src="${NO_IMAGE_SRC}" alt="" style="max-height:100%;border-radius:6px;box-shadow:0 2px 8px rgba(0,0,0,0.15);"></div>`;
+      <div class="detail-cover-front"><img src="${NO_IMAGE_SRC}" alt="" style="max-height:100%;box-shadow:0 2px 8px rgba(0,0,0,0.15);"></div>`;
   }
 
   const rows=[
@@ -1295,7 +1293,7 @@ setTimeout(()=>{
 },0);
 
 // NO IMAGE プレースホルダー（A判比率のSVG data URI）
-const NO_IMAGE_SRC = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 141" width="100" height="141"><rect width="100" height="141" fill="#d8d8d8" rx="4"/><text x="50" y="75" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#aaa">NO IMAGE</text></svg>`)}`;
+const NO_IMAGE_SRC = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 141" width="100" height="141"><rect width="100" height="141" fill="#d8d8d8"/><text x="50" y="75" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#aaa">NO IMAGE</text></svg>`)}`;
 
 let favorites = JSON.parse(localStorage.getItem('tbcal7-favs') || '[]');
 function saveFavs(){ localStorage.setItem('tbcal7-favs', JSON.stringify(favorites)); }

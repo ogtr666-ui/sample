@@ -2035,18 +2035,23 @@ function addSearchHistory(q){
   saveSearchHistory();
 }
 
-function setSearchBody(html, cb){
-  searchBody.style.opacity = '0';
-  setTimeout(()=>{
+function setSearchBody(html, cb, fade){
+  if(fade){
+    searchBody.style.opacity = '0';
+    setTimeout(()=>{
+      searchBody.innerHTML = html;
+      if(cb) cb();
+      searchBody.style.opacity = '1';
+    }, 120);
+  } else {
     searchBody.innerHTML = html;
     if(cb) cb();
-    searchBody.style.opacity = '1';
-  }, 120);
+  }
 }
 
 function renderSearchHistory(){
   if(!searchHistory.length){
-    setSearchBody('<div class="search-empty">検索履歴はありません</div>');
+    setSearchBody('<div class="search-empty">検索履歴はありません</div>', null, false);
     return;
   }
   setSearchBody(searchHistory.map(h => `
@@ -2062,7 +2067,7 @@ function renderSearchHistory(){
         execSearch(el.dataset.query);
       });
     });
-  });
+  }, false); // 履歴表示はフェードなし
 }
 
 function execSearch(q){
@@ -2080,7 +2085,7 @@ function execSearch(q){
     results = results.filter(b => b.tags && b.tags.some(t => searchFilters.has(t)));
   }
   if(!results.length){
-    setSearchBody('<div class="search-empty">該当する参考書が見つかりませんでした</div>');
+    setSearchBody('<div class="search-empty">該当する参考書が見つかりませんでした</div>', null, true);
     return;
   }
   const html = `
@@ -2115,7 +2120,7 @@ function execSearch(q){
         btn.classList.toggle('active', isFav(parseInt(btn.dataset.favId)));
       });
     });
-  });
+  }, true); // 検索結果表示はフェードあり
 }
 
 searchInput.addEventListener('keydown', e => { if(e.key==='Enter'){ searchInput.blur(); execSearch(searchInput.value); } });

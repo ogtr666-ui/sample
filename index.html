@@ -44,12 +44,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   color:#fff;
   font-family:var(--font);
 }
-.admin-badge{
-  font-size:10px;font-weight:700;letter-spacing:0.08em;
-  background:rgba(255,255,255,0.28);color:#fff;
-  padding:3px 8px;border-radius:20px;
-}
-
 /* ─── TAB BAR ─── */
 .tab-bar{
   display:flex;align-items:stretch;
@@ -593,96 +587,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .fab svg{ width:26px;height:26px;stroke:#fff;fill:none;stroke-width:2;stroke-linecap:round; }
 
 /* ─── FORM OVERLAY ─── */
-#form-overlay{
-  position:fixed;inset:0;background:rgba(0,0,0,0.38);
-  z-index:80;opacity:0;pointer-events:none;
-  transition:opacity 0.3s;
-}
-#form-overlay.active{opacity:1;pointer-events:all;}
 
 /* ─── FORM SHEET ─── */
-#form-sheet{
-  position:fixed;left:0;right:0;bottom:0;
-  background:var(--bg);
-  border-radius:20px 20px 0 0;
-  z-index:81;
-  transform:translateY(100%);
-  transition:transform 0.4s cubic-bezier(0.23,1,0.32,1);
-  display:flex;flex-direction:column;
-  max-height:92vh;
-}
-#form-sheet.open{ transform:translateY(0); }
-.form-handle-wrap{padding:12px 0 4px;display:flex;justify-content:center;flex-shrink:0;}
-.form-handle{width:40px;height:4px;background:var(--handle);border-radius:2px;}
-.form-header{
-  display:flex;align-items:center;justify-content:space-between;
-  padding:4px 16px 12px;flex-shrink:0;
-  border-bottom:0.5px solid var(--border);
-}
-.form-title{font-size:16px;font-weight:700;}
-.form-close-btn{
-  width:32px;height:32px;border:none;background:#f2f2f2;border-radius:50%;
-  cursor:pointer;display:flex;align-items:center;justify-content:center;
-  font-size:16px;color:var(--text2);
-  -webkit-tap-highlight-color:transparent;
-}
-.form-scroll{flex:1;overflow-y:auto;overscroll-behavior:contain;touch-action:pan-y;}
 
-/* ─── v98スタイル フォーム ─── */
-.admin-form{padding:16px;display:flex;flex-direction:column;gap:12px;}
-.form-row{display:flex;gap:10px;align-items:flex-start;}
-.form-row .form-group{flex:1;min-width:0;}
-.form-group{display:flex;flex-direction:column;gap:3px;width:100%;}
-.form-label{font-size:10px;font-weight:600;color:var(--text2);}
-.form-input{
-  box-sizing:border-box;width:100%;
-  background:#f4f4f4;border:0.5px solid #e0e0e0;
-  border-radius:8px;padding:7px 10px;
-  font-size:13px;color:var(--text);font-family:var(--font);outline:none;
-  -webkit-appearance:none;appearance:none;display:block;
-  height:34px;
-}
-.form-input:focus{border-color:#aaa;}
-.form-input::placeholder{color:#bbb;}
 
 /* 書影トリガー */
-.img-trigger{
-  cursor:pointer;display:flex;align-items:center;
-  min-height:34px;height:auto;
-}
 
 /* 科目タグ選択（v98スタイル） */
-.tags-pick-grouped{display:flex;flex-direction:column;gap:7px;margin-top:4px;}
-.tag-group{display:flex;flex-wrap:wrap;gap:5px;}
-.tag-pick-btn{
-  font-size:11px;padding:5px 10px;border-radius:20px;
-  border:1.5px solid #ddd;background:#fafafa;cursor:pointer;
-  color:var(--text2);font-family:var(--font);
-  transition:background 0.15s,color 0.15s,border-color 0.15s;
-  white-space:nowrap;
-  -webkit-tap-highlight-color:transparent;
-}
 
 /* オプション折りたたみ */
-.optional-toggle{
-  display:flex;align-items:center;gap:6px;
-  font-size:11px;color:var(--text3);cursor:pointer;
-  padding:2px 0;user-select:none;
-}
-.optional-toggle-arrow{font-size:9px;transition:transform 0.2s;}
-.optional-toggle.open .optional-toggle-arrow{transform:rotate(90deg);}
-.optional-fields{display:none;flex-direction:column;gap:12px;}
-.optional-fields.show{display:flex;}
 
 /* 登録ボタン */
-.submit-btn{
-  box-sizing:border-box;width:100%;
-  background:#111;color:#fff;border:none;border-radius:10px;
-  padding:11px;font-size:14px;font-weight:700;cursor:pointer;font-family:var(--font);
-  margin-bottom:40px;
-  -webkit-tap-highlight-color:transparent;
-}
-.submit-btn:active{opacity:0.75;}
 
 /* ─── 確認ダイアログ ─── */
 #confirm-overlay{
@@ -716,7 +631,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <!-- アプリタイトル -->
 <div class="app-title-bar">
   <span class="app-title-text">参考書新刊カレンダー</span>
-  <span class="admin-badge">ADMIN</span>
 </div>
 
 <div class="pages">
@@ -873,77 +787,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 </div>
 
 <!-- 全画面編集スクリーンは廃止 -->
-
-<!-- フォームオーバーレイ -->
-<div id="form-overlay"></div>
-
-<!-- 登録・編集フォームシート -->
-<div id="form-sheet">
-  <div class="form-handle-wrap"><div class="form-handle"></div></div>
-  <div class="form-header">
-    <div class="form-title" id="formTitle">新規登録</div>
-    <button class="form-close-btn" id="formCloseBtn">✕</button>
-  </div>
-  <div class="form-scroll">
-    <div class="admin-form">
-
-      <div class="form-group">
-        <label class="form-label">タイトル *</label>
-        <input class="form-input" id="formBookTitle" type="text" placeholder="参考書のタイトル">
-      </div>
-
-      <!-- 発売日 + 書影 -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">発売日 *</label>
-          <input class="form-input" id="formDate" type="date">
-        </div>
-        <div class="form-group">
-          <label class="form-label">書影</label>
-          <div class="form-input img-trigger" id="formImgTrigger">
-            <span id="formImgTriggerLabel" style="color:var(--text3);">タップして選択…</span>
-          </div>
-          <input type="file" id="formImgFile" accept="image/*" style="display:none;">
-        </div>
-      </div>
-
-      <!-- 著者 + 出版社 -->
-      <div class="form-row">
-        <div class="form-group">
-          <label class="form-label">著者</label>
-          <input class="form-input" id="formAuthor" type="text" placeholder="著者名">
-        </div>
-        <div class="form-group">
-          <label class="form-label">出版社</label>
-          <input class="form-input" id="formPublisher" type="text" placeholder="出版社名">
-        </div>
-      </div>
-
-      <div class="form-group">
-        <label class="form-label">科目タグ</label>
-        <div class="tags-pick-grouped" id="tagSelectGroup"></div>
-      </div>
-
-      <!-- オプション（URL・ISBN）-->
-      <div class="optional-toggle" id="formOptionalToggle">
-        <span class="optional-toggle-arrow">▶</span>
-        <span>オプション（URL・ISBN）</span>
-      </div>
-      <div class="optional-fields" id="formOptionalFields">
-        <div class="form-group">
-          <label class="form-label">URL</label>
-          <input class="form-input" id="formAmazon" type="text" placeholder="https://…">
-        </div>
-        <div class="form-group">
-          <label class="form-label">ISBN</label>
-          <input class="form-input" id="formIsbn" type="text" placeholder="978-4-…">
-        </div>
-      </div>
-
-      <button class="submit-btn" id="formSubmitBtn">登録する</button>
-    </div>
-  </div>
-</div>
 
 <!-- 削除確認ダイアログ -->
 <div id="confirm-overlay">
@@ -2205,185 +2048,6 @@ document.addEventListener('click', e => {
 });
 */
 
-/* ══════════════════════════════════════════
-   ADMIN: フォーム（登録・編集）
-══════════════════════════════════════════ */
-const formOverlay = document.getElementById('form-overlay');
-const formSheet = document.getElementById('form-sheet');
-const formTitle = document.getElementById('formTitle');
-const formCloseBtn = document.getElementById('formCloseBtn');
-const formSubmitBtn = document.getElementById('formSubmitBtn');
-
-let formEditId = null;
-let formImgMode = 'none';     // 'none' | 'file' | 'keep'
-let formImgFileDataUrl = '';
-let formImgKeepUrl = '';
-
-/* 書影ファイル選択 */
-document.getElementById('formImgTrigger').addEventListener('click', () => {
-  document.getElementById('formImgFile').click();
-});
-document.getElementById('formImgFile').addEventListener('change', e => {
-  const file = e.target.files[0];
-  if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ev => {
-    formImgFileDataUrl = ev.target.result;
-    formImgMode = 'file';
-    const label = document.getElementById('formImgTriggerLabel');
-    label.textContent = file.name;
-    label.style.color = 'var(--text)';
-  };
-  reader.readAsDataURL(file);
-});
-
-/* オプション折りたたみ */
-document.getElementById('formOptionalToggle').addEventListener('click', () => {
-  document.getElementById('formOptionalToggle').classList.toggle('open');
-  document.getElementById('formOptionalFields').classList.toggle('show');
-});
-
-/* タグ選択ボタン */
-function applyTagBtnStyle(btn, on){
-  const c = TAG_COLOR[btn.dataset.tag];
-  if(on && c){ btn.style.background=c[0]; btn.style.color=c[1]; btn.style.borderColor=c[1]; }
-  else { btn.style.background=''; btn.style.color=''; btn.style.borderColor=''; }
-}
-
-function buildTagSelectGroup(){
-  const group = document.getElementById('tagSelectGroup');
-  group.innerHTML = '';
-  TAG_GROUPS.forEach(g => {
-    const wrap = document.createElement('div');
-    const row  = document.createElement('div');
-    row.className = 'tag-group';
-    g.tags.forEach(t => {
-      const btn = document.createElement('button');
-      btn.type = 'button';
-      btn.className = 'tag-pick-btn';
-      btn.textContent = tagDisp(t);
-      btn.dataset.tag = t;
-      btn.addEventListener('click', () => {
-        btn.classList.toggle('on');
-        applyTagBtnStyle(btn, btn.classList.contains('on'));
-      });
-      row.appendChild(btn);
-    });
-    wrap.appendChild(row);
-    group.appendChild(wrap);
-  });
-}
-
-function setSelectedTags(tags){
-  document.querySelectorAll('#tagSelectGroup .tag-pick-btn').forEach(btn => {
-    const on = tags.includes(btn.dataset.tag);
-    btn.classList.toggle('on', on);
-    applyTagBtnStyle(btn, on);
-  });
-}
-
-function openForm(book){
-  // 書影リセット
-  formImgMode = 'none'; formImgFileDataUrl = ''; formImgKeepUrl = '';
-  document.getElementById('formImgFile').value = '';
-  const label = document.getElementById('formImgTriggerLabel');
-
-  if(book){
-    formEditId = book.id;
-    formTitle.textContent = '編集';
-    formSubmitBtn.textContent = '保存する';
-    document.getElementById('formBookTitle').value = book.title || '';
-    document.getElementById('formDate').value      = book.date  || '';
-    document.getElementById('formAuthor').value    = book.author    || '';
-    document.getElementById('formPublisher').value = book.publisher || '';
-    document.getElementById('formAmazon').value    = book.amazon || '';
-    document.getElementById('formIsbn').value      = book.isbn   || '';
-    if(book.img){
-      formImgMode = 'keep'; formImgKeepUrl = book.img;
-      label.textContent = '設定済み（変更する場合はタップ）';
-      label.style.color = 'var(--text)';
-    } else {
-      label.textContent = 'タップして選択…'; label.style.color = 'var(--text3)';
-    }
-    buildTagSelectGroup();
-    setSelectedTags(book.tags || []);
-  } else {
-    formEditId = null;
-    formTitle.textContent = '新規登録';
-    formSubmitBtn.textContent = '登録する';
-    ['formBookTitle','formDate','formAuthor','formPublisher','formAmazon','formIsbn'].forEach(id => {
-      document.getElementById(id).value = '';
-    });
-    label.textContent = 'タップして選択…'; label.style.color = 'var(--text3)';
-    buildTagSelectGroup();
-  }
-
-  // オプション折りたたみをリセット
-  document.getElementById('formOptionalToggle').classList.remove('open');
-  document.getElementById('formOptionalFields').classList.remove('show');
-
-  formSheet.querySelector('.form-scroll').scrollTop = 0;
-  formOverlay.classList.add('active');
-  requestAnimationFrame(() => { formSheet.classList.add('open'); });
-}
-
-function closeForm(){
-  formSheet.classList.remove('open');
-  formOverlay.classList.remove('active');
-}
-
-formCloseBtn.addEventListener('click', closeForm);
-formOverlay.addEventListener('click', closeForm);
-formSheet.addEventListener('click', e => e.stopPropagation());
-
-formSubmitBtn.addEventListener('click', () => {
-  const title = document.getElementById('formBookTitle').value.trim();
-  const date  = document.getElementById('formDate').value;
-  if(!title || !date){ showToast('タイトルと発売日は必須です'); return; }
-
-  const selTags = [...document.querySelectorAll('#tagSelectGroup .tag-pick-btn.on')].map(b => b.dataset.tag);
-  const imgVal  = formImgMode === 'file' ? formImgFileDataUrl
-                : formImgMode === 'keep' ? formImgKeepUrl : '';
-  const now = new Date();
-  const ts  = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
-
-  if(formEditId !== null){
-    const idx = books.findIndex(b => b.id === formEditId);
-    if(idx !== -1){
-      books[idx] = {
-        ...books[idx], title, date,
-        author:    document.getElementById('formAuthor').value.trim(),
-        publisher: document.getElementById('formPublisher').value.trim(),
-        tags: selTags, img: imgVal,
-        isbn:   document.getElementById('formIsbn').value.trim(),
-        amazon: document.getElementById('formAmazon').value.trim(),
-        updated: ts,
-      };
-    }
-    saveBooks(); closeForm(); renderCal(); renderFavList();
-    showToast('更新しました');
-  } else {
-    books.push({
-      id: Date.now(), title, date,
-      author:    document.getElementById('formAuthor').value.trim(),
-      publisher: document.getElementById('formPublisher').value.trim(),
-      tags: selTags, img: imgVal,
-      amazon: document.getElementById('formAmazon').value.trim(),
-      isbn:   document.getElementById('formIsbn').value.trim(),
-      created: ts, updated: ts,
-    });
-    saveBooks(); closeForm();
-    const [y,m] = date.split('-').map(Number);
-    curYear=y; curMonth=m-1;
-    renderCal(); renderFavList();
-    showToast('登録しました');
-  }
-});
-
-/* FAB */
-document.getElementById('fabBtn').addEventListener('click', () => {
-  openForm(null);
-});
 
 /* ══════════════════════════════════════════
    ADMIN: 削除確認ダイアログ

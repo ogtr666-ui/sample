@@ -178,6 +178,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .today-btn{font-size:11px;font-weight:600;color:var(--text2);border:1px solid #bbb;border-radius:6px;padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);transition:background 0.15s,color 0.15s;}
 .today-btn:active{background:#f0f0f0;color:#111;}
+/* iOSで:activeを発火させるためにtouchstartをJS側で追加 */
 .drum-trigger{display:flex;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
 .drum-label{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
 .ym-input{
@@ -345,19 +346,28 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .fav-subtab{
   display:flex;background:#f0f0f0;border-radius:20px;padding:3px;gap:0;
+  position:relative;
+}
+/* スライドするアクティブ背景 */
+.fav-subtab-indicator{
+  position:absolute;top:3px;left:3px;bottom:3px;
+  width:calc(50% - 3px);
+  background:#fff;border-radius:17px;
+  box-shadow:0 1px 4px rgba(0,0,0,0.12);
+  transition:transform 0.36s cubic-bezier(0.23,1,0.32,1);
+  pointer-events:none;
 }
 .fav-subtab-btn{
   flex:1;padding:6px 24px;border:none;background:none;
   border-radius:17px;font-size:13px;font-weight:600;
   color:var(--text3);cursor:pointer;font-family:var(--font);
-  transition:background 0.2s,color 0.2s,box-shadow 0.2s;
-  white-space:nowrap;
+  transition:color 0.2s;
+  white-space:nowrap;position:relative;z-index:1;
 }
-.fav-subtab-btn.active{
-  background:#fff;color:var(--text);
-  box-shadow:0 1px 4px rgba(0,0,0,0.12);
-}
-.fav-list{ flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch; }
+.fav-subtab-btn.active{ color:var(--text); }
+.fav-list{ flex:0 0 100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch; }
+.fav-track-outer{ flex:1;overflow:hidden;position:relative; }
+.fav-track{ display:flex;height:100%;will-change:transform;transition:transform 0.36s cubic-bezier(0.23,1,0.32,1); }
 .fav-empty{
   flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:10px;color:var(--text3);
@@ -434,7 +444,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .thumb{width:68px;height:95px;flex-shrink:0;flex-grow:0;display:flex;align-items:center;justify-content:center;}
 .thumb img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,0.22);}
 .list-info{flex:1;min-width:0;}
-.list-title{font-size:13px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;margin-bottom:5px;}
+.list-title{font-size:13px;font-weight:600;margin-bottom:5px;line-height:1.45;}
+.list-title.ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
 .tags{display:flex;gap:4px;flex-wrap:wrap;}
 .tag{font-size:10px;font-weight:500;padding:2px 7px;border-radius:20px;}
 
@@ -499,7 +510,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   border:none;cursor:pointer;
   display:flex;align-items:center;justify-content:center;
   box-shadow:0 4px 16px rgba(74,111,212,0.45);
-  z-index:50;
+  z-index:10;
   transition:transform 0.2s, box-shadow 0.2s;
   -webkit-tap-highlight-color:transparent;
 }
@@ -713,11 +724,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
     <div class="fav-page">
       <div class="fav-subtab-wrap">
         <div class="fav-subtab">
+          <div class="fav-subtab-indicator" id="favSubtabIndicator"></div>
           <button class="fav-subtab-btn active" id="favTabUpcoming">発売予定</button>
           <button class="fav-subtab-btn" id="favTabReleased">発売済み</button>
         </div>
       </div>
-      <div class="fav-list" id="favList"></div>
+      <div class="fav-track-outer">
+        <div class="fav-track" id="favTrack">
+          <div class="fav-list" id="favListUpcoming"></div>
+          <div class="fav-list" id="favListReleased"></div>
+        </div>
+      </div>
     </div>
   </div>
 
@@ -1037,12 +1054,13 @@ function switchTab(name){
   document.querySelectorAll('.tab[data-tab]').forEach(t => {
     t.classList.toggle('active', t.dataset.tab === name);
   });
+  // FABはカレンダータブのみ表示
+  const fab = document.getElementById('fabBtn');
+  if(fab) fab.style.display = name === 'calendar' ? 'flex' : 'none';
   drawTabBg();
   if(name === 'search') renderSearchHistory();
   if(name === 'bookmark'){
-    favSubTab = 'upcoming';
-    document.getElementById('favTabUpcoming')?.classList.add('active');
-    document.getElementById('favTabReleased')?.classList.remove('active');
+    switchFavTab('upcoming');
     renderFavList();
   }
 }
@@ -1080,6 +1098,7 @@ document.getElementById('ymMonthInput').addEventListener('change',e=>{
   curYear=y;curMonth=m-1;
   buildSelects();renderCal();
 });
+document.getElementById('todayBtn').addEventListener('touchstart',()=>{},{passive:true});
 document.getElementById('todayBtn').addEventListener('click',()=>{
   curYear=today.getFullYear();curMonth=today.getMonth();
   buildSelects();renderCal();
@@ -1241,6 +1260,9 @@ function closeDate(){
 function openDetail(b){
   currentDetailBook = b;
   setDetailContent(b);
+  // 詳細シートのスクロールをトップにリセット
+  const ds = detailSheet.querySelector('.detail-scroll');
+  if(ds) ds.scrollTop = 0;
   if(!detailOpen){
     detailOpen=true;
     const dov = document.getElementById('detail-overlay');
@@ -1261,6 +1283,10 @@ function buildDatePanels(s){
   renderDay(document.getElementById('datePanelPrev'),addDays(s,-1));
   renderDay(document.getElementById('datePanelCurr'),s);
   renderDay(document.getElementById('datePanelNext'),addDays(s,1));
+  // 全パネルのスクロールをトップにリセット
+  ['datePanelPrev','datePanelCurr','datePanelNext'].forEach(id=>{
+    document.getElementById(id).scrollTop = 0;
+  });
   const track=document.getElementById('dateTrack');
   track.style.transition='none';track.style.transform='translateX(-100%)';
 }
@@ -1544,17 +1570,13 @@ function toggleFav(id){
 
 let favSubTab = 'upcoming';
 
-function renderFavList(){
-  const list = document.getElementById('favList');
-  if(!list) return;
-  const today = todayStr;
+function buildFavListHtml(subTab){
   const favBooks = favorites.map(id => books.find(b => b.id === id)).filter(Boolean);
-  const isUpcoming = favSubTab === 'upcoming';
-  const filtered = favBooks.filter(b => isUpcoming ? b.date >= today : b.date < today);
+  const isUpcoming = subTab === 'upcoming';
+  const filtered = favBooks.filter(b => isUpcoming ? b.date >= todayStr : b.date < todayStr);
   filtered.sort((a,b) => isUpcoming ? a.date.localeCompare(b.date) : b.date.localeCompare(a.date));
   if(!filtered.length){
-    list.innerHTML=`<div class="fav-empty"><div class="big">♡</div><div>${isUpcoming?'発売予定のお気に入りはありません':'発売済みのお気に入りはありません'}</div></div>`;
-    return;
+    return `<div class="fav-empty"><div class="big">♡</div><div>${isUpcoming?'発売予定のお気に入りはありません':'発売済みのお気に入りはありません'}</div></div>`;
   }
   const groups = {};
   filtered.forEach(b=>{
@@ -1575,27 +1597,84 @@ function renderFavList(){
       </div>`;
     });
   });
-  list.innerHTML = `<div class="list-view">${html}</div>`;
-  list.querySelectorAll('.fav-list-item').forEach(el=>{
-    el.addEventListener('click',()=>{
-      const b = books.find(x=>x.id==el.dataset.id);
-      if(b) openDetail(b);
+  return `<div class="list-view">${html}</div>`;
+}
+
+function renderFavList(){
+  const upEl = document.getElementById('favListUpcoming');
+  const reEl = document.getElementById('favListReleased');
+  if(!upEl || !reEl) return;
+  upEl.innerHTML = buildFavListHtml('upcoming');
+  reEl.innerHTML = buildFavListHtml('released');
+  [upEl, reEl].forEach(el=>{
+    el.querySelectorAll('.fav-list-item').forEach(item=>{
+      item.addEventListener('click',()=>{
+        const b = books.find(x=>x.id==item.dataset.id);
+        if(b) openDetail(b);
+      });
     });
   });
 }
 
-document.getElementById('favTabUpcoming')?.addEventListener('click',()=>{
-  favSubTab='upcoming';
-  document.getElementById('favTabUpcoming').classList.add('active');
-  document.getElementById('favTabReleased').classList.remove('active');
-  renderFavList();
-});
-document.getElementById('favTabReleased')?.addEventListener('click',()=>{
-  favSubTab='released';
-  document.getElementById('favTabReleased').classList.add('active');
-  document.getElementById('favTabUpcoming').classList.remove('active');
-  renderFavList();
-});
+function switchFavTab(tab){
+  favSubTab = tab;
+  const track = document.getElementById('favTrack');
+  const indicator = document.getElementById('favSubtabIndicator');
+  const offset = tab === 'upcoming' ? 0 : 1;
+  track.style.transform = tab === 'upcoming' ? 'translateX(0)' : 'translateX(-100%)';
+  if(indicator) indicator.style.transform = offset === 0 ? '' : 'translateX(100%)';
+  document.getElementById('favTabUpcoming').classList.toggle('active', tab === 'upcoming');
+  document.getElementById('favTabReleased').classList.toggle('active', tab === 'released');
+}
+
+document.getElementById('favTabUpcoming')?.addEventListener('click',()=>switchFavTab('upcoming'));
+document.getElementById('favTabReleased')?.addEventListener('click',()=>switchFavTab('released'));
+
+/* お気に入り横スワイプ */
+(()=>{
+  const outer = document.querySelector('.fav-track-outer');
+  if(!outer) return;
+  const track = document.getElementById('favTrack');
+  const indicator = document.getElementById('favSubtabIndicator');
+  let sx=0, sy=0, dragging=false, scrolling=false, tracking=false;
+  outer.addEventListener('touchstart', e=>{
+    sx=e.touches[0].clientX; sy=e.touches[0].clientY;
+    tracking=true; dragging=false; scrolling=false;
+    track.style.transition='none';
+    if(indicator) indicator.style.transition='none';
+  },{passive:true});
+  outer.addEventListener('touchmove', e=>{
+    if(!tracking) return;
+    const dx=e.touches[0].clientX-sx, dy=e.touches[0].clientY-sy;
+    if(!dragging && !scrolling){
+      if(Math.abs(dy) > Math.abs(dx)){ scrolling=true; return; }
+      if(Math.abs(dx) > 6) dragging=true;
+    }
+    if(scrolling) return;
+    if(dragging){
+      e.preventDefault();
+      const W = outer.offsetWidth;
+      const base = favSubTab === 'upcoming' ? 0 : -W;
+      track.style.transform = `translateX(${base + dx}px)`;
+      // インジケーターをスワイプ量に比例してスライド
+      if(indicator){
+        const progress = (base + dx) / -W; // 0(upcoming)〜1(released)
+        indicator.style.transform = progress <= 0 ? '' : `translateX(${Math.min(progress,1)*100}%)`;
+      }
+    }
+  },{passive:false});
+  outer.addEventListener('touchend', e=>{
+    if(!tracking) return; tracking=false;
+    if(!dragging){ dragging=false; scrolling=false; return; }
+    dragging=false; scrolling=false;
+    const dx = e.changedTouches[0].clientX - sx;
+    track.style.transition = 'transform 0.36s cubic-bezier(0.23,1,0.32,1)';
+    if(indicator) indicator.style.transition = 'transform 0.36s cubic-bezier(0.23,1,0.32,1)';
+    if(dx < -40 && favSubTab === 'upcoming') switchFavTab('released');
+    else if(dx > 40 && favSubTab === 'released') switchFavTab('upcoming');
+    else switchFavTab(favSubTab); // 戻す
+  },{passive:true});
+})();
 
 /* ── FILTER ── */
 const filterBtn = document.getElementById('filterBtn');

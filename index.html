@@ -114,12 +114,67 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .tab-page.active{display:flex;}
 
 /* ─── CAL HEADER (固定) ─── */
+.cal-header-wrap{
+  position:relative;flex-shrink:0;z-index:4;
+}
 .cal-header{
   display:flex;align-items:center;justify-content:space-between;
-  padding:10px 14px 10px;background:var(--bg);flex-shrink:0;
+  padding:10px 14px 10px;background:var(--bg);
   height:var(--header-h);
-  border:none;border-bottom:none;
-  position:relative;z-index:4;
+}
+.cal-header-right{display:flex;align-items:center;gap:8px;}
+.filter-btn{
+  background:none;border:none;cursor:pointer;
+  padding:4px 6px;display:flex;align-items:center;justify-content:center;
+  -webkit-tap-highlight-color:transparent;border-radius:6px;
+  transition:background 0.15s;
+  height:27px;box-sizing:border-box;
+}
+.filter-btn:active{background:#f0f0f0;}
+.filter-btn svg{
+  stroke:var(--text3);fill:none;
+  stroke-linecap:round;
+  transition:stroke 0.15s;
+}
+.filter-btn.active{background:#e8e8e8;}
+.filter-btn.active svg{stroke:#222;}
+
+/* フィルタドロップダウン */
+.filter-dropdown{
+  position:absolute;top:100%;left:0;right:0;
+  background:var(--bg);
+  padding:0 14px;
+  border-bottom:0.5px solid var(--border);
+  z-index:5;
+  display:flex;
+  flex-direction:column;gap:8px;
+  max-height:0;
+  overflow:hidden;
+  transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1);
+}
+.filter-dropdown.open{
+  max-height:200px;
+  padding:10px 14px 12px;
+}
+.cal-body.filter-open .cal-track-outer{ pointer-events:none; }
+.filter-tag-group{display:flex;flex-wrap:wrap;gap:6px;}
+.filter-tag-btn{
+  font-size:11px;font-weight:500;
+  padding:4px 10px;border-radius:20px;
+  border:1.5px solid #ddd;background:#fafafa;
+  cursor:pointer;color:var(--text2);
+  font-family:var(--font);
+  transition:background 0.15s,color 0.15s,border-color 0.15s;
+  -webkit-tap-highlight-color:transparent;
+}
+.filter-tag-btn.on{border-color:transparent;}
+.filter-reset-btn{
+  align-self:flex-start;
+  font-size:11px;font-weight:500;color:var(--text3);
+  background:none;border:none;cursor:pointer;
+  padding:2px 0;font-family:var(--font);
+  text-decoration:underline;
+  -webkit-tap-highlight-color:transparent;
 }
 .today-btn{font-size:11px;font-weight:600;color:var(--text2);border:1px solid #bbb;border-radius:6px;padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);transition:background 0.15s,color 0.15s;}
 .today-btn:active{background:#f0f0f0;color:#111;}
@@ -219,9 +274,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .fav-btn.active svg{ stroke:#ff6b8a;fill:#ff6b8a; }
 .detail-title-row .fav-btn{
-  align-self:flex-start;margin-top:2px;
+  align-self:flex-start;
+  margin-top:calc((17px * 1.55 - 20px) / 2 - 6px); /* タイトル1行目の中央に合わせる */
   background:none;border-radius:50%;
   width:36px;height:36px;
+  padding:6px;
 }
 
 /* ─── お気に入りページ ─── */
@@ -435,13 +492,37 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
   <!-- カレンダータブ -->
   <div class="tab-page active" id="tab-calendar">
-    <div class="cal-header">
-      <div class="ym-input-wrap">
-        <span class="ym-label-display" id="ymLabelDisplay">2026年4月</span>
-        <input type="month" id="ymMonthInput"
-          style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+    <div class="cal-header-wrap">
+      <div class="cal-header">
+        <div class="ym-input-wrap">
+          <span class="ym-label-display" id="ymLabelDisplay">2026年4月</span>
+          <input type="month" id="ymMonthInput"
+            style="position:absolute;left:0;top:0;width:100%;height:100%;opacity:0;cursor:pointer;">
+        </div>
+        <div class="cal-header-right">
+          <button class="filter-btn" id="filterBtn" aria-label="フィルタ">
+            <svg viewBox="0 0 24 24" width="22" height="22" stroke-width="2" stroke-linecap="round">
+              <!-- 1本目の横線（つまみ位置x=8で分割、gap=1.5） -->
+              <line x1="3" y1="6" x2="6.5" y2="6"/>
+              <line x1="9.5" y1="6" x2="21" y2="6"/>
+              <!-- 1本目のつまみ -->
+              <line x1="8" y1="3.5" x2="8" y2="8.5"/>
+              <!-- 2本目の横線（つまみ位置x=16で分割） -->
+              <line x1="3" y1="12" x2="14.5" y2="12"/>
+              <line x1="17.5" y1="12" x2="21" y2="12"/>
+              <!-- 2本目のつまみ -->
+              <line x1="16" y1="9.5" x2="16" y2="14.5"/>
+              <!-- 3本目の横線（つまみ位置x=11で分割） -->
+              <line x1="3" y1="18" x2="9.5" y2="18"/>
+              <line x1="12.5" y1="18" x2="21" y2="18"/>
+              <!-- 3本目のつまみ -->
+              <line x1="11" y1="15.5" x2="11" y2="20.5"/>
+            </svg>
+          </button>
+          <button class="today-btn" id="todayBtn">今日</button>
+        </div>
       </div>
-      <button class="today-btn" id="todayBtn">今日</button>
+      <div class="filter-dropdown" id="filterDropdown"></div>
     </div>
     <div class="cal-body" id="calBody">
       <div class="cal-track-outer">
@@ -619,8 +700,19 @@ const DOT_COLOR_ORDER = [
   { color:'#aaaaaa', tags:['過去問（赤本）'] },
 ];
 
+// フィルタ状態（getDotColorsより前に宣言が必要）
+let activeFilters = new Set();
+
+function getFilteredBooks(dateStr){
+  let filtered = books.filter(b => b.date === dateStr);
+  if(activeFilters.size > 0){
+    filtered = filtered.filter(b => b.tags && b.tags.some(t => activeFilters.has(t)));
+  }
+  return filtered;
+}
+
 function getDotColors(dateStr){
-  const dayBooks = books.filter(b => b.date === dateStr);
+  const dayBooks = getFilteredBooks(dateStr);
   if(!dayBooks.length) return [];
   const seenColors = new Set();
   const colors = [];
@@ -633,7 +725,6 @@ function getDotColors(dateStr){
       if(!seenColors.has(color)){ seenColors.add(color); colors.push(color); }
     }
   }
-  // 色順を科目順に並べ直す
   const ordered = DOT_COLOR_ORDER.map(g => g.color).filter(c => seenColors.has(c));
   if(seenColors.has('#555')) ordered.push('#555');
   return ordered.slice(0, 6);
@@ -785,7 +876,11 @@ function buildGrid(el,y,m){
       ? `<div class="dots">${dotColors.map(c=>`<div class="dot" style="background:${c}"></div>`).join('')}</div>`
       : '';
     div.innerHTML=`<div class="day-num">${d.getDate()}</div>${dotsHtml}`;
-    div.addEventListener('click',()=>{if(dateOpen)return;openDate(s);});
+    div.addEventListener('click',()=>{
+      if(filterDropdown.classList.contains('open')){ closeFilterDropdown(); return; }
+      if(dateOpen)return;
+      openDate(s);
+    });
     el.appendChild(div);
   }
 }
@@ -958,7 +1053,10 @@ document.getElementById('viewToggle').addEventListener('click',e=>{
 });
 
 function renderDay(el,s){
-  const items=books.filter(b=>b.date===s);
+  const allItems=books.filter(b=>b.date===s);
+  const items = activeFilters.size > 0
+    ? allItems.filter(b => b.tags && b.tags.some(t => activeFilters.has(t)))
+    : allItems;
   if(!items.length){el.innerHTML='<div class="empty">この日の新刊はありません</div>';return;}
   if(viewMode==='list'){
     el.innerHTML=`<div class="list-view">${items.map(b=>`
@@ -1363,6 +1461,106 @@ document.getElementById('favTabReleased')?.addEventListener('click',()=>{
   document.getElementById('favTabReleased').classList.add('active');
   document.getElementById('favTabUpcoming').classList.remove('active');
   renderFavList();
+});
+
+/* ── FILTER ── */
+const filterBtn = document.getElementById('filterBtn');
+const filterDropdown = document.getElementById('filterDropdown');
+
+function buildFilterDropdown(){
+  filterDropdown.innerHTML = '';
+  // タグを1行にまとめて表示
+  const row = document.createElement('div');
+  row.className = 'filter-tag-group';
+  TAG_GROUPS.forEach(group => {
+    group.tags.forEach(t => {
+      const btn = document.createElement('button');
+      btn.className = 'filter-tag-btn' + (activeFilters.has(t) ? ' on' : '');
+      btn.textContent = tagDisp(t);
+      btn.dataset.tag = t;
+      if(activeFilters.has(t)){
+        const c = TAG_COLOR[t];
+        if(c){ btn.style.background=c[0]; btn.style.color=c[1]; btn.style.borderColor=c[1]; }
+      }
+      btn.addEventListener('click', e => {
+        e.stopPropagation();
+        if(activeFilters.has(t)){
+          activeFilters.delete(t);
+          btn.classList.remove('on');
+          btn.style.background=''; btn.style.color=''; btn.style.borderColor='';
+        } else {
+          activeFilters.add(t);
+          btn.classList.add('on');
+          const c = TAG_COLOR[t];
+          if(c){ btn.style.background=c[0]; btn.style.color=c[1]; btn.style.borderColor=c[1]; }
+        }
+        filterBtn.classList.toggle('active', activeFilters.size > 0);
+        renderCal(); // 即時反映
+      });
+      row.appendChild(btn);
+    });
+  });
+  filterDropdown.appendChild(row);
+
+  // リセット・閉じるボタン行
+  const btnRow = document.createElement('div');
+  btnRow.style.cssText = 'display:flex;justify-content:space-between;align-items:center;margin-top:4px;';
+
+  const resetBtn = document.createElement('button');
+  resetBtn.className = 'filter-reset-btn';
+  resetBtn.textContent = 'リセット';
+  resetBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    activeFilters.clear();
+    filterDropdown.querySelectorAll('.filter-tag-btn').forEach(b => {
+      b.classList.remove('on');
+      b.style.background=''; b.style.color=''; b.style.borderColor='';
+    });
+    filterBtn.classList.remove('active');
+    renderCal();
+  });
+
+  const closeBtn = document.createElement('button');
+  closeBtn.className = 'filter-reset-btn';
+  closeBtn.textContent = '閉じる';
+  closeBtn.addEventListener('click', e => {
+    e.stopPropagation();
+    closeFilterDropdown();
+  });
+
+  btnRow.appendChild(resetBtn);
+  btnRow.appendChild(closeBtn);
+  filterDropdown.appendChild(btnRow);
+}
+
+const calBody = document.getElementById('calBody');
+
+function closeFilterDropdown(){
+  filterDropdown.classList.remove('open');
+  filterBtn.classList.toggle('active', activeFilters.size > 0);
+  calBody?.classList.remove('filter-open');
+  renderCal();
+}
+
+filterBtn.addEventListener('click', e => {
+  e.stopPropagation();
+  const isOpen = !filterDropdown.classList.contains('open');
+  if(isOpen){
+    filterDropdown.classList.add('open');
+    calBody?.classList.add('filter-open');
+    buildFilterDropdown();
+  } else {
+    filterDropdown.classList.remove('open');
+    calBody?.classList.remove('filter-open');
+    filterBtn.classList.toggle('active', activeFilters.size > 0);
+    renderCal();
+  }
+});
+
+document.addEventListener('click', e => {
+  if(!filterDropdown.classList.contains('open')) return;
+  if(e.target.closest('.cal-header-wrap')) return;
+  closeFilterDropdown();
 });
 
 function showToast(msg){

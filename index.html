@@ -483,7 +483,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 /* ─── 詳細モーダル 編集モード ─── */
 #detail-sheet.editing{
   border-radius:0;
-  transition:border-radius 0.38s cubic-bezier(0.23,1,0.32,1);
+  height:100dvh;
 }
 #detail-sheet.editing .detail-body{
   padding-bottom:100px;
@@ -1569,14 +1569,15 @@ function setDetailEditMode(b){
   let editImgChanged = false;
   const editTags     = new Set(b.tags || []);
 
-  // モーダルを引き上げ
-  const sheetTop   = sheet.getBoundingClientRect().top;
+  // 現在の画面上の位置からtitle-h分まで引き上げ
   const titleH     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--title-h')) || 44;
-  const liftAmount = sheetTop - titleH;
+  const sheetRect  = sheet.getBoundingClientRect();
+  const liftAmount = sheetRect.top - titleH;
+  const curMat     = new DOMMatrix(window.getComputedStyle(sheet).transform);
+  const curY       = isNaN(curMat.m42) ? 0 : curMat.m42;
+  // editingクラスはアニメーション前に付与（height:100dvhで下端を埋める）
   sheet.classList.add('editing');
   sheet.querySelector('.handle-wrap').style.visibility = 'hidden';
-  const curMat = new DOMMatrix(window.getComputedStyle(sheet).transform);
-  const curY   = isNaN(curMat.m42) ? 0 : curMat.m42;
   animateSheet(sheet, curY, curY - liftAmount, null);
 
   // fileInput
@@ -1685,7 +1686,10 @@ function setDetailEditMode(b){
     if(footer) footer.remove();
     sheet.classList.remove('editing');
     sheet.querySelector('.handle-wrap').style.visibility = '';
-    // 一旦モーダルを閉じてから再度開く
+    sheet.style.height = '';
+    sheet.style.transition = '';
+    sheet.style.top = '';
+    sheet.style.transform = '';
     closeDetail();
     if(savedBook) setTimeout(()=> openDetail(savedBook), 350);
   }

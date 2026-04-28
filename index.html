@@ -191,20 +191,21 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .detail-title-row{ display:flex;align-items:flex-start;gap:8px;justify-content:space-between;padding:16px 0 6px; }
 .detail-title{ font-size:17px;font-weight:700;line-height:1.55;flex:1; }
 .card{ position:relative; }
+.card-caption{
+  position:absolute;bottom:0;left:0;right:0;
+  padding:14px 6px 4px;
+  background:linear-gradient(transparent, rgba(0,0,0,0.55));
+  border-radius:0 0 6px 6px;
+  pointer-events:none;
+}
+.card-caption-text{
+  font-size:9px;font-weight:600;color:#fff;
+  line-height:1.3;
+  display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;
+  overflow:hidden;
+}
 .list-item:active{background:#fafafa;}
 .list-item:has(.fav-btn:active){background:none !important;}
-.card-fav:active~*,.card-fav:active{ opacity:1; }
-.card-fav{ position:absolute;top:6px;right:6px;width:32px;height:32px;padding:0;background:none;border-radius:50%; }
-/* カードの♡ */
-.card-fav svg{
-  filter:drop-shadow(0 0 1px #fff) drop-shadow(0 0 2px rgba(0,0,0,0.5));
-  stroke:#fff !important;
-  stroke-width:1.8 !important;
-}
-.card-fav.active svg{
-  stroke:#ff6b8a !important;fill:#ff6b8a !important;
-  filter:drop-shadow(0 0 3px #fff) drop-shadow(0 0 2px #fff);
-}
 
 /* ─── SEARCH OVERLAY (placeholder) ─── */
 .fav-btn{
@@ -247,6 +248,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   box-shadow:0 1px 4px rgba(0,0,0,0.12);
 }
 .fav-list{ flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch; }
+.fav-date-sep{
+  padding:3px 16px;
+  font-size:11px;font-weight:500;color:var(--text3);
+  background:#f8f8f8;
+}
+.list-item:has(+ .fav-date-sep){ border-bottom:none; }
 .fav-empty{
   flex:1;display:flex;flex-direction:column;align-items:center;
   justify-content:center;gap:10px;color:var(--text3);
@@ -757,7 +764,12 @@ function switchTab(name){
   document.querySelectorAll('.tab[data-tab]').forEach(t => {
     t.classList.toggle('active', t.dataset.tab === name);
   });
-  if(name === 'bookmark') renderFavList();
+  if(name === 'bookmark'){
+    favSubTab = 'upcoming';
+    document.getElementById('favTabUpcoming')?.classList.add('active');
+    document.getElementById('favTabReleased')?.classList.remove('active');
+    renderFavList();
+  }
   drawTabBg();
 }
 
@@ -1011,9 +1023,7 @@ function renderDay(el,s){
     el.innerHTML=`<div class="grid">${items.map(b=>`
       <div class="card" data-id="${b.id}">
         ${b.img?`<img src="${b.img}" alt="" class="card-img-pending">`:`<div class="card-ph">NO IMAGE</div>`}
-        <button class="fav-btn${isFav(b.id)?' active':''} card-fav" data-fav-id="${b.id}">
-          <svg viewBox="0 0 24 24"><path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/></svg>
-        </button>
+        <div class="card-caption"><div class="card-caption-text">${b.title}</div></div>
       </div>`).join('')}</div>`;
     // 画像読み込み後にアスペクト比判定
     // セル比率: 1/1.414 ≈ 0.707 (幅/高さ)
@@ -1345,18 +1355,31 @@ function renderFavList(){
     list.innerHTML=`<div class="fav-empty"><div class="big">♡</div><div>${isUpcoming?'発売予定のお気に入りはありません':'発売済みのお気に入りはありません'}</div></div>`;
     return;
   }
-  list.innerHTML = filtered.map(b=>{
-    const [y,m,d] = b.date.split('-');
-    return `<div class="fav-item" data-id="${b.id}">
-      <div class="fav-thumb">${b.img?`<img src="${b.img}" alt="">`:'NO<br>IMAGE'}</div>
-      <div class="fav-info">
-        <div class="fav-title">${b.title}</div>
-        <div class="fav-date">${y}年${parseInt(m)}月${parseInt(d)}日発売</div>
-        <div class="fav-tags">${b.tags.map(t=>`<span class="tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
-      </div>
-    </div>`;
-  }).join('');
-  list.querySelectorAll('.fav-item').forEach(el=>{
+
+  // 発売日ごとにグループ化
+  const groups = {};
+  filtered.forEach(b=>{
+    if(!groups[b.date]) groups[b.date]=[];
+    groups[b.date].push(b);
+  });
+
+  let html = '';
+  Object.keys(groups).forEach(date=>{
+    const [y,m,d] = date.split('-');
+    html += `<div class="fav-date-sep">${y}年${parseInt(m)}月${parseInt(d)}日</div>`;
+    groups[date].forEach(b=>{
+      html += `<div class="list-item fav-list-item" data-id="${b.id}">
+        <div class="thumb${b.img?'':' no-img'}">${b.img?`<img src="${b.img}" alt="">`:'NO IMAGE'}</div>
+        <div class="list-info">
+          <div class="list-title">${b.title}</div>
+          <div class="tags">${b.tags.map(t=>`<span class="tag" style="${tagStyle(t)}">${tagDisp(t)}</span>`).join('')}</div>
+        </div>
+      </div>`;
+    });
+  });
+  list.innerHTML = `<div class="list-view">${html}</div>`;
+
+  list.querySelectorAll('.fav-list-item').forEach(el=>{
     el.addEventListener('click',()=>{
       const b = books.find(x=>x.id==el.dataset.id);
       if(b) openDetail(b);

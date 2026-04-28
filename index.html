@@ -977,7 +977,11 @@ function switchTab(name){
   const fab = document.getElementById('fabBtn');
   if(fab) fab.style.display = name === 'calendar' ? 'flex' : 'none';
   drawTabBg();
-  if(name === 'search') renderSearchHistory();
+  if(name === 'search'){
+    searchInput.value = '';
+    searchClearBtn.style.display = 'none';
+    renderSearchHistory();
+  }
   if(name === 'bookmark'){
     switchFavTab('upcoming');
     renderFavList();

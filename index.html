@@ -44,6 +44,11 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   color:#fff;
   font-family:var(--font);
 }
+.admin-badge{
+  font-size:10px;font-weight:700;letter-spacing:0.08em;
+  background:rgba(255,255,255,0.28);color:#fff;
+  padding:3px 8px;border-radius:20px;
+}
 /* ─── TAB BAR ─── */
 .tab-bar{
   display:flex;align-items:stretch;
@@ -295,7 +300,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1);
 }
 .search-filter-dropdown.open{ max-height:200px;padding:10px 14px 12px; }
-.search-body{ flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;transition:opacity 0.22s ease; }
+.search-body{ flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;transition:opacity 0.22s ease; }
+.search-body .list-view,.search-body .search-history-item{ touch-action:manipulation; }
 .search-history-item{
   display:flex;align-items:center;gap:10px;
   padding:12px 16px;border-bottom:0.5px solid var(--border);
@@ -359,7 +365,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   white-space:nowrap;position:relative;z-index:1;
 }
 .fav-subtab-btn.active{ color:var(--text); }
-.fav-list{ flex:0 0 100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch; }
+.fav-list{ flex:0 0 100%;height:100%;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y; }
+.fav-list .list-view{ touch-action:manipulation; }
 .fav-track-outer{ flex:1;overflow:hidden;position:relative; }
 .fav-track{ display:flex;height:100%;will-change:transform;transition:transform 0.36s cubic-bezier(0.23,1,0.32,1); }
 .fav-empty{
@@ -380,8 +387,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 /* ─── TOAST ─── */
 .toast{
-  position:fixed;bottom:calc(var(--tab-h) + 16px);left:50%;
-  transform:translateX(-50%) translateY(0);
+  position:fixed;top:calc(var(--title-h) + 12px);left:50%;
+  transform:translateX(-50%) translateY(-8px);
   background:rgba(30,30,30,0.88);color:#fff;
   font-size:13px;font-weight:500;
   padding:10px 20px;border-radius:20px;
@@ -389,7 +396,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   opacity:0;pointer-events:none;
   transition:opacity 0.3s ease,transform 0.3s ease;
 }
-.toast.show{opacity:1;transform:translateX(-50%) translateY(-4px);}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0);}
 
 /* ─── OVERLAY ─── */
 #overlay{
@@ -474,14 +481,13 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .amazon-btn{display:block;margin-top:14px;background:#FF9900;color:#111;text-align:center;text-decoration:none;font-weight:700;font-size:13px;padding:11px;border-radius:9px;}
 .timestamps{margin-top:14px;text-align:right;font-size:11px;color:var(--text3);line-height:1.9;}
 
-/* ─── 詳細モーダル 編集モード ─── */
-#detail-sheet.editing{
+/* ─── EDIT SHEET ─── */
+#edit-sheet{
+  z-index:16;
+  top:var(--title-h);
   border-radius:0;
-  height:100dvh;
 }
-#detail-sheet.editing .detail-body{
-  padding-bottom:100px;
-}
+
 .detail-cover-zone.editable{ cursor:pointer; }
 .detail-cover-zone.editable::after{
   content:'書影を変更';
@@ -495,7 +501,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   border-bottom:1.5px solid #bbb;
   padding-bottom:2px;
   cursor:text;
-  user-select:text;-webkit-user-select:text;
 }
 .meta-val-input{
   flex:1;border:none;outline:none;
@@ -504,7 +509,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   border-bottom:1.5px solid #bbb;
   padding:0 0 2px;
   width:100%;
-  user-select:text;-webkit-user-select:text;
 }
 .meta-val-input::placeholder{ color:#ccc; }
 .detail-tag.edit-off{ opacity:0.25; }
@@ -515,8 +519,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   border-radius:8px;padding:6px 10px;
   font-size:13px;color:var(--text);font-family:var(--font);
   outline:none;-webkit-appearance:none;
-  user-select:text;-webkit-user-select:text;
-  width:100%;
+  width:100%;height:34px;
 }
 .edit-inline-input:focus{ border-color:#aaa;background:#fff; }
 .edit-inline-title{
@@ -631,6 +634,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 <!-- アプリタイトル -->
 <div class="app-title-bar">
   <span class="app-title-text">参考書新刊カレンダー</span>
+  <span class="admin-badge">ADMIN</span>
 </div>
 
 <div class="pages">
@@ -783,6 +787,17 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   <div class="detail-scroll">
     <div class="detail-cover-zone" id="detailCoverZone"></div>
     <div class="detail-body" id="detailBody"></div>
+  </div>
+</div>
+
+<!-- 編集シート（詳細モーダルの上に重ねる） -->
+<div class="sheet" id="edit-sheet">
+  <div class="sheet-header" style="padding:0 16px;height:30px;display:flex;align-items:center;">
+    <div style="font-size:12px;font-weight:400;color:var(--text3);" id="editSheetLabel"></div>
+  </div>
+  <div class="detail-scroll" id="editSheetScroll">
+    <div class="detail-cover-zone" id="editCoverZone"></div>
+    <div class="detail-body" id="editSheetBody"></div>
   </div>
 </div>
 
@@ -1400,8 +1415,7 @@ function setDetailContent(b){
   });
   document.getElementById('detailEditBtn')?.addEventListener('click', e=>{
     e.stopPropagation();
-    closeDetail();
-    setTimeout(()=> setDetailEditMode(b), 320);
+    setDetailEditMode(b);
   });
   document.getElementById('detailDeleteBtn')?.addEventListener('click', e=>{
     e.stopPropagation();
@@ -1410,67 +1424,63 @@ function setDetailContent(b){
 }
 
 function setDetailEditMode(b){
-  const sheet = document.getElementById('detail-sheet');
+  const editSheet  = document.getElementById('edit-sheet');
+  const editScroll = document.getElementById('editSheetScroll');
+  const editBody   = document.getElementById('editSheetBody');
+  const coverZone  = document.getElementById('editCoverZone');
+  const dov        = document.getElementById('detail-overlay');
 
   let editImgSrc     = b.img || '';
   let editImgChanged = false;
   const editTags     = new Set(b.tags || []);
 
-  // 現在の画面上の位置からtitle-h分まで引き上げ
-  const titleH     = parseFloat(getComputedStyle(document.documentElement).getPropertyValue('--title-h')) || 44;
-  const sheetRect  = sheet.getBoundingClientRect();
-  const liftAmount = sheetRect.top - titleH;
-  const curMat     = new DOMMatrix(window.getComputedStyle(sheet).transform);
-  const curY       = isNaN(curMat.m42) ? 0 : curMat.m42;
-  // editingクラスはアニメーション前に付与（height:100dvhで下端を埋める）
-  sheet.classList.add('editing');
-  sheet.querySelector('.handle-wrap').style.visibility = 'hidden';
-  animateSheet(sheet, curY, curY - liftAmount, null);
+  // ヘッダー
+  document.getElementById('editSheetLabel').textContent = b.id === null ? '新規登録' : '編集中';
 
-  // fileInput
+  // 書影エリア初期化
+  updateCoverZone(editImgSrc, false);
+  // editCoverZoneに同じ内容をコピー
+  const mainCover = document.getElementById('detailCoverZone');
+  coverZone.innerHTML = mainCover ? mainCover.innerHTML : `
+    <div class="detail-cover-bg" style="background-image:url('${NO_IMAGE_SRC}')"></div>
+    <div class="detail-cover-front"><img src="${NO_IMAGE_SRC}" alt=""></div>`;
+  coverZone.classList.add('editable');
+
   const fileInput = document.createElement('input');
   fileInput.type='file'; fileInput.accept='image/*'; fileInput.style.display='none';
   document.body.appendChild(fileInput);
-
-  // 書影：タップで変更
-  const zone = document.getElementById('detailCoverZone');
-  zone.classList.add('editable');
   const zoneClick = ()=> fileInput.click();
-  zone.addEventListener('click', zoneClick);
+  coverZone.addEventListener('click', zoneClick);
   fileInput.addEventListener('change', e=>{
     const file = e.target.files[0]; if(!file) return;
     const reader = new FileReader();
     reader.onload = ev=>{
       editImgSrc = ev.target.result; editImgChanged = true;
-      const img = zone.querySelector('.detail-cover-front img');
-      const bg  = zone.querySelector('.detail-cover-bg');
+      const img = coverZone.querySelector('.detail-cover-front img');
+      const bg  = coverZone.querySelector('.detail-cover-bg');
       if(img) img.src = editImgSrc;
       if(bg)  bg.style.backgroundImage = `url('${editImgSrc}')`;
     };
     reader.readAsDataURL(file);
   });
 
-  // ヘッダー
-  document.getElementById('detailDateLabel').textContent = '編集中';
+  // body構築
+  editBody.innerHTML = `
+    <div class="detail-title-row" style="padding-bottom:10px;">
+      <input class="edit-inline-input edit-inline-title" id="editTitle" type="text" value="${b.title}" placeholder="タイトル">
+    </div>
+    <div class="edit-tag-area" id="editTagGroup" style="display:flex;flex-wrap:wrap;gap:5px;margin-bottom:14px;"></div>
+    <div class="meta-rows" id="editMetaRows"></div>
+    <div class="detail-edit-footer">
+      <button class="detail-edit-footer-cancel" id="editCancelBtn">キャンセル</button>
+      <button class="detail-edit-footer-save" id="editSaveBtn">保存</button>
+    </div>`;
 
-  // タイトルをinputに（角丸ボックス）
-  const titleEl = document.querySelector('#detailBody .detail-title');
-  if(titleEl){
-    const inp = document.createElement('input');
-    inp.type = 'text';
-    inp.className = 'edit-inline-input edit-inline-title';
-    inp.id = 'editTitle';
-    inp.value = b.title;
-    titleEl.replaceWith(inp);
-  }
-
-  // タグをfilter-tag-btnスタイルでon/off
-  const tagsWrap = document.querySelector('#detailBody .detail-tags');
-  tagsWrap.innerHTML = '';
-  tagsWrap.style.flexWrap = 'wrap';
+  // タグ
+  const tagGroup = document.getElementById('editTagGroup');
   ALL_TAGS.forEach(t => {
     const btn = document.createElement('button');
-    btn.type = 'button';
+    btn.type='button';
     btn.className = 'filter-tag-btn' + (editTags.has(t) ? ' on' : '');
     btn.textContent = tagDisp(t);
     if(editTags.has(t)){
@@ -1484,14 +1494,13 @@ function setDetailEditMode(b){
         btn.style.background=''; btn.style.color=''; btn.style.borderColor='';
       } else {
         editTags.add(t); btn.classList.add('on');
-        const c = TAG_COLOR[t];
-        if(c){ btn.style.background=c[0]; btn.style.color=c[1]; btn.style.borderColor=c[1]; }
+        const c=TAG_COLOR[t]; if(c){btn.style.background=c[0];btn.style.color=c[1];btn.style.borderColor=c[1];}
       }
     });
-    tagsWrap.appendChild(btn);
+    tagGroup.appendChild(btn);
   });
 
-  // メタ行の値を角丸inputに差し替え
+  // メタ行
   const metaFields = [
     {label:'発売日',  id:'editDate',      type:'date', val:b.date},
     {label:'著者',    id:'editAuthor',    type:'text', val:b.author||'',    ph:'著者名'},
@@ -1499,48 +1508,39 @@ function setDetailEditMode(b){
     {label:'ISBN',    id:'editIsbn',      type:'text', val:b.isbn||'',      ph:'978-4-…'},
     {label:'URL',     id:'editAmazon',    type:'text', val:b.amazon||'',    ph:'https://…'},
   ];
-  const metaRows = document.querySelector('#detailBody .meta-rows');
-  if(metaRows){
-    metaRows.innerHTML = metaFields.map((f,i)=>`
-      <div class="meta-row" ${i===metaFields.length-1?'style="border-bottom:none;"':''}>
-        <span class="meta-label">${f.label}</span>
-        <input class="edit-inline-input" id="${f.id}" type="${f.type}" value="${f.val}" placeholder="${f.ph||''}">
-      </div>`).join('');
-  }
+  document.getElementById('editMetaRows').innerHTML = metaFields.map((f,i)=>`
+    <div class="meta-row" ${i===metaFields.length-1?'style="border-bottom:none;"':''}>
+      <span class="meta-label">${f.label}</span>
+      <input class="edit-inline-input" id="${f.id}" type="${f.type}" value="${f.val}" placeholder="${f.ph||''}">
+    </div>`).join('');
 
-  // AmazonボタンとadminActionsを非表示
-  const amazonBtn = document.querySelector('#detailBody .amazon-btn');
-  if(amazonBtn) amazonBtn.style.display='none';
-  const adminActions = document.querySelector('#detailBody .detail-admin-actions');
-  if(adminActions) adminActions.style.display='none';
+  // スクロールをトップに
+  editScroll.scrollTop = 0;
 
-  // ボタンをdetailBody末尾に追加
-  const editFooter = document.createElement('div');
-  editFooter.className = 'detail-edit-footer';
-  editFooter.innerHTML = `
-    <button class="detail-edit-footer-cancel" id="editCancelBtn">キャンセル</button>
-    <button class="detail-edit-footer-save" id="editSaveBtn">保存</button>`;
-  document.getElementById('detailBody').appendChild(editFooter);
-
-  sheet.querySelector('.detail-scroll').scrollTop = 0;
+  // edit-sheetを開く
+  const dist = getTravelDist(editSheet);
+  setSheetY(editSheet, dist);
+  openSheet(editSheet, null);
 
   function exitEditMode(savedBook){
-    zone.removeEventListener('click', zoneClick);
-    zone.classList.remove('editable');
+    coverZone.removeEventListener('click', zoneClick);
+    coverZone.classList.remove('editable');
     document.body.removeChild(fileInput);
-    const footer = document.querySelector('#detailBody .detail-edit-footer');
-    if(footer) footer.remove();
-    // editingクラスとinlineスタイルをリセット（transformはcloseDetailに任せる）
-    sheet.classList.remove('editing');
-    sheet.querySelector('.handle-wrap').style.visibility = '';
-    sheet.style.height = '';
-    // 現在のtransformを維持したまま閉じてから開き直す
-    detailOpen = true; // closeDetailが動くようにフラグを立てる
-    closeDetail();
-    if(savedBook) setTimeout(()=> openDetail(savedBook), 420);
+    closeSheet(editSheet, null, ()=>{
+      editBody.innerHTML = '';
+      coverZone.innerHTML = '';
+    });
+    if(b.id === null){
+      // 新規登録：そのまま閉じるだけ
+    } else {
+      // 編集：詳細モーダルはそのまま、内容だけ更新
+      if(savedBook) setDetailContent(savedBook);
+    }
   }
 
-  document.getElementById('editCancelBtn').onclick = ()=>{ exitEditMode(b); };
+  document.getElementById('editCancelBtn').onclick = ()=>{
+    exitEditMode(b.id !== null ? b : null);
+  };
 
   document.getElementById('editSaveBtn').onclick = ()=>{
     const titleText = document.getElementById('editTitle')?.value.trim();
@@ -1548,12 +1548,12 @@ function setDetailEditMode(b){
     if(!titleText || !date){ showToast('タイトルと発売日は必須です'); return; }
     const now = new Date();
     const ts = `${now.getFullYear()}/${now.getMonth()+1}/${now.getDate()} ${String(now.getHours()).padStart(2,'0')}:${String(now.getMinutes()).padStart(2,'0')}`;
+    let savedBook;
     const idx = books.findIndex(x=>x.id===b.id);
     if(idx !== -1){
       books[idx] = {
         ...books[idx],
-        title:     titleText,
-        date,
+        title:     titleText, date,
         author:    document.getElementById('editAuthor')?.value.trim()||'',
         publisher: document.getElementById('editPublisher')?.value.trim()||'',
         isbn:      document.getElementById('editIsbn')?.value.trim()||'',
@@ -1562,11 +1562,27 @@ function setDetailEditMode(b){
         img:       editImgChanged ? editImgSrc : b.img,
         updated:   ts,
       };
-      saveBooks(); renderCal(); renderFavList();
-      if(dateOpen) buildDatePanels(activeDate);
+      savedBook = books[idx];
+      showToast('更新しました');
+    } else {
+      savedBook = {
+        id: Date.now(), title: titleText, date,
+        author:    document.getElementById('editAuthor')?.value.trim()||'',
+        publisher: document.getElementById('editPublisher')?.value.trim()||'',
+        isbn:      document.getElementById('editIsbn')?.value.trim()||'',
+        amazon:    document.getElementById('editAmazon')?.value.trim()||'',
+        tags:      [...editTags],
+        img:       editImgChanged ? editImgSrc : '',
+        created: ts, updated: ts,
+      };
+      books.push(savedBook);
+      const [y,m] = date.split('-').map(Number);
+      curYear=y; curMonth=m-1;
+      showToast('登録しました');
     }
-    showToast('更新しました');
-    exitEditMode(books[idx]);
+    saveBooks(); renderCal(); renderFavList();
+    if(dateOpen) buildDatePanels(activeDate);
+    exitEditMode(savedBook);
   };
 }
 
@@ -1649,8 +1665,9 @@ addOverlayTapClose(overlay, closeDate);
 addOverlayTapClose(document.getElementById('detail-overlay'), closeDetail);
 
 setTimeout(()=>{
-  [dateSheet,detailSheet].forEach(sh=>{
-    setSheetY(sh, getTravelDist(sh));
+  const editSheet = document.getElementById('edit-sheet');
+  [dateSheet, detailSheet, editSheet].forEach(sh=>{
+    if(sh) setSheetY(sh, getTravelDist(sh));
   });
 },0);
 
@@ -1719,10 +1736,17 @@ function switchFavTab(tab){
   const track = document.getElementById('favTrack');
   const indicator = document.getElementById('favSubtabIndicator');
   const offset = tab === 'upcoming' ? 0 : 1;
+  // タップ時もスワイプと同じアニメーションになるようtransitionを明示
+  track.style.transition = 'transform 0.36s cubic-bezier(0.23,1,0.32,1)';
+  if(indicator) indicator.style.transition = 'transform 0.36s cubic-bezier(0.23,1,0.32,1)';
   track.style.transform = tab === 'upcoming' ? 'translateX(0)' : 'translateX(-100%)';
   if(indicator) indicator.style.transform = offset === 0 ? '' : 'translateX(100%)';
   document.getElementById('favTabUpcoming').classList.toggle('active', tab === 'upcoming');
   document.getElementById('favTabReleased').classList.toggle('active', tab === 'released');
+  // 遷移先パネルのスクロールをリセット
+  const targetId = tab === 'upcoming' ? 'favListUpcoming' : 'favListReleased';
+  const target = document.getElementById(targetId);
+  if(target) target.scrollTop = 0;
 }
 
 document.getElementById('favTabUpcoming')?.addEventListener('click',()=>switchFavTab('upcoming'));
@@ -1972,7 +1996,6 @@ function execSearch(q){
 
 searchInput.addEventListener('keydown', e => { if(e.key==='Enter'){ searchInput.blur(); execSearch(searchInput.value); } });
 searchInput.addEventListener('input', () => {
-  // リアルタイム検索はしない。入力が空になったら履歴に戻す
   if(!searchInput.value.trim()){ searchClearBtn.style.display='none'; renderSearchHistory(); }
   else { searchClearBtn.style.display='block'; }
 });
@@ -2087,6 +2110,16 @@ document.getElementById('confirmDeleteBtn').addEventListener('click', () => {
   renderCal();
   renderFavList();
   showToast('削除しました');
+});
+
+/* ── FAB: 新規登録 ── */
+document.getElementById('fabBtn')?.addEventListener('click', ()=>{
+  const emptyBook = {
+    id:null, title:'', date:'', author:'', publisher:'',
+    isbn:'', amazon:'', tags:[], img:'',
+    created:'', updated:''
+  };
+  setDetailEditMode(emptyBook);
 });
 
 /* ── TOAST ── */

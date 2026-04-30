@@ -249,7 +249,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   line-height:1.3;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.list-item:active{background:#fafafa;}
+.list-item:active{background:#e8e8e8;}
 .list-item:has(.fav-btn:active){background:none !important;}
 
 /* ─── SEARCH PAGE ─── */
@@ -442,9 +442,9 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .list-view{display:flex;flex-direction:column;}
 .list-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
 .list-item:last-child{border-bottom:none;}
-.list-item:active{background:#fafafa;}
+.list-item:active{background:#e8e8e8;}
 .thumb{width:68px;height:95px;flex-shrink:0;flex-grow:0;display:flex;align-items:center;justify-content:center;}
-.thumb img{max-width:100%;max-height:100%;width:auto;height:auto;display:block;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,0.22);}
+.thumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,0.22);}
 .list-info{flex:1;min-width:0;}
 .list-title{font-size:13px;font-weight:600;margin-bottom:5px;line-height:1.45;}
 .list-title.ellipsis{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;}
@@ -832,6 +832,14 @@ const TAG_DISPLAY = {
   '情報':'情報','小論文':'小論文','共通テスト':'共通テスト','過去問（赤本）':'過去問'
 };
 const ALL_TAGS = Object.keys(TAG_DISPLAY);
+
+// 科目タグ順ソート（最初のタグのALL_TAGS内インデックスで比較）
+function tagOrder(b){
+  if(!b.tags || !b.tags.length) return ALL_TAGS.length;
+  const idx = ALL_TAGS.indexOf(b.tags[0]);
+  return idx === -1 ? ALL_TAGS.length : idx;
+}
+function sortByTag(arr){ return [...arr].sort((a,b)=> tagOrder(a) - tagOrder(b)); }
 
 const TAG_GROUPS = [
   { tags:['英語','数学','現代文','古文','漢文'] },
@@ -1282,13 +1290,13 @@ document.getElementById('viewToggle').addEventListener('click',e=>{
   localStorage.setItem('tbcal7-view',viewMode);updToggle();buildDatePanels(activeDate);
 });
 
-const NO_IMAGE_SRC = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 141" width="100" height="141"><rect width="100" height="141" fill="#d8d8d8"/><text x="50" y="75" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#aaa">NO IMAGE</text></svg>`)}`;
+const NO_IMAGE_SRC = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 95" width="68" height="95"><rect width="68" height="95" fill="#d8d8d8"/><text x="34" y="52" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#aaa">NO IMAGE</text></svg>`)}`;
 
 function renderDay(el,s){
   const allItems=books.filter(b=>b.date===s);
-  const items = activeFilters.size > 0
+  const items = sortByTag(activeFilters.size > 0
     ? allItems.filter(b => b.tags && b.tags.some(t => activeFilters.has(t)))
-    : allItems;
+    : allItems);
   if(!items.length){el.innerHTML='<div class="empty">この日の新刊はありません</div>';return;}
   if(viewMode==='list'){
     el.innerHTML=`<div class="list-view">${items.map(b=>`
@@ -1697,6 +1705,8 @@ function buildFavListHtml(subTab){
     if(!groups[b.date]) groups[b.date]=[];
     groups[b.date].push(b);
   });
+  // グループ内をタグ順に
+  Object.keys(groups).forEach(d=>{ groups[d] = sortByTag(groups[d]); });
   let html = '';
   Object.keys(groups).forEach(date=>{
     const [y,m,d] = date.split('-');
@@ -1955,6 +1965,7 @@ function execSearch(q){
   if(searchFilters.size > 0){
     results = results.filter(b => b.tags && b.tags.some(t => searchFilters.has(t)));
   }
+  results = sortByTag(results);
   if(!results.length){
     setSearchBody('<div class="search-empty">該当する参考書が見つかりませんでした</div>', null, true);
     return;

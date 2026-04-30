@@ -178,16 +178,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .today-btn{font-size:11px;font-weight:600;color:var(--text2);border:1px solid #bbb;border-radius:6px;padding:4px 9px;cursor:pointer;background:none;font-family:var(--font);transition:background 0.15s,color 0.15s;}
 .today-btn:active{background:#f0f0f0;color:#111;}
 /* iOSで:activeを発火させるためにtouchstartをJS側で追加 */
-.drum-trigger{display:flex;align-items:center;gap:3px;cursor:pointer;padding:4px 0;}
-.drum-label{font-size:17px;font-weight:700;letter-spacing:-0.5px;}
-.ym-input{
-  font-size:17px;font-weight:700;letter-spacing:-0.3px;
-  color:var(--text);font-family:var(--font);
-  background:none;border:none;outline:none;
-  -webkit-appearance:none;appearance:none;
-  padding:4px 0;cursor:pointer;
-  position:relative;
-}
 .ym-label-display{
   font-size:17px;font-weight:700;letter-spacing:-0.5px;
   pointer-events:none;
@@ -235,7 +225,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 
 .detail-title-row{ display:flex;align-items:flex-start;gap:8px;justify-content:space-between;padding:16px 0 6px; }
 .detail-title{ font-size:17px;font-weight:700;line-height:1.55;flex:1; }
-.card{ position:relative; }
 .card-caption{
   position:absolute;bottom:0;
   padding:10px 6px 4px;
@@ -248,8 +237,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   line-height:1.3;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.list-item:active,.list-item.touched{background:#f0f0f0;}
-.list-item:has(.fav-btn:active){background:none !important;}
+.list-item:active,.list-item.touched{background:#f0f0f0;}.list-item:has(.fav-btn:active){background:none !important;}
 
 /* ─── SEARCH PAGE ─── */
 .search-page{ display:flex;flex-direction:column;height:100%; }
@@ -280,26 +268,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   display:none;color:#aaa;font-size:16px;line-height:1;
   -webkit-tap-highlight-color:transparent;
 }
-.search-filter-btn{
-  background:none;border:none;cursor:pointer;
-  padding:4px 6px;border-radius:6px;
-  display:flex;align-items:center;justify-content:center;
-  -webkit-tap-highlight-color:transparent;
-  transition:background 0.15s;
-  height:36px;box-sizing:border-box;flex-shrink:0;
-}
-.search-filter-btn svg{ stroke:var(--text3);fill:none;stroke-linecap:round; }
-.search-filter-btn.active{ background:#e8e8e8; }
-.search-filter-btn.active svg{ stroke:#222; }
-.search-filter-dropdown{
-  position:absolute;top:100%;left:0;right:0;
-  background:var(--bg);padding:0 14px;
-  border-bottom:0.5px solid var(--border);
-  z-index:5;display:flex;flex-direction:column;gap:8px;
-  max-height:0;overflow:hidden;
-  transition:max-height 0.3s cubic-bezier(0.4,0,0.2,1), padding 0.3s cubic-bezier(0.4,0,0.2,1);
-}
-.search-filter-dropdown.open{ max-height:200px;padding:10px 14px 12px; }
 .search-body{ flex:1;overflow-y:auto;-webkit-overflow-scrolling:touch;touch-action:pan-y;transition:opacity 0.22s ease; }
 .search-body .list-view,.search-body .search-history-item{ touch-action:manipulation; }
 .search-history-item{
@@ -382,8 +350,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 }
 .list-item:has(+ .fav-date-sep){ border-bottom:none; }
 
-.center-msg{flex:1;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;color:var(--text3);font-size:14px;text-align:center;padding:32px;}
-.center-msg .big{font-size:36px;}
 
 /* ─── TOAST ─── */
 .toast{
@@ -442,7 +408,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .list-view{display:flex;flex-direction:column;}
 .list-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
 .list-item:last-child{border-bottom:none;}
-.list-item:active,.list-item.touched{background:#f0f0f0;}
+
 .thumb{width:68px;height:95px;flex-shrink:0;flex-grow:0;display:flex;align-items:center;justify-content:center;}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,0.22);}
 .list-info{flex:1;min-width:0;}
@@ -502,15 +468,6 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   padding-bottom:2px;
   cursor:text;
 }
-.meta-val-input{
-  flex:1;border:none;outline:none;
-  background:transparent;
-  color:var(--text);font-size:13px;font-family:var(--font);
-  border-bottom:1.5px solid #bbb;
-  padding:0 0 2px;
-  width:100%;
-}
-.meta-val-input::placeholder{ color:#ccc; }
 .edit-inline-input:focus::placeholder{ color:transparent; }
 input:focus::placeholder{ color:transparent; }
 .detail-tag.edit-off{ opacity:0.25; }
@@ -997,6 +954,16 @@ function drawTabBg(){
 
 function switchTab(name){
   if(activeTab === name) return;
+  // bookmarkから離れる際に即リセット（表示前に完了させる）
+  if(activeTab === 'bookmark' && name !== 'bookmark'){
+    favSubTab = 'upcoming';
+    const track = document.getElementById('favTrack');
+    const indicator = document.getElementById('favSubtabIndicator');
+    if(track){ track.style.transition='none'; track.style.transform='translateX(0)'; }
+    if(indicator){ indicator.style.transition='none'; indicator.style.transform=''; }
+    document.getElementById('favTabUpcoming')?.classList.add('active');
+    document.getElementById('favTabReleased')?.classList.remove('active');
+  }
   activeTab = name;
   document.querySelectorAll('.tab-page').forEach(p => p.classList.remove('active'));
   const page = document.getElementById('tab-' + name);
@@ -1014,7 +981,6 @@ function switchTab(name){
     renderSearchHistory();
   }
   if(name === 'bookmark'){
-    switchFavTab('upcoming');
     renderFavList();
   }
 }
@@ -1047,9 +1013,14 @@ function buildSelects(){
 function syncSelects(){ buildSelects(); }
 
 document.getElementById('ymMonthInput').addEventListener('change',e=>{
-  if(!e.target.value)return;
-  const[y,m]=e.target.value.split('-').map(Number);
+  e.target.dataset.pending = e.target.value;
+});
+document.getElementById('ymMonthInput').addEventListener('blur',e=>{
+  const val = e.target.dataset.pending || e.target.value;
+  if(!val)return;
+  const[y,m]=val.split('-').map(Number);
   curYear=y;curMonth=m-1;
+  delete e.target.dataset.pending;
   buildSelects();renderCal();
 });
 document.getElementById('todayBtn').addEventListener('touchstart',()=>{},{passive:true});

@@ -1290,7 +1290,7 @@ document.getElementById('viewToggle').addEventListener('click',e=>{
   localStorage.setItem('tbcal7-view',viewMode);updToggle();buildDatePanels(activeDate);
 });
 
-const NO_IMAGE_SRC = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 95" width="68" height="95"><rect width="68" height="95" fill="#d8d8d8"/><text x="34" y="52" text-anchor="middle" font-family="sans-serif" font-size="10" font-weight="600" fill="#aaa">NO IMAGE</text></svg>`)}`;
+const NO_IMAGE_SRC = `data:image/svg+xml,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 68 95" width="68" height="95"><rect width="68" height="95" fill="#d8d8d8"/><text x="34" y="52" text-anchor="middle" font-family="sans-serif" font-size="7" font-weight="600" fill="#aaa">NO IMAGE</text></svg>`)}`;
 
 function renderDay(el,s){
   const allItems=books.filter(b=>b.date===s);

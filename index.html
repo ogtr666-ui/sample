@@ -1740,10 +1740,10 @@ function switchFavTab(tab){
   if(indicator) indicator.style.transform = offset === 0 ? '' : 'translateX(100%)';
   document.getElementById('favTabUpcoming').classList.toggle('active', tab === 'upcoming');
   document.getElementById('favTabReleased').classList.toggle('active', tab === 'released');
-  // 遷移先パネルのスクロールをリセット
-  const targetId = tab === 'upcoming' ? 'favListUpcoming' : 'favListReleased';
-  const target = document.getElementById(targetId);
-  if(target) target.scrollTop = 0;
+  // 遷移元パネルのスクロールをリセット
+  const prevId = tab === 'upcoming' ? 'favListReleased' : 'favListUpcoming';
+  const prev = document.getElementById(prevId);
+  if(prev) prev.scrollTop = 0;
 }
 
 document.getElementById('favTabUpcoming')?.addEventListener('click',()=>switchFavTab('upcoming'));

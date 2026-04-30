@@ -223,13 +223,12 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   display:flex;flex-direction:column;align-items:center;justify-content:flex-start;gap:4px;
   transition:background 0.1s;
 }
-.day:active{background:#ececec;}
 .day.other{opacity:0.4;}
 .day.sun,.day.hol{color:var(--sun);}
 .day.sat{color:var(--sat);}
 .day.today .day-num{background:var(--today-bg);color:var(--today-text);}
 .day.selected{background:#e8e8e8;}
-.day.selected .day-num{font-weight:700;}
+
 .day-num{width:24px;height:24px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:13px;}
 .dots{display:flex;gap:3px;justify-content:center;flex-wrap:wrap;max-width:calc(4 * 5px + 3 * 3px);margin:2px auto 0;}
 .dot{width:5px;height:5px;border-radius:50%;flex-shrink:0;}
@@ -249,7 +248,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   line-height:1.3;
   white-space:nowrap;overflow:hidden;text-overflow:ellipsis;
 }
-.list-item:active{background:#e8e8e8;}
+.list-item:active,.list-item.touched{background:#f0f0f0;}
 .list-item:has(.fav-btn:active){background:none !important;}
 
 /* ─── SEARCH PAGE ─── */
@@ -275,6 +274,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   padding:9px 0;
 }
 .search-input::placeholder{color:#bbb;}
+.search-input:focus::placeholder{color:transparent;}
 .search-clear-btn{
   background:none;border:none;cursor:pointer;padding:2px;
   display:none;color:#aaa;font-size:16px;line-height:1;
@@ -442,7 +442,7 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
 .list-view{display:flex;flex-direction:column;}
 .list-item{display:flex;align-items:flex-start;gap:12px;padding:10px 16px;border-bottom:0.5px solid var(--border);cursor:pointer;transition:background 0.1s;}
 .list-item:last-child{border-bottom:none;}
-.list-item:active{background:#e8e8e8;}
+.list-item:active,.list-item.touched{background:#f0f0f0;}
 .thumb{width:68px;height:95px;flex-shrink:0;flex-grow:0;display:flex;align-items:center;justify-content:center;}
 .thumb img{width:100%;height:100%;object-fit:cover;display:block;border-radius:5px;box-shadow:0 2px 10px rgba(0,0,0,0.22);}
 .list-info{flex:1;min-width:0;}
@@ -511,6 +511,8 @@ body{font-family:var(--font);background:var(--bg);color:var(--text);overscroll-b
   width:100%;
 }
 .meta-val-input::placeholder{ color:#ccc; }
+.edit-inline-input:focus::placeholder{ color:transparent; }
+input:focus::placeholder{ color:transparent; }
 .detail-tag.edit-off{ opacity:0.25; }
 /* インライン編集inputの角丸ボックス */
 .edit-inline-input{
@@ -945,6 +947,12 @@ if(!books){
 }
 function saveBooks(){localStorage.setItem('tbcal7',JSON.stringify(books))}
 
+// タップフィードバック：タップしたら300ms間グレー表示
+function touchFlash(el){
+  el.classList.add('touched');
+  setTimeout(()=> el.classList.remove('touched'), 80);
+}
+
 /* ── STATE ── */
 const today=new Date(),todayStr=ds(today);
 let curYear=2026,curMonth=3;
@@ -1070,6 +1078,13 @@ function buildGrid(el,y,m){
       ? `<div class="dots">${dotColors.map(c=>`<div class="dot" style="background:${c}"></div>`).join('')}</div>`
       : '';
     div.innerHTML=`<div class="day-num">${d.getDate()}</div>${dotsHtml}`;
+    div.addEventListener('pointerdown',()=>{
+      if(filterDropdown.classList.contains('open')) return;
+      if(dateOpen) return;
+      // タップ瞬間にselectedを付与してグレーを即表示
+      document.querySelectorAll('.day.selected').forEach(el=>el.classList.remove('selected'));
+      div.classList.add('selected');
+    });
     div.addEventListener('click',()=>{
       if(filterDropdown.classList.contains('open')){ closeFilterDropdown(); return; }
       if(dateOpen)return;
@@ -1187,8 +1202,8 @@ function closeSheet(sheetEl, overlayEl, onDone){
 
 function openDate(s){
   activeDate=s; setDateLabel(s); buildDatePanels(s);
+  // モーダル展開時にselectedを消す（横スワイプ後の古い選択状態を残さないため）
   document.querySelectorAll('.day.selected').forEach(el=>el.classList.remove('selected'));
-  document.querySelectorAll('.day').forEach(el=>{ if(el.dataset.date===s) el.classList.add('selected'); });
   if(!dateOpen){ dateOpen=true; hideTabBar(); openSheet(dateSheet, overlay); }
 }
 function closeDate(){
@@ -1340,6 +1355,7 @@ function renderDay(el,s){
     });
   }
   el.querySelectorAll('.list-item[data-id]').forEach(el2=>{
+    el2.addEventListener('pointerdown',()=>touchFlash(el2));
     el2.addEventListener('click',e=>{
       if(e.target.closest('.fav-btn')) return;
       e.stopPropagation();
@@ -1732,7 +1748,7 @@ function renderFavList(){
   reEl.innerHTML = buildFavListHtml('released');
   [upEl, reEl].forEach(el=>{
     el.querySelectorAll('.fav-list-item').forEach(item=>{
-      item.addEventListener('touchstart',()=>{},{passive:true});
+      item.addEventListener('pointerdown',()=>touchFlash(item));
       item.addEventListener('click',()=>{
         const b = books.find(x=>x.id==item.dataset.id);
         if(b) openDetail(b);
@@ -1942,7 +1958,7 @@ function renderSearchHistory(){
     </div>
   `).join(''), ()=>{
     searchBody.querySelectorAll('.search-history-item').forEach(el => {
-      el.addEventListener('touchstart',()=>{},{passive:true});
+      el.addEventListener('pointerdown',()=>touchFlash(el));
       el.addEventListener('click', () => {
         searchInput.value = el.dataset.query;
         execSearch(el.dataset.query);
@@ -1986,7 +2002,7 @@ function execSearch(q){
     </div>`;
   setSearchBody(html, ()=>{
     searchBody.querySelectorAll('.list-item[data-id]').forEach(el => {
-      el.addEventListener('touchstart',()=>{},{passive:true});
+      el.addEventListener('pointerdown',()=>touchFlash(el));
       el.addEventListener('click', e => {
         if(e.target.closest('.fav-btn')) return;
         const b = books.find(x => x.id == el.dataset.id);
